@@ -1,0 +1,11 @@
+{
+  "name": "Omnira Gestionale",
+  "short_name": "Omnira",
+  "description": "Gestionale interno di Omnira Soft",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fafafb",
+  "theme_color": "#3b5bdb",
+  "lang": "it",
+  "icons": [{ "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

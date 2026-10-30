@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Omnira Gestionale
 
-## Getting Started
+Gestionale interno di Omnira Soft: clienti, lead, progetti, task, tempo, preventivi, fatture e assistenza.
+Web app **Next.js 16 + Supabase**, installabile come PWA. Progetto completo e roadmap nel documento "Omnira Gestionale — Progetto della web app".
 
-First, run the development server:
+## Stato
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+| Modulo | Stato |
+| --- | --- |
+| M0 Fondamenta (login, ruoli, sedi, impostazioni, registro attività) | ✅ |
+| M1 Dashboard | ✅ base (KPI commerciali, scadenze) |
+| M2 CRM clienti, referenti, attività, pipeline lead | ✅ |
+| M3–M5 Progetti, task, collaborazione | Fase 1 — prossimi |
+| M6–M14 | Fasi 2–4 (pagine segnaposto già nel menu) |
+
+## Avvio in locale
+
+1. **Database.** Crea un progetto Supabase in regione UE (es. Frankfurt). Apri *SQL Editor* ed esegui, in ordine, i file in `supabase/migrations/`.
+2. **Variabili.** Copia `.env.example` in `.env.local` e inserisci URL e chiave pubblica (*Project Settings → API*).
+3. **Avvio.**
+   ```bash
+   npm install
+   npm run dev
+   ```
+4. **Primo accesso.** Crea il tuo utente da Supabase (*Authentication → Users → Add user*). **Il primo utente diventa automaticamente amministratore**; gli altri entrano come "Team" e l'admin assegna i ruoli da *Impostazioni → Team*.
+
+Accesso con Google (opzionale): abilita il provider Google in *Authentication → Providers* e aggiungi `https://<dominio>/auth/callback` agli URL di redirect.
+
+## Ruoli
+
+| Ruolo | Può |
+| --- | --- |
+| Amministratore | Tutto, inclusi ruoli del team, archiviazione, registro attività |
+| Project manager | Clienti, referenti, lead |
+| Commerciale | Clienti, referenti, lead |
+| Amministrazione | Clienti, referenti, dati aziendali |
+| Team | Legge tutto, registra attività e note |
+
+I permessi sono applicati nel database con **Row Level Security** (`supabase/migrations`); la UI si limita a nascondere ciò che non si può fare.
+
+## Struttura
+
+```
+src/
+  app/                 Rotte (App Router). (app)/ = area autenticata
+  components/ui/       Componenti base (stile shadcn/ui, Radix)
+  components/app/      Componenti condivisi (header pagina, form, stati vuoti)
+  components/layout/   Sidebar, topbar, palette comandi (Ctrl/⌘ K)
+  modules/<modulo>/    Un modulo = queries.ts (lettura), actions.ts (Server Actions), schema.ts (Zod), components/
+  lib/                 Supabase, auth, permessi, etichette, tipi DB
+supabase/
+  migrations/          Schema SQL versionato
+  tests/               Test RLS e dati demo per Postgres locale
+DESIGN.md              Regole visive (colori, tipografia, componenti)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Convenzioni: importi in **centesimi** (intero), date con fuso orario, cancellazione logica (`deleted_at`), ogni Server Action riverifica sessione e ruolo.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Test
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npx tsc --noEmit && npm run lint && npm run build
+```
 
-## Learn More
+Test delle policy RLS su un Postgres 16 locale (senza Supabase):
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+createdb omnira_test
+psql -d omnira_test -f supabase/tests/auth_stub.sql
+psql -d omnira_test -f supabase/migrations/20261030000001_fondamenta_crm.sql
+psql -d omnira_test -f supabase/tests/rls_test.sql   # stampa "OK: ..." per ogni controllo
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Da completare
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Colori del brand**: la palette in `src/app/globals.css` è provvisoria; sostituirla con i colori ufficiali Omnira (vedi `DESIGN.md`).
+- **Tipi del database**: dopo aver collegato Supabase, rigenerare `src/lib/database.types.ts` con `npx supabase gen types typescript`.
