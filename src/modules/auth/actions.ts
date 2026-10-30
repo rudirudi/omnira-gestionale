@@ -21,11 +21,18 @@ export async function signIn(_prev: ActionResult, formData: FormData): Promise<A
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Dati non validi" };
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email: parsed.data.email,
     password: parsed.data.password,
   });
   if (error) return { ok: false, error: "Email o password non corretti." };
+
+  // Account creato ma non ancora attivato da un amministratore
+  const { data: profile } = await supabase.from("profiles").select("active").eq("id", data.user.id).maybeSingle();
+  if (!profile?.active) {
+    await supabase.auth.signOut();
+    return { ok: false, error: "Il tuo account non è ancora attivo: un amministratore deve attivarlo da Impostazioni → Team." };
+  }
   redirect(safeNext(parsed.data.next));
 }
 

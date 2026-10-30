@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 
-export type SearchHit = { kind: "cliente" | "lead"; id: string; title: string; subtitle?: string | null; href: string };
+export type SearchHit = { kind: "cliente" | "lead" | "progetto"; id: string; title: string; subtitle?: string | null; href: string };
 
 /** Ricerca globale per la palette comandi (Ctrl/⌘ K). RLS limita i risultati. */
 export async function globalSearch(query: string): Promise<SearchHit[]> {
@@ -11,7 +11,7 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
   const supabase = await createClient();
   const like = `%${q}%`;
 
-  const [clients, leads] = await Promise.all([
+  const [clients, leads, projects] = await Promise.all([
     supabase
       .from("clients")
       .select("id, name, city, vat_number")
@@ -24,9 +24,22 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
       .is("deleted_at", null)
       .or(`title.ilike.${like},company_name.ilike.${like},contact_name.ilike.${like}`)
       .limit(6),
+    supabase
+      .from("projects")
+      .select("id, name, code")
+      .is("deleted_at", null)
+      .or(`name.ilike.${like},code.ilike.${like}`)
+      .limit(6),
   ]);
 
   return [
+    ...(projects.data ?? []).map((p) => ({
+      kind: "progetto" as const,
+      id: p.id,
+      title: p.name,
+      subtitle: p.code,
+      href: `/progetti/${p.id}`,
+    })),
     ...(clients.data ?? []).map((c) => ({
       kind: "cliente" as const,
       id: c.id,

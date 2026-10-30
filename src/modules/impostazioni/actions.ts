@@ -64,7 +64,7 @@ export async function changePasswordAction(_prev: ActionResult, formData: FormDa
 }
 
 const memberSchema = z.object({
-  id: z.uuid(),
+  id: z.guid(),
   role: z.enum(["admin", "project_manager", "team", "amministrazione", "commerciale"]),
   site_id: z.string().optional().transform((v) => v || null),
   active: z.boolean(),

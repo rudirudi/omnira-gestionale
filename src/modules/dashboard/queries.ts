@@ -7,7 +7,9 @@ export async function getDashboardData(userId: string) {
   const in7 = new Date(now.getTime() + 7 * 86400000).toISOString();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
-  const [clients, openLeads, wonMonth, dueActivities, recentLeads] = await Promise.all([
+  const { data: myAssign } = await supabase.from("task_assignees").select("task_id").eq("user_id", userId);
+  const myIds = (myAssign ?? []).map((a) => a.task_id);
+  const [clients, openLeads, wonMonth, dueActivities, recentLeads, activeProjects, myTasks] = await Promise.all([
     supabase.from("clients").select("id", { count: "exact", head: true }).eq("status", "attivo").is("deleted_at", null),
     supabase.from("leads").select("estimated_value_cents, stage").is("deleted_at", null).not("stage", "in", "(vinto,perso)"),
     supabase.from("leads").select("estimated_value_cents").eq("stage", "vinto").gte("closed_at", monthStart).is("deleted_at", null),
@@ -25,6 +27,17 @@ export async function getDashboardData(userId: string) {
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .limit(6),
+    supabase.from("projects").select("id", { count: "exact", head: true }).eq("status", "attivo").is("deleted_at", null),
+    myIds.length
+      ? supabase
+          .from("tasks")
+          .select("id, title, number, status, priority, due_date, project:projects(id, code, name)")
+          .in("id", myIds)
+          .is("deleted_at", null)
+          .neq("status", "fatto")
+          .order("due_date", { ascending: true, nullsFirst: false })
+          .limit(8)
+      : Promise.resolve({ data: [] as never[] }),
   ]);
 
   const pipeline = (openLeads.data ?? []).reduce((s, l) => s + (l.estimated_value_cents ?? 0), 0);
@@ -40,5 +53,7 @@ export async function getDashboardData(userId: string) {
     due,
     myDue: due.filter((a) => a.created_by === userId).length,
     recentLeads: recentLeads.data ?? [],
+    activeProjects: activeProjects.count ?? 0,
+    myTasks: myTasks.data ?? [],
   };
 }

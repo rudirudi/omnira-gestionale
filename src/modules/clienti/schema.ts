@@ -25,7 +25,7 @@ export const clientSchema = z.object({
 export type ClientInput = z.infer<typeof clientSchema>;
 
 export const contactSchema = z.object({
-  client_id: z.uuid(),
+  client_id: z.guid(),
   first_name: z.string().trim().min(1, "Il nome è obbligatorio"),
   last_name: optionalText,
   job_title: optionalText,
@@ -39,8 +39,8 @@ export const contactSchema = z.object({
 
 export const activitySchema = z
   .object({
-    client_id: z.uuid().optional(),
-    lead_id: z.uuid().optional(),
+    client_id: z.guid().optional(),
+    lead_id: z.guid().optional(),
     type: z.enum(["nota", "chiamata", "email", "riunione", "promemoria"]),
     subject: z.string().trim().min(1, "Scrivi un oggetto").max(200),
     body: optionalText,

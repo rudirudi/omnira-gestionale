@@ -20,7 +20,10 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser> => {
     .eq("id", user.id)
     .single();
 
-  if (!profile || !profile.active) redirect("/login?errore=disattivato");
+  if (!profile || !profile.active) {
+    await supabase.auth.signOut();
+    redirect("/login?errore=disattivato");
+  }
   return {
     id: profile.id,
     full_name: profile.full_name,

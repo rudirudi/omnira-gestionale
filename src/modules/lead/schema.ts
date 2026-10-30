@@ -20,7 +20,7 @@ export const leadSchema = z.object({
 
 export const moveSchema = z
   .object({
-    id: z.uuid(),
+    id: z.guid(),
     stage: z.enum(STAGES),
     position: z.number(),
     lost_reason: z.string().trim().max(500).optional(),

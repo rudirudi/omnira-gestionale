@@ -39,7 +39,7 @@ export async function updateSession(request: NextRequest) {
     url.search = pathname !== "/" ? `?next=${encodeURIComponent(pathname)}` : "";
     return NextResponse.redirect(url);
   }
-  if (user && pathname === "/login") {
+  if (user && pathname === "/login" && !request.nextUrl.searchParams.has("errore")) {
     return NextResponse.redirect(new URL("/", request.url));
   }
   return response;

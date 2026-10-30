@@ -4,6 +4,8 @@ import type { AppRole } from "@/lib/database.types";
 export const can = {
   editClients: (r: AppRole) => ["admin", "project_manager", "commerciale", "amministrazione"].includes(r),
   editLeads: (r: AppRole) => ["admin", "project_manager", "commerciale"].includes(r),
+  manageProjects: (r: AppRole) => r === "admin" || r === "project_manager",
+  deleteTasks: (r: AppRole) => r === "admin" || r === "project_manager",
   deleteRecords: (r: AppRole) => r === "admin",
   editCompanySettings: (r: AppRole) => r === "admin" || r === "amministrazione",
   manageTeam: (r: AppRole) => r === "admin",

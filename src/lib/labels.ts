@@ -1,4 +1,14 @@
-import type { ActivityType, ClientStatus, LeadSource, LeadStage } from "@/lib/database.types";
+import type {
+  ActivityType,
+  BillingType,
+  ClientStatus,
+  LeadSource,
+  LeadStage,
+  ProjectStatus,
+  ProjectType,
+  TaskPriority,
+  TaskStatus,
+} from "@/lib/database.types";
 
 type Tone = "neutral" | "primary" | "success" | "warning" | "danger";
 
@@ -52,3 +62,48 @@ export const SERVICES = [
   "AI Chat",
   "AI Voice",
 ];
+
+
+export const PROJECT_TYPE: Record<ProjectType, string> = {
+  sito: "Sito web",
+  ecommerce: "E-commerce",
+  software: "Software su misura",
+  app: "App mobile",
+  gestionale: "Gestionale",
+  automazione_ai: "Automazione AI",
+  seo: "SEO",
+  altro: "Altro",
+};
+
+export const PROJECT_STATUS: Record<ProjectStatus, { label: string; tone: Tone }> = {
+  pianificato: { label: "Pianificato", tone: "neutral" },
+  attivo: { label: "Attivo", tone: "primary" },
+  in_pausa: { label: "In pausa", tone: "warning" },
+  completato: { label: "Completato", tone: "success" },
+  annullato: { label: "Annullato", tone: "danger" },
+};
+
+export const BILLING_TYPE: Record<BillingType, string> = {
+  corpo: "A corpo",
+  ore: "A ore",
+  canone: "A canone",
+};
+
+export const TASK_STATUSES: { value: TaskStatus; label: string; tone: Tone }[] = [
+  { value: "da_fare", label: "Da fare", tone: "neutral" },
+  { value: "in_corso", label: "In corso", tone: "primary" },
+  { value: "in_review", label: "In review", tone: "warning" },
+  { value: "test", label: "Test", tone: "warning" },
+  { value: "fatto", label: "Fatto", tone: "success" },
+];
+export const TASK_STATUS = Object.fromEntries(TASK_STATUSES.map((s) => [s.value, s])) as Record<
+  TaskStatus,
+  (typeof TASK_STATUSES)[number]
+>;
+
+export const TASK_PRIORITY: Record<TaskPriority, { label: string; tone: Tone; rank: number }> = {
+  urgente: { label: "Urgente", tone: "danger", rank: 0 },
+  alta: { label: "Alta", tone: "warning", rank: 1 },
+  media: { label: "Media", tone: "neutral", rank: 2 },
+  bassa: { label: "Bassa", tone: "neutral", rank: 3 },
+};

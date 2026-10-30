@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Building2, Plus, Search, Target } from "lucide-react";
+import { Briefcase, Building2, Plus, Search, Target } from "lucide-react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import {
   Command,
@@ -65,14 +65,14 @@ export function CommandPalette() {
         <DialogPrimitive.Content className="fixed top-[15vh] left-1/2 z-50 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 overflow-hidden rounded-xl border shadow-2xl">
           <DialogPrimitive.Title className="sr-only">Cerca e vai</DialogPrimitive.Title>
           <Command shouldFilter={false}>
-            <CommandInput placeholder="Cerca clienti, lead o pagine…" value={query} onValueChange={setQuery} />
+            <CommandInput placeholder="Cerca progetti, clienti, lead o pagine…" value={query} onValueChange={setQuery} />
             <CommandList>
               <CommandEmpty>Nessun risultato.</CommandEmpty>
               {visibleHits.length > 0 && (
                 <CommandGroup heading="Risultati">
                   {visibleHits.map((h) => (
                     <CommandItem key={`${h.kind}-${h.id}`} value={`${h.kind}-${h.id}`} onSelect={() => go(h.href)}>
-                      {h.kind === "cliente" ? <Building2 /> : <Target />}
+                      {h.kind === "cliente" ? <Building2 /> : h.kind === "progetto" ? <Briefcase /> : <Target />}
                       <span className="truncate">{h.title}</span>
                       {h.subtitle && <span className="ml-auto truncate text-xs text-muted-foreground">{h.subtitle}</span>}
                     </CommandItem>
@@ -80,6 +80,12 @@ export function CommandPalette() {
                 </CommandGroup>
               )}
               <CommandGroup heading="Azioni rapide">
+                <CommandItem value="nuovo-task" onSelect={() => go("/task?nuovo=1")}>
+                  <Plus /> Nuovo task
+                </CommandItem>
+                <CommandItem value="nuovo-progetto" onSelect={() => go("/progetti?nuovo=1")}>
+                  <Plus /> Nuovo progetto
+                </CommandItem>
                 <CommandItem value="nuovo-cliente" onSelect={() => go("/clienti?nuovo=1")}>
                   <Plus /> Nuovo cliente
                 </CommandItem>

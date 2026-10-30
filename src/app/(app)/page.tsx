@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, Bell, CalendarClock, Target, TrendingUp, Trophy, Users } from "lucide-react";
+import { ArrowRight, Bell, Briefcase, CalendarClock, CheckCircle2, Target, TrendingUp, Users } from "lucide-react";
+import { DueLabel, PriorityFlag, TaskCode } from "@/modules/task/components/task-meta";
+import { TASK_STATUS } from "@/lib/labels";
 import { EmptyState } from "@/components/app/empty-state";
 import { PageBody, PageHeader } from "@/components/app/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -23,10 +25,16 @@ export default async function DashboardPage() {
   const today = new Date().toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Rome" });
 
   const kpis = [
+    { label: "I miei task aperti", value: String(d.myTasks.length === 8 ? "8+" : d.myTasks.length), icon: CheckCircle2, href: "/task" },
+    { label: "Progetti attivi", value: String(d.activeProjects), icon: Briefcase, href: "/progetti?stato=attivo" },
     { label: "Clienti attivi", value: String(d.activeClients), icon: Users, href: "/clienti?stato=attivo" },
-    { label: "Lead aperti", value: String(d.openLeads), icon: Target, href: "/lead" },
-    { label: "Valore pipeline", value: formatEuro(d.pipelineCents), icon: TrendingUp, href: "/lead" },
-    { label: "Vinti questo mese", value: formatEuro(d.wonMonthCents), sub: `${d.wonMonthCount} lead`, icon: Trophy, href: "/lead" },
+    {
+      label: "Pipeline commerciale",
+      value: formatEuro(d.pipelineCents),
+      sub: `${d.openLeads} lead aperti · ${formatEuro(d.wonMonthCents)} vinti nel mese`,
+      icon: TrendingUp,
+      href: "/lead",
+    },
   ];
 
   return (
@@ -45,6 +53,37 @@ export default async function DashboardPage() {
             </Link>
           ))}
         </div>
+
+        <Card>
+          <CardHeader className="flex-row items-center justify-between">
+            <CardTitle>I miei task</CardTitle>
+            <Link href="/task" className="flex items-center gap-1 text-[13px] text-primary hover:underline">
+              Tutti i task <ArrowRight className="size-3.5" />
+            </Link>
+          </CardHeader>
+          <CardContent className="pt-3">
+            {d.myTasks.length === 0 ? (
+              <EmptyState icon={CheckCircle2} title="Niente da fare, per ora" description="I task che ti assegnano compaiono qui, ordinati per scadenza." className="py-8" />
+            ) : (
+              <ul className="divide-y">
+                {d.myTasks.map((t) => (
+                  <li key={t.id}>
+                    <Link href={`/task?aperto=${t.id}`} className="flex items-center gap-3 py-2.5 hover:text-primary">
+                      <TaskCode code={t.project?.code} number={t.number} />
+                      <span className="min-w-0 flex-1 truncate text-[13px] font-medium">{t.title}</span>
+                      <span className="hidden truncate text-xs text-muted-foreground md:inline">{t.project?.name}</span>
+                      <PriorityFlag priority={t.priority} />
+                      <Badge tone={TASK_STATUS[t.status].tone}>{TASK_STATUS[t.status].label}</Badge>
+                      <span className="w-16 text-right">
+                        <DueLabel due={t.due_date} status={t.status} />
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
 
         <div className="grid gap-6 lg:grid-cols-5">
           <Card className="lg:col-span-3">

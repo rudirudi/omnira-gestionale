@@ -4,6 +4,7 @@ import { CommandPalette, SearchButton } from "@/components/layout/command-palett
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { Brand, SidebarNav } from "@/components/layout/sidebar";
 import { UserMenu } from "@/components/layout/user-menu";
+import { NotificationBell } from "@/modules/notifiche/components/notification-bell";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { getCurrentUser } from "@/lib/auth";
-import { ROLE_LABEL } from "@/lib/permissions";
+import { can, ROLE_LABEL } from "@/lib/permissions";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const user = await getCurrentUser();
@@ -39,6 +40,14 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
+                    <Link href="/task?nuovo=1">Task</Link>
+                  </DropdownMenuItem>
+                  {can.manageProjects(user.role) && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/progetti?nuovo=1">Progetto</Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem asChild>
                     <Link href="/clienti?nuovo=1">Cliente</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -46,6 +55,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              <NotificationBell userId={user.id} />
               <UserMenu name={user.full_name} email={user.email} roleLabel={ROLE_LABEL[user.role]} />
             </div>
           </header>

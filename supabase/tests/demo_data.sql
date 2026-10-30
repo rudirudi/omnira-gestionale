@@ -50,3 +50,39 @@ from (values
   ('Studio Legale Bianchi', 'promemoria', 'Rinnovo manutenzione sito', null, '96')
 ) as v(client, type, subject, body, due)
 join public.clients c on c.name = v.client;
+
+-- ---------------- Fase 1: progetti e task demo ----------------
+with team as (select id, row_number() over (order by created_at, email) as n from public.profiles)
+insert into public.projects (name, client_id, type, status, billing_type, budget_cents, budget_hours, start_date, due_date, manager_id, description)
+select v.name, (select id from public.clients where name = v.client), v.type::public.project_type, v.status::public.project_status,
+       v.billing::public.billing_type, v.budget, v.hours, current_date + v.s, current_date + v.d, (select id from team where n = v.pm), v.descr
+from (values
+  ('Automazione fatture fornitori', 'Templana', 'automazione_ai', 'attivo', 'corpo', 600000, 80, -20, 25, 1, 'Lettura automatica delle fatture fornitori e registrazione nel gestionale.'),
+  ('E-commerce Shopify', 'Bottega Rossi', 'ecommerce', 'attivo', 'corpo', 199900, 40, -10, 12, 2, null),
+  ('Manutenzione sito', 'Studio Legale Bianchi', 'sito', 'pianificato', 'canone', null, null, 5, 60, 2, null)
+) as v(name, client, type, status, billing, budget, hours, s, d, pm, descr);
+
+insert into public.project_members (project_id, user_id)
+select p.id, pr.id from public.projects p cross join public.profiles pr where pr.active on conflict do nothing;
+
+insert into public.tasks (project_id, phase_id, title, status, priority, due_date, estimate_hours, position)
+select p.id, ph.id, v.title, v.status::public.task_status, v.prio::public.task_priority, current_date + v.d, v.est, v.pos
+from (values
+  ('Automazione fatture fornitori', 'Analisi', 'Raccolta 50 fatture di esempio', 'fatto', 'media', -15, 2, 1),
+  ('Automazione fatture fornitori', 'Progettazione', 'Disegno flusso estrazione dati', 'fatto', 'alta', -8, 4, 1),
+  ('Automazione fatture fornitori', 'Sviluppo', 'Prompt estrazione campi fattura', 'in_corso', 'alta', 2, 6, 1),
+  ('Automazione fatture fornitori', 'Sviluppo', 'Integrazione API gestionale Templana', 'da_fare', 'urgente', -1, 8, 2),
+  ('Automazione fatture fornitori', 'Test', 'Test su fatture reali di ottobre', 'da_fare', 'media', 10, 4, 1),
+  ('E-commerce Shopify', 'Sviluppo', 'Catalogo prodotti e categorie', 'in_review', 'media', 0, 6, 1),
+  ('E-commerce Shopify', 'Sviluppo', 'Pagamenti e spedizioni', 'da_fare', 'alta', 4, 4, 2),
+  ('E-commerce Shopify', 'Test', 'Test ordine completo', 'da_fare', 'media', 9, 2, 1)
+) as v(project, phase, title, status, prio, d, est, pos)
+join public.projects p on p.name = v.project
+join public.project_phases ph on ph.project_id = p.id and ph.name = v.phase;
+
+insert into public.task_assignees (task_id, user_id)
+select t.id, (select id from public.profiles order by created_at, email limit 1) from public.tasks t where t.title in
+  ('Prompt estrazione campi fattura', 'Integrazione API gestionale Templana', 'Catalogo prodotti e categorie', 'Test su fatture reali di ottobre');
+insert into public.task_assignees (task_id, user_id)
+select t.id, (select id from public.profiles order by created_at, email offset 2 limit 1) from public.tasks t where t.title in
+  ('Integrazione API gestionale Templana', 'Pagamenti e spedizioni');

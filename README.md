@@ -10,7 +10,9 @@ Web app **Next.js 16 + Supabase**, installabile come PWA. Progetto completo e ro
 | M0 Fondamenta (login, ruoli, sedi, impostazioni, registro attività) | ✅ |
 | M1 Dashboard | ✅ base (KPI commerciali, scadenze) |
 | M2 CRM clienti, referenti, attività, pipeline lead | ✅ |
-| M3–M5 Progetti, task, collaborazione | Fase 1 — prossimi |
+| M3 Progetti (template per tipo, fasi, milestone, team, budget) | ✅ |
+| M4 Task (board, lista, calendario, sotto-task, assegnatari, priorità) | ✅ |
+| M5 Commenti con @menzioni, notifiche in tempo reale | ✅ |
 | M6–M14 | Fasi 2–4 (pagine segnaposto già nel menu) |
 
 ## Avvio in locale
@@ -31,10 +33,12 @@ Accesso con Google (opzionale): abilita il provider Google in *Authentication �
 | Ruolo | Può |
 | --- | --- |
 | Amministratore | Tutto, inclusi ruoli del team, archiviazione, registro attività |
-| Project manager | Clienti, referenti, lead |
+| Project manager | Progetti, fasi, milestone, team di progetto, clienti, lead |
 | Commerciale | Clienti, referenti, lead |
 | Amministrazione | Clienti, referenti, dati aziendali |
-| Team | Legge tutto, registra attività e note |
+| Team | Legge tutto; crea e aggiorna task, commenta, registra attività |
+
+Nota: il primo utente registrato diventa amministratore; tutti gli altri entrano **disattivati** finché un admin non li attiva.
 
 I permessi sono applicati nel database con **Row Level Security** (`supabase/migrations`); la UI si limita a nascondere ciò che non si può fare.
 
