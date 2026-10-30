@@ -19,7 +19,7 @@ create type public.activity_type as enum ('nota', 'chiamata', 'email', 'riunione
 -- Funzioni di utilità
 -- ---------------------------------------------------------------------------
 create or replace function public.set_updated_at()
-returns trigger language plpgsql as $$
+returns trigger language plpgsql set search_path = public as $$
 begin
   new.updated_at := now();
   return new;
@@ -72,19 +72,22 @@ language sql stable security definer set search_path = public as $$
   select coalesce(public.current_app_role() = any (roles), false)
 $$;
 
--- Nuovo utente in auth.users → profilo. Il primo utente in assoluto diventa admin.
+-- Nuovo utente in auth.users → profilo. Il primo utente in assoluto diventa admin attivo;
+-- tutti gli altri entrano DISATTIVATI finché un admin non li attiva (Impostazioni → Team).
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path = public as $$
 declare
   first_user boolean;
 begin
+  perform pg_advisory_xact_lock(hashtext('handle_new_user'));
   select not exists (select 1 from public.profiles) into first_user;
-  insert into public.profiles (id, email, full_name, role)
+  insert into public.profiles (id, email, full_name, role, active)
   values (
     new.id,
     coalesce(new.email, ''),
     coalesce(new.raw_user_meta_data ->> 'full_name', split_part(coalesce(new.email, ''), '@', 1)),
-    case when first_user then 'admin'::public.app_role else 'team'::public.app_role end
+    case when first_user then 'admin'::public.app_role else 'team'::public.app_role end,
+    first_user
   );
   return new;
 end $$;
@@ -260,7 +263,7 @@ create trigger leads_audit after insert or update or delete on public.leads
   for each row execute function public.audit_row();
 
 create or replace function public.leads_set_closed_at()
-returns trigger language plpgsql as $$
+returns trigger language plpgsql set search_path = public as $$
 begin
   if new.stage in ('vinto', 'perso') and (tg_op = 'INSERT' or old.stage is distinct from new.stage) then
     new.closed_at := now();

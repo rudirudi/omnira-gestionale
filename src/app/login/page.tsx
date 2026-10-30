@@ -8,7 +8,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const errore = typeof sp.errore === "string" ? sp.errore : undefined;
   const message =
     errore === "disattivato"
-      ? "Il tuo account è disattivato. Contatta un amministratore."
+      ? "Il tuo account non è ancora attivo: un amministratore deve attivarlo da Impostazioni → Team."
       : errore === "google"
         ? "Accesso con Google non riuscito. Riprova o usa email e password."
         : errore === "link"

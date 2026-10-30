@@ -109,7 +109,7 @@ export function TeamTable({ members, sites, canManage, meId }: { members: Profil
   return (
     <div className="flex flex-col gap-3">
       <p className="text-[13px] text-muted-foreground">
-        Per aggiungere una persona invitala da Supabase (Authentication → Users → Invite). Al primo accesso compare qui con ruolo &quot;Team&quot;.
+        Per aggiungere una persona invitala da Supabase (Authentication → Users → Invite). Compare qui come &quot;Disattivato&quot;: attivala e assegnale il ruolo.
       </p>
       <div className="rounded-lg border bg-card">
         <Table className={pending ? "opacity-70" : undefined}>
