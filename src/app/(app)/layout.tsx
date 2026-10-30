@@ -22,10 +22,10 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   return (
     <TooltipProvider delayDuration={300}>
       <div className="flex min-h-svh">
-        <aside className="sticky top-0 hidden h-svh w-60 shrink-0 flex-col border-r bg-sidebar lg:flex">
+        <aside className="sticky top-0 hidden h-svh w-60 shrink-0 flex-col bg-sidebar lg:flex">
           <Brand />
           <SidebarNav />
-          <div className="border-t px-5 py-3 text-[11px] text-muted-foreground">Omnira Soft · uso interno</div>
+          <div className="border-t border-sidebar-border px-5 py-3 text-[11px] text-sidebar-muted">Omnira Soft · uso interno</div>
         </aside>
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b bg-background/85 px-4 backdrop-blur sm:px-6">

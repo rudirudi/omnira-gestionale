@@ -2,29 +2,25 @@
 
 Riferimento unico per l'aspetto del gestionale. Persone e agenti di coding leggono questo file prima di creare o modificare un'interfaccia. I valori vivono come variabili CSS in `src/app/globals.css`: cambiare un colore lì lo cambia ovunque.
 
-> **Stato del brand:** palette provvisoria. Colori e font ufficiali del sito omnirasoft.it vanno confermati e sostituiti in `globals.css` (sezione `:root` e `.dark`).
+## Colori
 
-## Personalità
+Base **blu istituzionale e bianco**; **rosso, verde e giallo acceso** come colori secondari.
 
-- Strumento di lavoro quotidiano: sobrio, denso di informazioni ma arioso, veloce.
-- Riferimenti: Linear, Vercel Dashboard, Attio. Niente gradienti decorativi, niente ombre pesanti, niente emoji nell'interfaccia.
-- Tono dei testi: italiano diretto, seconda persona plurale implicita ("Nuovo cliente", "Salva modifiche"), messaggi d'errore che dicono cosa fare.
-
-## Colori (token)
-
-| Token | Uso | Chiaro | Scuro |
-| --- | --- | --- | --- |
-| `--background` | Sfondo pagina | quasi bianco caldo | grafite |
-| `--card` | Superfici, pannelli | bianco | grafite più chiaro |
-| `--foreground` | Testo principale | neutro 950 | neutro 50 |
-| `--muted-foreground` | Testo secondario, etichette | neutro 500 | neutro 400 |
-| `--primary` | Azione principale, link attivi, focus | blu Omnira | blu Omnira chiaro |
-| `--border` | Bordi 1px | neutro 200 | bianco 10% |
-| `--success` / `--warning` / `--destructive` | Stati | verde / ambra / rosso | idem, più chiari |
+| Token | Uso | Valore (chiaro) |
+| --- | --- | --- |
+| `--primary` | Blu istituzionale: azioni principali, link, focus, stato "attivo" | ≈ #1F4196 |
+| `--background` / `--card` | Bianco: sfondo pagine e superfici | #FFFFFF |
+| `--sidebar` | Barra laterale in blu pieno con testo bianco | ≈ #0E2A6B |
+| `--destructive` | Rosso: errori, ritardi, urgente, lead perso | ≈ #D62D2D |
+| `--success` | Verde: completato, vinto, attivo | ≈ #1F9D55 |
+| `--warning` | Giallo acceso: in attesa, in review, scadenze vicine, accento del logo | ≈ #F7D312 (testo scuro sopra) |
+| `--muted-foreground` | Testo secondario | grigio-blu |
 
 Regole:
-- Un solo colore d'accento (`--primary`). Gli stati usano sempre colore **+ etichetta**, mai solo colore.
-- Sfondi tinti degli stati al 10–12% di opacità, testo pieno.
+- Il blu domina; rosso, verde e giallo si usano a piccole dosi (badge, icone, indicatori), mai come sfondo di grandi aree.
+- Sul giallo il testo è sempre scuro (`--warning-foreground`), mai bianco.
+- Gli stati usano sempre colore **+ etichetta**, mai solo colore.
+- Il tema scuro usa le stesse tinte, più chiare e meno sature.
 
 ## Tipografia
 

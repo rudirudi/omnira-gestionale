@@ -15,7 +15,7 @@ export function MobileNav() {
           <Menu />
         </Button>
       </DialogTrigger>
-      <DialogContent side="left" className="flex flex-col gap-0 bg-sidebar">
+      <DialogContent side="left" className="flex flex-col gap-0 border-sidebar-border bg-sidebar text-sidebar-foreground [&>button]:text-sidebar-foreground">
         <DialogTitle className="sr-only">Menu</DialogTitle>
         <Brand />
         <SidebarNav onNavigate={() => setOpen(false)} />

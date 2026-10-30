@@ -9,8 +9,8 @@ export const badgeVariants = cva(
       tone: {
         neutral: "border-transparent bg-muted text-muted-foreground",
         primary: "border-transparent bg-primary/10 text-primary",
-        success: "border-transparent bg-success/12 text-success",
-        warning: "border-transparent bg-warning/15 text-[oklch(0.5_0.12_70)] dark:text-warning",
+        success: "border-transparent bg-success/14 text-success",
+        warning: "border-transparent bg-warning text-warning-foreground dark:bg-warning/20",
         danger: "border-transparent bg-destructive/10 text-destructive",
         outline: "text-foreground",
       },

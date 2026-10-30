@@ -77,5 +77,4 @@ psql -d omnira_test -f supabase/tests/rls_test.sql   # stampa "OK: ..." per ogni
 
 ## Da completare
 
-- **Colori del brand**: la palette in `src/app/globals.css` è provvisoria; sostituirla con i colori ufficiali Omnira (vedi `DESIGN.md`).
 - **Tipi del database**: dopo aver collegato Supabase, rigenerare `src/lib/database.types.ts` con `npx supabase gen types typescript`.

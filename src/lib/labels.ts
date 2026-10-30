@@ -93,7 +93,7 @@ export const TASK_STATUSES: { value: TaskStatus; label: string; tone: Tone }[] =
   { value: "da_fare", label: "Da fare", tone: "neutral" },
   { value: "in_corso", label: "In corso", tone: "primary" },
   { value: "in_review", label: "In review", tone: "warning" },
-  { value: "test", label: "Test", tone: "warning" },
+  { value: "test", label: "Test", tone: "primary" },
   { value: "fatto", label: "Fatto", tone: "success" },
 ];
 export const TASK_STATUS = Object.fromEntries(TASK_STATUSES.map((s) => [s.value, s])) as Record<

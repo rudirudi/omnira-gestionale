@@ -25,15 +25,16 @@ export default async function DashboardPage() {
   const today = new Date().toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Rome" });
 
   const kpis = [
-    { label: "I miei task aperti", value: String(d.myTasks.length === 8 ? "8+" : d.myTasks.length), icon: CheckCircle2, href: "/task" },
-    { label: "Progetti attivi", value: String(d.activeProjects), icon: Briefcase, href: "/progetti?stato=attivo" },
-    { label: "Clienti attivi", value: String(d.activeClients), icon: Users, href: "/clienti?stato=attivo" },
+    { label: "I miei task aperti", value: String(d.myTasks.length === 8 ? "8+" : d.myTasks.length), icon: CheckCircle2, href: "/task", tone: "bg-primary/10 text-primary" },
+    { label: "Progetti attivi", value: String(d.activeProjects), icon: Briefcase, href: "/progetti?stato=attivo", tone: "bg-success/14 text-success" },
+    { label: "Clienti attivi", value: String(d.activeClients), icon: Users, href: "/clienti?stato=attivo", tone: "bg-warning text-warning-foreground dark:bg-warning/20" },
     {
       label: "Pipeline commerciale",
       value: formatEuro(d.pipelineCents),
       sub: `${d.openLeads} lead aperti · ${formatEuro(d.wonMonthCents)} vinti nel mese`,
       icon: TrendingUp,
       href: "/lead",
+      tone: "bg-destructive/10 text-destructive",
     },
   ];
 
@@ -46,7 +47,9 @@ export default async function DashboardPage() {
             <Link key={k.label} href={k.href} className="group rounded-lg border bg-card p-4 transition-colors hover:border-primary/40">
               <div className="flex items-center justify-between text-[13px] text-muted-foreground">
                 {k.label}
-                <k.icon className="size-4" strokeWidth={1.75} />
+                <span className={cn("flex size-8 items-center justify-center rounded-md", k.tone)}>
+                  <k.icon className="size-4" strokeWidth={2} />
+                </span>
               </div>
               <p className="mt-2 text-[26px] leading-none font-semibold tracking-tight tabular">{k.value}</p>
               {k.sub && <p className="mt-1.5 text-xs text-muted-foreground">{k.sub}</p>}

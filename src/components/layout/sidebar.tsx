@@ -15,7 +15,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
     <nav className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 py-4" aria-label="Navigazione principale">
       {NAV.map((section) => (
         <div key={section.label} className="flex flex-col gap-0.5">
-          <p className="px-2 pb-1 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">{section.label}</p>
+          <p className="px-2 pb-1 text-[11px] font-medium tracking-wide text-sidebar-muted uppercase">{section.label}</p>
           {section.items.map((item) => {
             const active = isActive(pathname, item.href);
             const Icon = item.icon;
@@ -26,14 +26,14 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                 onClick={onNavigate}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "group flex h-8 items-center gap-2.5 rounded-md px-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-                  active && "bg-card text-foreground shadow-xs ring-1 ring-border",
+                  "group flex h-8 items-center gap-2.5 rounded-md px-2 text-[13px] font-medium text-sidebar-foreground/85 transition-colors hover:bg-sidebar-hover hover:text-sidebar-foreground",
+                  active && "bg-sidebar-active text-sidebar-active-foreground shadow-sm hover:bg-sidebar-active hover:text-sidebar-active-foreground",
                 )}
               >
-                <Icon className={cn("size-[17px] shrink-0", active && "text-primary")} strokeWidth={1.75} />
+                <Icon className="size-[17px] shrink-0" strokeWidth={1.75} />
                 <span className="truncate">{item.label}</span>
                 {item.phase && item.phase > 1 ? (
-                  <span className="ml-auto rounded px-1 text-[10px] font-medium text-muted-foreground/70 tabular">F{item.phase}</span>
+                  <span className={cn("ml-auto rounded px-1 text-[10px] font-medium tabular", active ? "text-sidebar-active-foreground/60" : "text-sidebar-muted/80")}>F{item.phase}</span>
                 ) : null}
               </Link>
             );
@@ -47,12 +47,13 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 export function Brand() {
   return (
     <Link href="/" className="flex h-14 items-center gap-2.5 px-5">
-      <span className="flex size-7 items-center justify-center rounded-md bg-primary text-[13px] font-bold text-primary-foreground">
+      <span className="relative flex size-7 items-center justify-center rounded-md bg-white text-[13px] font-bold text-primary">
         O
+        <span className="absolute -right-0.5 -bottom-0.5 size-2.5 rounded-full bg-warning ring-2 ring-sidebar" aria-hidden />
       </span>
-      <span className="flex flex-col leading-none">
+      <span className="flex flex-col leading-none text-sidebar-foreground">
         <span className="text-[13px] font-semibold tracking-tight">Omnira</span>
-        <span className="text-[11px] text-muted-foreground">Gestionale</span>
+        <span className="text-[11px] text-sidebar-muted">Gestionale</span>
       </span>
     </Link>
   );
