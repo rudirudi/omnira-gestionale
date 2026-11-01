@@ -108,22 +108,18 @@ export default async function DashboardPage() {
         {kpis.map((k) => {
           const a = AREA[k.area];
           return (
-            <Link key={k.label} href={k.href} className="group relative overflow-hidden rounded-xl border bg-card p-4 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md">
-              <span className={cn("absolute inset-y-0 left-0 w-1", a.stripe)} aria-hidden />
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className={cn("text-[11px] font-semibold tracking-wider uppercase", a.text)}>{a.label}</p>
-                  <p className="mt-0.5 text-[13px] text-muted-foreground">{k.label}</p>
-                </div>
-                <span className={cn("flex size-10 items-center justify-center rounded-xl", a.tile)}>
-                  <k.icon className="size-5" strokeWidth={2} />
-                </span>
+            <Link key={k.label} href={k.href} className="group overflow-hidden rounded-xl border bg-card shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md">
+              <div className={cn("flex items-center justify-between gap-3 px-4 py-2.5 text-white", a.band)}>
+                <p className="text-[13px] font-semibold">{k.label}</p>
+                <k.icon className="size-4.5 opacity-90" strokeWidth={2} aria-hidden />
               </div>
-              <p className="mt-3 text-[28px] leading-none font-semibold tracking-tight tabular">{k.value}</p>
-              <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-                {k.sub}
-                <ArrowRight className="ml-auto size-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
-              </p>
+              <div className="px-4 pt-3.5 pb-3">
+                <p className="text-[34px] leading-none font-semibold tracking-tight tabular">{k.value}</p>
+                <p className="mt-2.5 flex items-center gap-1 text-xs text-muted-foreground">
+                  {k.sub}
+                  <ArrowRight className="ml-auto size-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
+                </p>
+              </div>
             </Link>
           );
         })}
