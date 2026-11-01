@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
+import { FEATURES } from "@/lib/features";
 import { ROLE_LABEL } from "@/lib/permissions";
 import { runTool, TOOL_LABEL, TOOLS } from "@/modules/assistente/tools";
 
@@ -32,6 +33,7 @@ Vedi solo i dati che l'utente può vedere con il suo ruolo.`;
 }
 
 export async function POST(req: Request) {
+  if (!FEATURES.assistant) return Response.json({ error: "Assistente spento" }, { status: 404 });
   const user = await getCurrentUser();
   const parsed = bodySchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: "Richiesta non valida" }, { status: 400 });
