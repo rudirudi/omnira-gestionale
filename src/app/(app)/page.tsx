@@ -75,17 +75,17 @@ export default async function DashboardPage() {
   return (
     <PageBody className="flex flex-col gap-6">
       {/* Benvenuto */}
-      <section className="relative -mx-4 -mt-6 overflow-hidden border-white/60 bg-sidebar px-5 pt-5 pb-6 text-sidebar-foreground sm:-mx-6 sm:px-7 sm:pb-7 lg:border-l">
+      <section data-hero className="relative -mx-4 -mt-6 overflow-hidden border-white/60 bg-sidebar px-5 pt-5 pb-5 text-sidebar-foreground sm:-mx-6 sm:px-7 sm:pb-6 lg:border-l">
         <div className="absolute -top-20 -right-16 size-72 rounded-full bg-white/[0.06]" aria-hidden />
         <div className="absolute -bottom-24 right-40 size-56 rounded-full bg-white/[0.04]" aria-hidden />
-        <div className="relative mb-4 flex items-center gap-2 sm:mb-1">
+        <div className="relative flex items-center gap-2">
           <HeaderMenuButton onDark />
           <p className="text-[13px] font-medium text-sidebar-muted first-letter:uppercase">{today}</p>
-          <div className="ml-auto">
+          <div className="ml-auto" data-tools>
             <HeaderTools onDark />
           </div>
         </div>
-        <div className="relative mt-1 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between xl:gap-8">
+        <div className="relative mt-5 flex flex-col gap-5 sm:mt-6 xl:flex-row xl:items-center xl:justify-between xl:gap-8">
           <div className="min-w-0">
             <h1 className="text-[28px] leading-tight font-semibold">
               {greeting()}, {firstName}
@@ -105,7 +105,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Numeri chiave dentro l'intestazione: riquadri "in vetro", colore dell'area su icona e filo in basso */}
-          <div className="grid shrink-0 grid-cols-2 gap-3 md:grid-cols-4 xl:w-[700px]">
+          <div data-kpis className="grid shrink-0 grid-cols-2 gap-3 md:grid-cols-4 xl:w-[700px]">
             {kpis.map((k) => {
               const g = GLASS[k.area];
               return (
