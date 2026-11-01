@@ -10,7 +10,7 @@ import type {
   TaskStatus,
 } from "@/lib/database.types";
 
-type Tone = "neutral" | "primary" | "success" | "warning" | "danger";
+import type { Tone } from "@/lib/areas";
 
 export const CLIENT_STATUS: Record<ClientStatus, { label: string; tone: Tone }> = {
   attivo: { label: "Attivo", tone: "success" },

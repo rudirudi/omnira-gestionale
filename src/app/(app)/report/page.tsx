@@ -1,13 +1,12 @@
 import { ComingSoon } from "@/components/app/coming-soon";
+import { MODULES } from "@/lib/areas";
 
 export const metadata = { title: "Report" };
 
 export default function Page() {
   return (
     <ComingSoon
-      title="Report"
-      module="M12"
-      phase={4}
+      mod={MODULES.report}
       features={[
         "Marginalità per progetto e cliente",
         "Carico di lavoro del team",

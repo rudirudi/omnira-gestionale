@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { TaskStatus } from "@/lib/database.types";
 import { TASK_STATUS, TASK_STATUSES } from "@/lib/labels";
 import { cn } from "@/lib/utils";
+import { TONE } from "@/lib/areas";
 import { moveTaskAction, updateTaskAction } from "../actions";
 import type { TaskListItem } from "../queries";
 import { NewTaskDialog } from "./new-task-dialog";
@@ -197,11 +198,16 @@ export function TaskWorkspace({
                     e.preventDefault();
                     drop(col.value, null);
                   }}
-                  className={cn("flex min-h-[55vh] flex-col rounded-lg bg-muted/50 p-2", over === col.value && "bg-primary/8 ring-2 ring-primary/30")}
+                  className={cn(
+                    "flex min-h-[55vh] flex-col rounded-xl border-t-4 p-2",
+                    TONE[col.tone].columnTop,
+                    TONE[col.tone].columnBg,
+                    over === col.value && "ring-2 ring-primary/40",
+                  )}
                 >
-                  <header className="flex items-center gap-2 px-1.5 pt-1 pb-2.5">
-                    <Badge tone={col.tone}>{col.label}</Badge>
-                    <span className="text-xs text-muted-foreground tabular">{items.length}</span>
+                  <header className="flex items-center justify-between gap-2 px-1.5 pt-1.5 pb-3">
+                    <span className="text-[13px] font-semibold">{col.label}</span>
+                    <span className="rounded-full bg-card px-2 py-0.5 text-xs font-semibold text-muted-foreground tabular shadow-xs">{items.length}</span>
                   </header>
                   <div className="flex flex-col gap-2">
                     {items.map((t) => (
@@ -284,10 +290,18 @@ function TaskListView({
         .filter((g) => g.items.length > 0)
         .map((g) => (
           <section key={g.key}>
-            <h3 className={cn("mb-2 flex items-center gap-2 text-[13px] font-semibold", g.key === "scaduti" && "text-destructive")}>
-              {g.label} <span className="font-normal text-muted-foreground tabular">{g.items.length}</span>
+            <h3 className="mb-2 flex items-center gap-2 text-[13px] font-semibold">
+              <span
+                className={cn(
+                  "size-2 rounded-full",
+                  g.key === "scaduti" ? "bg-destructive" : g.key === "oggi" ? "bg-warning" : g.key === "fatti" ? "bg-success" : "bg-work",
+                )}
+                aria-hidden
+              />
+              <span className={cn(g.key === "scaduti" && "text-destructive")}>{g.label}</span>
+              <span className="rounded-full bg-muted px-1.5 text-xs font-semibold text-muted-foreground tabular">{g.items.length}</span>
             </h3>
-            <ul className="divide-y rounded-lg border bg-card">
+            <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-xs">
               {[...g.items].sort(sortTasks).map((t) => (
                 <li key={t.id} className="flex items-center gap-3 px-3 py-2 hover:bg-muted/40">
                   <input
@@ -305,7 +319,7 @@ function TaskListView({
                     {showProject && t.project && <span className="hidden truncate text-xs text-muted-foreground md:inline">· {t.project.name}</span>}
                   </button>
                   <PriorityFlag priority={t.priority} />
-                  <Badge tone={TASK_STATUS[t.status].tone} className="hidden sm:inline-flex">
+                  <Badge dot tone={TASK_STATUS[t.status].tone} className="hidden sm:inline-flex">
                     {TASK_STATUS[t.status].label}
                   </Badge>
                   <span className="hidden w-20 sm:block">
@@ -359,9 +373,9 @@ function TaskCalendar({
         <p className="text-[15px] font-semibold capitalize">{month.toLocaleDateString("it-IT", { month: "long", year: "numeric" })}</p>
         {noDate > 0 && <span className="ml-auto text-xs text-muted-foreground">{noDate} task aperti senza scadenza (vedi Lista)</span>}
       </div>
-      <div className="grid grid-cols-7 overflow-hidden rounded-lg border bg-border gap-px">
+      <div className="grid grid-cols-7 gap-px overflow-hidden rounded-xl border bg-border shadow-xs">
         {["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"].map((d) => (
-          <div key={d} className="bg-muted/60 px-2 py-1.5 text-xs font-medium text-muted-foreground">
+          <div key={d} className="bg-work/[0.06] px-2 py-2 text-xs font-semibold text-work-ink">
             {d}
           </div>
         ))}

@@ -1,13 +1,12 @@
 import { ComingSoon } from "@/components/app/coming-soon";
+import { MODULES } from "@/lib/areas";
 
 export const metadata = { title: "Canoni" };
 
 export default function Page() {
   return (
     <ComingSoon
-      title="Canoni"
-      module="M9"
-      phase={2}
+      mod={MODULES.canoni}
       features={[
         "Manutenzioni, SEO mensile, AI Chat e AI Voice",
         "Fatturazione ricorrente automatica",

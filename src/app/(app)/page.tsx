@@ -1,15 +1,28 @@
 import Link from "next/link";
-import { ArrowRight, Bell, Briefcase, CalendarClock, CheckCircle2, Target, TrendingUp, Users } from "lucide-react";
-import { DueLabel, PriorityFlag, TaskCode } from "@/modules/task/components/task-meta";
-import { TASK_STATUS } from "@/lib/labels";
+import {
+  AlertTriangle,
+  ArrowRight,
+  Bell,
+  Briefcase,
+  CalendarClock,
+  CheckCircle2,
+  CheckSquare,
+  Plus,
+  Target,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 import { EmptyState } from "@/components/app/empty-state";
-import { PageBody, PageHeader } from "@/components/app/page-header";
+import { PageBody, SectionTitle } from "@/components/app/page-header";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { AREA, type Area } from "@/lib/areas";
 import { getCurrentUser } from "@/lib/auth";
-import { LEAD_STAGE } from "@/lib/labels";
+import { LEAD_STAGE, LEAD_STAGES, TASK_STATUS } from "@/lib/labels";
+import { can } from "@/lib/permissions";
 import { cn, formatEuro } from "@/lib/utils";
 import { getDashboardData } from "@/modules/dashboard/queries";
+import { dueInfo, DueLabel, PriorityFlag, TaskCode } from "@/modules/task/components/task-meta";
 
 export const metadata = { title: "Dashboard" };
 
@@ -18,140 +31,248 @@ function greeting() {
   return h < 13 ? "Buongiorno" : h < 18 ? "Buon pomeriggio" : "Buonasera";
 }
 
+const STAGE_BAR: Record<string, string> = {
+  nuovo: "bg-muted-foreground/40",
+  call: "bg-primary/60",
+  analisi: "bg-primary",
+  preventivo: "bg-warning",
+};
+
 export default async function DashboardPage() {
   const user = await getCurrentUser();
   const d = await getDashboardData(user.id);
   const firstName = user.full_name.split(" ")[0];
   const today = new Date().toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Rome" });
+  const lateTasks = d.myTasks.filter((t) => dueInfo(t.due_date, t.status)?.late).length;
+  const todayTasks = d.myTasks.filter((t) => dueInfo(t.due_date, t.status)?.diff === 0).length;
+  const openStages = LEAD_STAGES.filter((s) => s.value !== "vinto" && s.value !== "perso");
+  const pipelineTotal = Math.max(1, d.pipelineCents);
 
-  const kpis = [
-    { label: "I miei task aperti", value: String(d.myTasks.length === 8 ? "8+" : d.myTasks.length), icon: CheckCircle2, href: "/task", tone: "bg-primary/10 text-primary" },
-    { label: "Progetti attivi", value: String(d.activeProjects), icon: Briefcase, href: "/progetti?stato=attivo", tone: "bg-success/14 text-success" },
-    { label: "Clienti attivi", value: String(d.activeClients), icon: Users, href: "/clienti?stato=attivo", tone: "bg-warning text-warning-foreground dark:bg-warning/20" },
-    {
-      label: "Pipeline commerciale",
-      value: formatEuro(d.pipelineCents),
-      sub: `${d.openLeads} lead aperti · ${formatEuro(d.wonMonthCents)} vinti nel mese`,
-      icon: TrendingUp,
-      href: "/lead",
-      tone: "bg-destructive/10 text-destructive",
-    },
+  const kpis: { label: string; value: string; sub: string; icon: typeof Users; href: string; area: Area }[] = [
+    { label: "I miei task aperti", value: d.myTasks.length === 8 ? "8+" : String(d.myTasks.length), sub: lateTasks ? `${lateTasks} in ritardo` : "nessun ritardo", icon: CheckSquare, href: "/task", area: "work" },
+    { label: "Progetti attivi", value: String(d.activeProjects), sub: "in lavorazione", icon: Briefcase, href: "/progetti?stato=attivo", area: "work" },
+    { label: "Clienti attivi", value: String(d.activeClients), sub: `${d.openLeads} lead aperti`, icon: Users, href: "/clienti?stato=attivo", area: "sales" },
+    { label: "Vinti questo mese", value: formatEuro(d.wonMonthCents), sub: `${d.wonMonthCount} lead chiusi`, icon: TrendingUp, href: "/lead", area: "money" },
   ];
 
   return (
-    <>
-      <PageHeader title={`${greeting()}, ${firstName}`} description={today.charAt(0).toUpperCase() + today.slice(1)} />
-      <PageBody className="flex flex-col gap-6">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {kpis.map((k) => (
-            <Link key={k.label} href={k.href} className="group rounded-lg border bg-card p-4 transition-colors hover:border-primary/40">
-              <div className="flex items-center justify-between text-[13px] text-muted-foreground">
-                {k.label}
-                <span className={cn("flex size-8 items-center justify-center rounded-md", k.tone)}>
-                  <k.icon className="size-4" strokeWidth={2} />
+    <PageBody className="flex flex-col gap-6">
+      {/* Benvenuto */}
+      <section className="relative overflow-hidden rounded-2xl bg-sidebar p-6 text-sidebar-foreground shadow-sm sm:p-7">
+        <div className="absolute -top-20 -right-16 size-72 rounded-full bg-white/[0.06]" aria-hidden />
+        <div className="absolute -bottom-24 right-40 size-56 rounded-full bg-white/[0.04]" aria-hidden />
+        <div className="relative flex flex-wrap items-end justify-between gap-5">
+          <div>
+            <p className="text-[13px] font-medium text-sidebar-muted first-letter:uppercase">{today}</p>
+            <h1 className="mt-1 text-[28px] leading-tight font-semibold">
+              {greeting()}, {firstName}
+            </h1>
+            <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-sidebar-foreground/85">
+              <span className="flex items-center gap-1.5">
+                <span className="size-2 rounded-full bg-warning" /> {todayTasks} task in scadenza oggi
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className={cn("size-2 rounded-full", lateTasks ? "bg-destructive" : "bg-success")} />
+                {lateTasks ? `${lateTasks} in ritardo` : "nessun task in ritardo"}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="size-2 rounded-full bg-[oklch(0.8_0.1_250)]" /> {d.due.length} promemoria questa settimana
+              </span>
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/task?nuovo=1" className="flex h-9 items-center gap-1.5 rounded-lg bg-warning px-3.5 text-[13px] font-semibold text-on-warning transition-transform hover:-translate-y-0.5">
+              <Plus className="size-4" /> Nuovo task
+            </Link>
+            {can.editLeads(user.role) && (
+              <Link href="/lead?nuovo=1" className="flex h-9 items-center gap-1.5 rounded-lg bg-white/10 px-3.5 text-[13px] font-semibold ring-1 ring-white/20 transition-colors hover:bg-white/15">
+                <Plus className="size-4" /> Nuovo lead
+              </Link>
+            )}
+            {can.manageProjects(user.role) && (
+              <Link href="/progetti?nuovo=1" className="flex h-9 items-center gap-1.5 rounded-lg bg-white/10 px-3.5 text-[13px] font-semibold ring-1 ring-white/20 transition-colors hover:bg-white/15">
+                <Plus className="size-4" /> Nuovo progetto
+              </Link>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Numeri chiave, colorati per area */}
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {kpis.map((k) => {
+          const a = AREA[k.area];
+          return (
+            <Link key={k.label} href={k.href} className="group relative overflow-hidden rounded-xl border bg-card p-4 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md">
+              <span className={cn("absolute inset-y-0 left-0 w-1", a.stripe)} aria-hidden />
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className={cn("text-[11px] font-semibold tracking-wider uppercase", a.text)}>{a.label}</p>
+                  <p className="mt-0.5 text-[13px] text-muted-foreground">{k.label}</p>
+                </div>
+                <span className={cn("flex size-10 items-center justify-center rounded-xl", a.tile)}>
+                  <k.icon className="size-5" strokeWidth={2} />
                 </span>
               </div>
-              <p className="mt-2 text-[26px] leading-none font-semibold tracking-tight tabular">{k.value}</p>
-              {k.sub && <p className="mt-1.5 text-xs text-muted-foreground">{k.sub}</p>}
+              <p className="mt-3 text-[28px] leading-none font-semibold tracking-tight tabular">{k.value}</p>
+              <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+                {k.sub}
+                <ArrowRight className="ml-auto size-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
+              </p>
             </Link>
-          ))}
-        </div>
+          );
+        })}
+      </div>
 
-        <Card>
-          <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>I miei task</CardTitle>
-            <Link href="/task" className="flex items-center gap-1 text-[13px] text-primary hover:underline">
-              Tutti i task <ArrowRight className="size-3.5" />
-            </Link>
+      <div className="grid gap-6 xl:grid-cols-5">
+        {/* I miei task */}
+        <Card className="overflow-hidden rounded-xl shadow-xs xl:col-span-3">
+          <CardHeader className="pb-1">
+            <SectionTitle
+              icon={CheckSquare}
+              area="work"
+              action={
+                <Link href="/task" className="flex items-center gap-1 text-[13px] font-medium text-primary hover:underline">
+                  Tutti i task <ArrowRight className="size-3.5" />
+                </Link>
+              }
+            >
+              I miei task
+            </SectionTitle>
           </CardHeader>
-          <CardContent className="pt-3">
+          <CardContent className="pt-2">
             {d.myTasks.length === 0 ? (
-              <EmptyState icon={CheckCircle2} title="Niente da fare, per ora" description="I task che ti assegnano compaiono qui, ordinati per scadenza." className="py-8" />
+              <EmptyState area="work" icon={CheckCircle2} title="Niente da fare, per ora" description="I task che ti assegnano compaiono qui, ordinati per scadenza." className="py-8" />
             ) : (
-              <ul className="divide-y">
-                {d.myTasks.map((t) => (
-                  <li key={t.id}>
-                    <Link href={`/task?aperto=${t.id}`} className="flex items-center gap-3 py-2.5 hover:text-primary">
-                      <TaskCode code={t.project?.code} number={t.number} />
-                      <span className="min-w-0 flex-1 truncate text-[13px] font-medium">{t.title}</span>
-                      <span className="hidden truncate text-xs text-muted-foreground md:inline">{t.project?.name}</span>
-                      <PriorityFlag priority={t.priority} />
-                      <Badge tone={TASK_STATUS[t.status].tone}>{TASK_STATUS[t.status].label}</Badge>
-                      <span className="w-16 text-right">
-                        <DueLabel due={t.due_date} status={t.status} />
-                      </span>
-                    </Link>
-                  </li>
-                ))}
+              <ul className="flex flex-col gap-1.5">
+                {d.myTasks.map((t) => {
+                  const info = dueInfo(t.due_date, t.status);
+                  return (
+                    <li key={t.id}>
+                      <Link
+                        href={`/task?aperto=${t.id}`}
+                        className={cn(
+                          "flex items-center gap-3 rounded-lg border border-l-4 px-3 py-2.5 transition-colors hover:bg-muted/50",
+                          info?.late ? "border-l-destructive bg-destructive/[0.03]" : info?.soon ? "border-l-warning" : "border-l-work/40",
+                        )}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-[13px] font-medium">{t.title}</p>
+                          <p className="flex items-center gap-2 truncate text-xs text-muted-foreground">
+                            <TaskCode code={t.project?.code} number={t.number} /> {t.project?.name}
+                          </p>
+                        </div>
+                        <PriorityFlag priority={t.priority} />
+                        <Badge dot tone={TASK_STATUS[t.status].tone} className="hidden sm:inline-flex">
+                          {TASK_STATUS[t.status].label}
+                        </Badge>
+                        <span className="w-16 text-right">
+                          <DueLabel due={t.due_date} status={t.status} />
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </CardContent>
         </Card>
 
-        <div className="grid gap-6 lg:grid-cols-5">
-          <Card className="lg:col-span-3">
-            <CardHeader className="flex-row items-center justify-between">
-              <CardTitle>Ultimi lead</CardTitle>
-              <Link href="/lead" className="flex items-center gap-1 text-[13px] text-primary hover:underline">
-                Pipeline <ArrowRight className="size-3.5" />
-              </Link>
-            </CardHeader>
-            <CardContent className="pt-3">
-              {d.recentLeads.length === 0 ? (
-                <EmptyState icon={Target} title="Nessun lead" description="I nuovi contatti commerciali compariranno qui." className="py-8" />
-              ) : (
-                <ul className="divide-y">
-                  {d.recentLeads.map((l) => (
-                    <li key={l.id}>
-                      <Link href={`/lead?aperto=${l.id}`} className="flex items-center gap-3 py-2.5 hover:text-primary">
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate font-medium">{l.title}</p>
-                          <p className="truncate text-xs text-muted-foreground">{l.company_name ?? "—"}</p>
+        {/* Scadenze */}
+        <Card className="overflow-hidden rounded-xl shadow-xs xl:col-span-2">
+          <CardHeader className="pb-1">
+            <SectionTitle icon={Bell} area="support">
+              Promemoria della settimana
+            </SectionTitle>
+          </CardHeader>
+          <CardContent className="pt-2">
+            {d.due.length === 0 ? (
+              <EmptyState area="support" icon={Bell} title="Niente in scadenza" description="Aggiungi un promemoria da un cliente o da un lead." className="py-8" />
+            ) : (
+              <ul className="flex flex-col gap-1.5">
+                {d.due.map((a) => {
+                  const late = new Date(a.due_at!) < new Date();
+                  const href = a.client ? `/clienti/${a.client.id}?scheda=attivita` : `/lead?aperto=${a.lead_id}`;
+                  return (
+                    <li key={a.id}>
+                      <Link href={href} className="flex items-start gap-3 rounded-lg p-2 hover:bg-muted/60">
+                        <span className={cn("mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg", late ? "bg-destructive/10 text-destructive" : "bg-warning/25 text-on-warning dark:text-warning")}>
+                          {late ? <AlertTriangle className="size-4" /> : <CalendarClock className="size-4" />}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate text-[13px] font-medium">{a.subject}</p>
+                          <p className={cn("text-xs", late ? "font-medium text-destructive" : "text-muted-foreground")}>
+                            {late ? "Scaduto · " : ""}
+                            {new Date(a.due_at!).toLocaleString("it-IT", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                            {a.client ? ` · ${a.client.name}` : ""}
+                          </p>
                         </div>
-                        <span className="text-[13px] tabular">{formatEuro(l.estimated_value_cents)}</span>
-                        <Badge tone={LEAD_STAGE[l.stage].tone}>{LEAD_STAGE[l.stage].label}</Badge>
                       </Link>
                     </li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
+                  );
+                })}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Scadenze dei prossimi 7 giorni</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-3">
-              {d.due.length === 0 ? (
-                <EmptyState icon={Bell} title="Niente in scadenza" description="Aggiungi un promemoria da un cliente o da un lead." className="py-8" />
-              ) : (
-                <ul className="flex flex-col gap-2.5">
-                  {d.due.map((a) => {
-                    const late = new Date(a.due_at!) < new Date();
-                    const href = a.client ? `/clienti/${a.client.id}?scheda=attivita` : `/lead?aperto=${a.lead_id}`;
-                    return (
-                      <li key={a.id}>
-                        <Link href={href} className="flex items-start gap-2.5 rounded-md p-1.5 hover:bg-muted">
-                          <CalendarClock className={cn("mt-0.5 size-4 shrink-0", late ? "text-destructive" : "text-muted-foreground")} />
-                          <div className="min-w-0">
-                            <p className="truncate text-[13px] font-medium">{a.subject}</p>
-                            <p className={cn("text-xs", late ? "text-destructive" : "text-muted-foreground")}>
-                              {late ? "Scaduta · " : ""}
-                              {new Date(a.due_at!).toLocaleString("it-IT", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                              {a.client ? ` · ${a.client.name}` : ""}
-                            </p>
-                          </div>
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </PageBody>
-    </>
+      {/* Pipeline commerciale */}
+      <Card className="overflow-hidden rounded-xl shadow-xs">
+        <CardHeader className="pb-1">
+          <SectionTitle
+            icon={Target}
+            area="sales"
+            action={
+              <Link href="/lead" className="flex items-center gap-1 text-[13px] font-medium text-primary hover:underline">
+                Apri la pipeline <ArrowRight className="size-3.5" />
+              </Link>
+            }
+          >
+            Pipeline commerciale · {formatEuro(d.pipelineCents)}
+          </SectionTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-5 pt-3">
+          <div className="flex h-3 overflow-hidden rounded-full bg-muted" role="img" aria-label="Valore dei lead aperti per fase">
+            {openStages.map((s) => {
+              const v = d.pipelineByStage[s.value]?.value ?? 0;
+              return v ? <div key={s.value} className={STAGE_BAR[s.value]} style={{ width: `${(v / pipelineTotal) * 100}%` }} title={`${s.label}: ${formatEuro(v)}`} /> : null;
+            })}
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {openStages.map((s) => {
+              const st = d.pipelineByStage[s.value];
+              return (
+                <Link key={s.value} href="/lead" className="rounded-lg border p-3 transition-colors hover:bg-muted/50">
+                  <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                    <span className={cn("size-2 rounded-full", STAGE_BAR[s.value])} /> {s.label}
+                  </p>
+                  <p className="mt-1.5 text-lg font-semibold tabular">{formatEuro(st?.value ?? 0)}</p>
+                  <p className="text-xs text-muted-foreground tabular">{st?.count ?? 0} lead</p>
+                </Link>
+              );
+            })}
+          </div>
+          {d.recentLeads.length > 0 && (
+            <div>
+              <p className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">Ultimi arrivati</p>
+              <ul className="flex flex-wrap gap-2">
+                {d.recentLeads.map((l) => (
+                  <li key={l.id}>
+                    <Link href={`/lead?aperto=${l.id}`} className="flex items-center gap-2 rounded-full border bg-card py-1 pr-3 pl-1.5 text-[13px] hover:bg-muted/60">
+                      <Badge dot tone={LEAD_STAGE[l.stage].tone}>
+                        {LEAD_STAGE[l.stage].label}
+                      </Badge>
+                      <span className="max-w-56 truncate font-medium">{l.title}</span>
+                      <span className="text-muted-foreground tabular">{formatEuro(l.estimated_value_cents)}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </PageBody>
   );
 }

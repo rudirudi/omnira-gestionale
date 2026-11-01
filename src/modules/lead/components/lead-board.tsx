@@ -7,13 +7,13 @@ import { Building2, CalendarDays, GripVertical, Plus, Target, UserRound } from "
 import { toast } from "sonner";
 import { EmptyState } from "@/components/app/empty-state";
 import { Avatar } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import type { LeadStage } from "@/lib/database.types";
 import { LEAD_SOURCE, LEAD_STAGES } from "@/lib/labels";
 import { cn, formatDate, formatEuro } from "@/lib/utils";
+import { TONE } from "@/lib/areas";
 import { convertLeadToClientAction, createLeadAction, moveLeadAction } from "../actions";
 import type { LeadWithRefs } from "../queries";
 import { LeadForm } from "./lead-form";
@@ -141,16 +141,18 @@ export function LeadBoard({ leads: initial, team, canEdit }: { leads: LeadWithRe
                   onDrop(col.value, null);
                 }}
                 className={cn(
-                  "flex min-h-[60vh] flex-col rounded-lg bg-muted/50 p-2 transition-colors",
-                  overStage === col.value && "bg-primary/8 ring-2 ring-primary/30",
+                  "flex min-h-[60vh] flex-col rounded-xl border-t-4 p-2 transition-colors",
+                  TONE[col.tone].columnTop,
+                  TONE[col.tone].columnBg,
+                  overStage === col.value && "ring-2 ring-primary/40",
                 )}
               >
-                <header className="flex flex-col gap-1 px-1.5 pt-1 pb-2.5">
-                  <div className="flex items-center gap-2">
-                    <Badge tone={col.tone}>{col.label}</Badge>
-                    <span className="text-xs text-muted-foreground tabular">{col.items.length}</span>
+                <header className="flex flex-col gap-0.5 px-1.5 pt-1.5 pb-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[13px] font-semibold">{col.label}</span>
+                    <span className="rounded-full bg-card px-2 py-0.5 text-xs font-semibold text-muted-foreground tabular shadow-xs">{col.items.length}</span>
                   </div>
-                  <span className="h-4 text-xs text-muted-foreground tabular">{col.total ? formatEuro(col.total) : ""}</span>
+                  <span className="h-4 text-xs font-medium text-muted-foreground tabular">{col.total ? formatEuro(col.total) : "—"}</span>
                 </header>
                 <div className="flex flex-col gap-2">
                   {col.items.map((l) => (
@@ -172,7 +174,8 @@ export function LeadBoard({ leads: initial, team, canEdit }: { leads: LeadWithRe
                         onDrop(col.value, l.id);
                       }}
                       className={cn(
-                        "group cursor-pointer rounded-md border bg-card p-3 shadow-xs transition-shadow hover:shadow-md",
+                        "group cursor-pointer rounded-lg border border-l-4 bg-card p-3 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md",
+                        TONE[col.tone].cardBorder,
                         dragId === l.id && "opacity-40",
                       )}
                       onClick={() => setParam("aperto", l.id)}
@@ -187,7 +190,7 @@ export function LeadBoard({ leads: initial, team, canEdit }: { leads: LeadWithRe
                         </p>
                       )}
                       <div className="mt-2.5 flex items-center justify-between gap-2">
-                        <span className="text-xs font-medium tabular">{l.estimated_value_cents ? formatEuro(l.estimated_value_cents) : "—"}</span>
+                        <span className="text-[13px] font-semibold tabular">{l.estimated_value_cents ? formatEuro(l.estimated_value_cents) : "—"}</span>
                         <div className="flex items-center gap-1.5">
                           {l.expected_close_date && (
                             <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
@@ -198,7 +201,7 @@ export function LeadBoard({ leads: initial, team, canEdit }: { leads: LeadWithRe
                           {l.owner ? <Avatar name={l.owner.full_name} className="size-5 text-[9px]" /> : <UserRound className="size-3.5 text-muted-foreground/60" />}
                         </div>
                       </div>
-                      <p className="mt-1.5 text-[11px] text-muted-foreground">{LEAD_SOURCE[l.source]}</p>
+                      <p className="mt-2 flex flex-wrap gap-1"><span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">{LEAD_SOURCE[l.source]}</span>{l.service_interest && <span className="rounded bg-sales/20 px-1.5 py-0.5 text-[10px] font-medium text-sales-ink">{l.service_interest}</span>}</p>
                       {l.stage === "perso" && l.lost_reason && (
                         <p className="mt-1.5 line-clamp-2 text-[11px] text-destructive">Motivo: {l.lost_reason}</p>
                       )}

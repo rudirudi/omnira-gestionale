@@ -1,6 +1,6 @@
 import { PageBody, PageHeader } from "@/components/app/page-header";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Target } from "lucide-react";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { can } from "@/lib/permissions";
@@ -20,7 +20,9 @@ export default async function LeadPage() {
   return (
     <>
       <PageHeader
-        title="Lead"
+        title="Pipeline lead"
+        area="sales"
+        icon={Target}
         description={`${open.length} aperti · ${formatEuro(value)} in pipeline${canEdit ? " · trascina le card per cambiare fase" : ""}`}
         actions={
           canEdit && (

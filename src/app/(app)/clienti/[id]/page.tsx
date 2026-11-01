@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Globe, Mail, MapPin, Phone } from "lucide-react";
+import { Building2, ChevronLeft, Globe, Mail, MapPin, Phone } from "lucide-react";
 import { PageBody, PageHeader } from "@/components/app/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -38,10 +38,13 @@ export default async function ClientePage({ params, searchParams }: PageProps<"/
   return (
     <>
       <PageHeader
+        area="sales"
+        icon={Building2}
+        eyebrow="Cliente"
         title={
           <span className="flex items-center gap-3">
             {client.name}
-            <Badge tone={CLIENT_STATUS[client.status].tone}>{CLIENT_STATUS[client.status].label}</Badge>
+            <Badge dot tone={CLIENT_STATUS[client.status].tone}>{CLIENT_STATUS[client.status].label}</Badge>
           </span>
         }
         description={
@@ -105,7 +108,7 @@ export default async function ClientePage({ params, searchParams }: PageProps<"/
                     <Link href={`/lead?aperto=${l.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50">
                       <span className="flex-1 font-medium">{l.title}</span>
                       <span className="text-[13px] tabular">{formatEuro(l.estimated_value_cents)}</span>
-                      <Badge tone={LEAD_STAGE[l.stage].tone}>{LEAD_STAGE[l.stage].label}</Badge>
+                      <Badge dot tone={LEAD_STAGE[l.stage].tone}>{LEAD_STAGE[l.stage].label}</Badge>
                     </Link>
                   </li>
                 ))}

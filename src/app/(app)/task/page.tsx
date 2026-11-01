@@ -1,3 +1,4 @@
+import { CheckSquare } from "lucide-react";
 import { PageBody, PageHeader } from "@/components/app/page-header";
 import { getCurrentUser } from "@/lib/auth";
 import { can } from "@/lib/permissions";
@@ -24,6 +25,8 @@ export default async function TaskPage({ searchParams }: PageProps<"/task">) {
     <>
       <PageHeader
         title={all ? "Task del team" : "I miei task"}
+        area="work"
+        icon={CheckSquare}
         description={`${open} aperti`}
         actions={<TaskScopeToggle all={all} />}
       />

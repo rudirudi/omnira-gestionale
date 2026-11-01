@@ -1,13 +1,12 @@
 import { ComingSoon } from "@/components/app/coming-soon";
+import { MODULES } from "@/lib/areas";
 
 export const metadata = { title: "Tempo" };
 
 export default function Page() {
   return (
     <ComingSoon
-      title="Tempo"
-      module="M6"
-      phase={2}
+      mod={MODULES.tempo}
       features={[
         "Timer su un task o inserimento manuale",
         "Foglio settimanale con approvazione del PM",

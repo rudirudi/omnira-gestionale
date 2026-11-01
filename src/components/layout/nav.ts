@@ -1,53 +1,16 @@
-import {
-  BarChart3,
-  Briefcase,
-  CheckSquare,
-  Clock,
-  FileSignature,
-  LayoutDashboard,
-  LifeBuoy,
-  Receipt,
-  Repeat,
-  Settings,
-  Target,
-  Users,
-  type LucideIcon,
-} from "lucide-react";
+import { type Area, type Module, MODULES } from "@/lib/areas";
 
-export type NavItem = { href: string; label: string; icon: LucideIcon; phase?: number; module: string };
-export type NavSection = { label: string; items: NavItem[] };
+export type NavItem = Module;
+export type NavSection = { label: string | null; area: Area; items: NavItem[] };
 
+// Il menu è diviso per area: ogni area ha il suo colore (vedi lib/areas.ts)
 export const NAV: NavSection[] = [
-  {
-    label: "Lavoro",
-    items: [
-      { href: "/", label: "Dashboard", icon: LayoutDashboard, module: "M1" },
-      { href: "/clienti", label: "Clienti", icon: Users, module: "M2" },
-      { href: "/lead", label: "Lead", icon: Target, module: "M2" },
-      { href: "/progetti", label: "Progetti", icon: Briefcase, module: "M3", phase: 1 },
-      { href: "/task", label: "Task", icon: CheckSquare, module: "M4", phase: 1 },
-      { href: "/tempo", label: "Tempo", icon: Clock, module: "M6", phase: 2 },
-    ],
-  },
-  {
-    label: "Amministrazione",
-    items: [
-      { href: "/preventivi", label: "Preventivi", icon: FileSignature, module: "M7", phase: 2 },
-      { href: "/fatture", label: "Fatture", icon: Receipt, module: "M8", phase: 2 },
-      { href: "/canoni", label: "Canoni", icon: Repeat, module: "M9", phase: 2 },
-    ],
-  },
-  {
-    label: "Assistenza e analisi",
-    items: [
-      { href: "/ticket", label: "Ticket", icon: LifeBuoy, module: "M10", phase: 3 },
-      { href: "/report", label: "Report", icon: BarChart3, module: "M12", phase: 4 },
-    ],
-  },
-  {
-    label: "Sistema",
-    items: [{ href: "/impostazioni", label: "Impostazioni", icon: Settings, module: "M0" }],
-  },
+  { label: null, area: "system", items: [MODULES.dashboard] },
+  { label: "Operativo", area: "work", items: [MODULES.progetti, MODULES.task, MODULES.tempo] },
+  { label: "Commerciale", area: "sales", items: [MODULES.clienti, MODULES.lead, MODULES.preventivi] },
+  { label: "Economia", area: "money", items: [MODULES.fatture, MODULES.canoni, MODULES.report] },
+  { label: "Assistenza", area: "support", items: [MODULES.ticket] },
+  { label: "Sistema", area: "system", items: [MODULES.impostazioni] },
 ];
 
 export const ALL_NAV_ITEMS = NAV.flatMap((s) => s.items);

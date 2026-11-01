@@ -1,13 +1,12 @@
 import { ComingSoon } from "@/components/app/coming-soon";
+import { MODULES } from "@/lib/areas";
 
 export const metadata = { title: "Ticket" };
 
 export default function Page() {
   return (
     <ComingSoon
-      title="Ticket"
-      module="M10"
-      phase={3}
+      mod={MODULES.ticket}
       features={[
         "Segnalazioni da email, chatbot o inserite dal team",
         "Stati Inviata → Presa in carico → In lavorazione → Risolta",

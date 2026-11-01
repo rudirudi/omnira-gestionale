@@ -22,10 +22,39 @@ Regole:
 - Gli stati usano sempre colore **+ etichetta**, mai solo colore.
 - Il tema scuro usa le stesse tinte, più chiare e meno sature.
 
+## Colori come guida (aree e stati)
+
+I colori hanno sempre lo stesso significato, così si capisce dove si è e cosa richiede attenzione senza leggere.
+
+**Aree** (menu, intestazioni di pagina, icone, numeri della dashboard) — definite in `src/lib/areas.ts`:
+
+| Area | Colore | Moduli |
+| --- | --- | --- |
+| Operativo | Blu | Progetti, Task, Tempo |
+| Commerciale | Giallo | Clienti, Lead, Preventivi |
+| Economia | Verde | Fatture, Canoni, Report |
+| Assistenza | Rosso | Ticket |
+| Sistema | Blu istituzionale | Dashboard, Impostazioni |
+
+Ogni pagina ha: barra colorata in alto, tinta leggera nell'intestazione, icona dell'area in un riquadro pieno, etichetta dell'area sopra il titolo.
+
+**Stati** (badge con pallino, colonne kanban, bordo sinistro delle card):
+
+| Colore | Significato | Esempi |
+| --- | --- | --- |
+| Grigio | Da iniziare / neutro | Da fare, Nuovo, Pianificato, Inattivo |
+| Blu | In lavorazione | In corso, Analisi, Attivo (progetto), Test |
+| Giallo | In attesa / serve attenzione | In review, Preventivo inviato, In pausa, scadenza oggi |
+| Verde | Concluso con successo | Fatto, Vinto, Completato, Cliente attivo |
+| Rosso | Problema | In ritardo, Urgente, Perso, Annullato |
+
+Card dei task: bordo rosso se urgente o in ritardo, giallo se alta priorità o in scadenza, verde se fatto.
+Barra di avanzamento: blu in corso, verde al 100%, rossa se il progetto ha task in ritardo.
+
 ## Tipografia
 
 - Font: **Geist Sans** (UI) e **Geist Mono** (codici, importi in tabella, numeri di fattura).
-- Scala: 12 (meta) · 13 (tabelle, controlli) · 14 (testo) · 16 (titoli sezione) · 20 (titolo pagina) · 28 (KPI).
+- Scala: 11 maiuscolo spaziato (etichetta area) · 12 (meta) · 13 (tabelle, controlli) · 14 (testo) · 15 (titoli sezione) · 24 (titolo pagina) · 28 (KPI e saluto).
 - Pesi: 400 testo, 500 controlli ed etichette, 600 titoli. Mai 700+.
 - Numeri: `tabular-nums` in tabelle e KPI; euro in formato italiano (`1.234,50 €`), date `gg/mm/aaaa`.
 

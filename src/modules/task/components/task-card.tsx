@@ -6,11 +6,17 @@ import { DueLabel, PriorityFlag, SubtaskCount, TaskCode } from "./task-meta";
 
 export function TaskCard({ task, showProject, dragging }: { task: TaskListItem; showProject?: boolean; dragging?: boolean }) {
   return (
-    <div className={cn("rounded-md border bg-card p-3 shadow-xs transition-shadow hover:shadow-md", dragging && "opacity-40")}>
+    <div
+      className={cn(
+        "rounded-lg border border-l-4 bg-card p-3 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md",
+        task.priority === "urgente" ? "border-l-destructive" : task.priority === "alta" ? "border-l-warning" : task.status === "fatto" ? "border-l-success" : "border-l-work/40",
+        dragging && "opacity-40",
+      )}
+    >
       <div className="flex items-center gap-2">
         <TaskCode code={task.project?.code} number={task.number} />
         <PriorityFlag priority={task.priority} />
-        {task.phase && <span className="ml-auto truncate text-[11px] text-muted-foreground">{task.phase.name}</span>}
+        {task.phase && <span className="ml-auto truncate rounded bg-work/[0.08] px-1.5 py-0.5 text-[10px] font-medium text-work-ink">{task.phase.name}</span>}
       </div>
       <p className={cn("mt-1 text-[13px] leading-snug font-medium", task.status === "fatto" && "text-muted-foreground line-through")}>
         {task.title}

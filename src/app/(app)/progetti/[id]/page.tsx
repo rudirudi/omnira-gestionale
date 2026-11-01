@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Building2, CalendarDays, ChevronLeft, Clock, Euro, UserRound } from "lucide-react";
+import { Briefcase, Building2, CalendarDays, ChevronLeft, Clock, Euro, UserRound } from "lucide-react";
 import { PageBody, PageHeader } from "@/components/app/page-header";
 import { ProgressBar } from "@/components/app/progress-bar";
 import { Badge } from "@/components/ui/badge";
@@ -52,15 +52,17 @@ export default async function ProgettoPage({ params, searchParams }: PageProps<"
   return (
     <>
       <PageHeader
+        area="work"
+        icon={Briefcase}
+        eyebrow={`Progetto · ${project.code}`}
         title={
           <span className="flex items-center gap-3">
             {project.name}
-            <Badge tone={PROJECT_STATUS[project.status].tone}>{PROJECT_STATUS[project.status].label}</Badge>
+            <Badge dot tone={PROJECT_STATUS[project.status].tone}>{PROJECT_STATUS[project.status].label}</Badge>
           </span>
         }
         description={
           <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            <span className="font-mono text-xs">{project.code}</span>
             <span>{PROJECT_TYPE[project.type]}</span>
             {project.client ? (
               <Link href={`/clienti/${project.client.id}`} className="flex items-center gap-1 hover:text-foreground">
@@ -97,7 +99,7 @@ export default async function ProgettoPage({ params, searchParams }: PageProps<"
           </Link>
         }
       >
-        <ProgressBar value={total ? (done / total) * 100 : 0} className="max-w-md" label="Avanzamento progetto" />
+        <ProgressBar value={total ? (done / total) * 100 : 0} className="max-w-md" label="Avanzamento progetto" late={(project.progress?.overdue_tasks ?? 0) > 0} />
       </PageHeader>
       <PageBody>
         <Tabs defaultValue={tab}>

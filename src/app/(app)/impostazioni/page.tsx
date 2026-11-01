@@ -1,3 +1,4 @@
+import { Settings } from "lucide-react";
 import { PageBody, PageHeader } from "@/components/app/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getCurrentUser } from "@/lib/auth";
@@ -15,7 +16,7 @@ export default async function ImpostazioniPage({ searchParams }: PageProps<"/imp
 
   return (
     <>
-      <PageHeader title="Impostazioni" description="Profilo, team e dati aziendali" />
+      <PageHeader title="Impostazioni" area="system" icon={Settings} description="Profilo, team e dati aziendali" />
       <PageBody>
         <Tabs defaultValue={tab}>
           <TabsList>

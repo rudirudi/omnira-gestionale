@@ -41,6 +41,13 @@ export async function getDashboardData(userId: string) {
   ]);
 
   const pipeline = (openLeads.data ?? []).reduce((s, l) => s + (l.estimated_value_cents ?? 0), 0);
+  const byStage = new Map<string, { count: number; value: number }>();
+  for (const l of openLeads.data ?? []) {
+    const c = byStage.get(l.stage) ?? { count: 0, value: 0 };
+    c.count++;
+    c.value += l.estimated_value_cents ?? 0;
+    byStage.set(l.stage, c);
+  }
   const won = (wonMonth.data ?? []).reduce((s, l) => s + (l.estimated_value_cents ?? 0), 0);
   const due = dueActivities.data ?? [];
 
@@ -54,6 +61,7 @@ export async function getDashboardData(userId: string) {
     myDue: due.filter((a) => a.created_by === userId).length,
     recentLeads: recentLeads.data ?? [],
     activeProjects: activeProjects.count ?? 0,
+    pipelineByStage: Object.fromEntries(byStage),
     myTasks: myTasks.data ?? [],
   };
 }
