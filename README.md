@@ -28,6 +28,32 @@ Web app **Next.js 16 + Supabase**, installabile come PWA. Progetto completo e ro
 
 Accesso con Google (opzionale): abilita il provider Google in *Authentication → Providers* e aggiungi `https://<dominio>/auth/callback` agli URL di redirect.
 
+
+## Accesso, registrazioni ed email (configurazione Supabase)
+
+**Authentication → URL Configuration**
+- Site URL: `https://omnira-gestionale.vercel.app`
+- Redirect URLs: `https://omnira-gestionale.vercel.app/auth/callback` e `https://omnira-gestionale.vercel.app/auth/confirm`
+
+**Authentication → Sign In / Providers**
+- "Allow new users to sign up": attivo. Chi si registra resta **in attesa** finché un admin non lo attiva (Impostazioni → Team); gli admin ricevono una notifica.
+- "Confirm email": attivo (consigliato).
+- Google: vedi sotto.
+
+**Authentication → Emails → Templates** — sostituire il link in ogni template, così i link funzionano da qualsiasi browser o telefono:
+
+| Template | Link da usare |
+| --- | --- |
+| Confirm signup | `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email` |
+| Invite user | `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite` |
+| Magic link | `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=magiclink` |
+| Reset password | `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery` |
+
+**Accesso con Google**
+1. Google Cloud Console → APIs & Services → Credentials → Create credentials → OAuth client ID → tipo "Web application".
+2. Authorized redirect URI: `https://ppkhewqtokvjaoynxurh.supabase.co/auth/v1/callback`.
+3. Copiare Client ID e Client secret in Supabase → Authentication → Providers → Google → Enable.
+
 ## Ruoli
 
 | Ruolo | Può |

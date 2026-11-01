@@ -92,3 +92,10 @@ select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001
 select type, title, body, link from public.notifications;
 select * from public.project_progress;
 reset role;
+
+-- ===================== Registrazioni =====================
+insert into auth.users (id, email, raw_user_meta_data, invited_at) values
+  ('00000000-0000-0000-0000-000000000010', 'invitato@omnirasoft.it', '{}', now()),
+  ('00000000-0000-0000-0000-000000000011', 'esterno@gmail.com', '{"name":"Mario Esterno"}', null);
+select email, full_name, role, active from public.profiles where email in ('invitato@omnirasoft.it', 'esterno@gmail.com') order by email;
+select u.email as admin_notificato, n.title from public.notifications n join public.profiles u on u.id = n.user_id where n.type = 'nuovo_utente';

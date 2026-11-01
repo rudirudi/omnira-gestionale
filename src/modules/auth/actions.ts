@@ -12,9 +12,7 @@ const credentials = z.object({
   next: z.string().optional(),
 });
 
-function safeNext(next?: string) {
-  return next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
-}
+import { safeNext } from "@/lib/safe-next";
 
 export async function signIn(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   const parsed = credentials.safeParse(Object.fromEntries(formData));
@@ -54,10 +52,58 @@ export async function sendPasswordReset(_prev: ActionResult, formData: FormData)
   const supabase = await createClient();
   const origin = (await headers()).get("origin") ?? "";
   await supabase.auth.resetPasswordForEmail(email.data, {
-    redirectTo: `${origin}/auth/callback?next=/impostazioni?scheda=profilo`,
+    redirectTo: `${origin}/auth/callback?next=/nuova-password`,
   });
   // Stessa risposta in ogni caso: non riveliamo quali email esistono.
   return { ok: true, message: "Se l'email è registrata, riceverai un link per reimpostare la password." };
+}
+
+const signUpSchema = z
+  .object({
+    full_name: z.string().trim().min(3, "Inserisci nome e cognome"),
+    email: z.email("Inserisci un'email valida"),
+    password: z.string().min(10, "La password deve avere almeno 10 caratteri"),
+    confirm: z.string(),
+  })
+  .refine((v) => v.password === v.confirm, { message: "Le password non coincidono", path: ["confirm"] });
+
+export async function signUp(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  const parsed = signUpSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+  const supabase = await createClient();
+  const origin = (await headers()).get("origin") ?? "";
+  const { data, error } = await supabase.auth.signUp({
+    email: parsed.data.email,
+    password: parsed.data.password,
+    options: {
+      data: { full_name: parsed.data.full_name },
+      emailRedirectTo: `${origin}/auth/callback?next=/`,
+    },
+  });
+  if (error) {
+    if (/already registered|already exists/i.test(error.message)) return { ok: false, error: "Esiste già un account con questa email: accedi o reimposta la password." };
+    if (/signups not allowed|disabled/i.test(error.message)) return { ok: false, error: "Le registrazioni sono chiuse. Chiedi un invito a un amministratore." };
+    if (/password/i.test(error.message)) return { ok: false, error: "Password troppo debole: usa almeno 10 caratteri con lettere e numeri." };
+    return { ok: false, error: "Registrazione non riuscita. Riprova tra poco." };
+  }
+  // Se la conferma email è disattivata Supabase crea subito la sessione: usciamo, l'account va attivato.
+  if (data.session) await supabase.auth.signOut();
+  return {
+    ok: true,
+    message: "Account creato. Controlla l'email per confermarlo; poi un amministratore lo attiverà e potrai accedere.",
+  };
+}
+
+export async function setNewPasswordAction(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  const schema = z
+    .object({ password: z.string().min(10, "Almeno 10 caratteri"), confirm: z.string() })
+    .refine((v) => v.password === v.confirm, { message: "Le password non coincidono", path: ["confirm"] });
+  const parsed = schema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
+  if (error) return { ok: false, error: "Password non aggiornata: il link potrebbe essere scaduto. Richiedine uno nuovo." };
+  redirect("/");
 }
 
 export async function signOut() {

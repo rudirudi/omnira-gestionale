@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { SUPABASE_KEY, SUPABASE_URL, isSupabaseConfigured } from "./env";
 
-const PUBLIC_PATHS = ["/login", "/auth", "/configurazione"];
+const PUBLIC_PATHS = ["/login", "/registrati", "/auth", "/configurazione"];
 
 /** Rinnova la sessione a ogni richiesta e manda al login chi non è autenticato. */
 export async function updateSession(request: NextRequest) {
@@ -39,7 +39,7 @@ export async function updateSession(request: NextRequest) {
     url.search = pathname !== "/" ? `?next=${encodeURIComponent(pathname)}` : "";
     return NextResponse.redirect(url);
   }
-  if (user && pathname === "/login" && !request.nextUrl.searchParams.has("errore")) {
+  if (user && (pathname === "/login" || pathname === "/registrati") && !request.nextUrl.searchParams.has("errore")) {
     return NextResponse.redirect(new URL("/", request.url));
   }
   return response;

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import { ActionForm } from "@/components/app/action-form";
 import { Field } from "@/components/app/field";
@@ -77,6 +78,12 @@ export function LoginForm({ next, initialError }: { next: string; initialError?:
           Password dimenticata?
         </Button>
       </ActionForm>
+      <p className="text-center text-[13px] text-muted-foreground">
+        Non hai un account?{" "}
+        <Link href="/registrati" className="font-medium text-primary hover:underline">
+          Registrati
+        </Link>
+      </p>
     </div>
   );
 }

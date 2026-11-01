@@ -109,7 +109,7 @@ export function TeamTable({ members, sites, canManage, meId }: { members: Profil
   return (
     <div className="flex flex-col gap-3">
       <p className="text-[13px] text-muted-foreground">
-        Per aggiungere una persona invitala da Supabase (Authentication → Users → Invite). Compare qui come &quot;Disattivato&quot;: attivala e assegnale il ruolo.
+        Chi si registra da solo compare qui Per aggiungere una persona invitala da Supabase (Authentication → Users → Invite). Compare qui come &quot;Disattivato&quot;: attivala e assegnale il ruolo.quot;In attesaPer aggiungere una persona invitala da Supabase (Authentication → Users → Invite). Compare qui come &quot;Disattivato&quot;: attivala e assegnale il ruolo.quot;: attivalo e assegnagli il ruolo. Chi inviti da Supabase (Authentication → Users → Invite user) è già attivo.
       </p>
       <div className="rounded-lg border bg-card">
         <Table className={pending ? "opacity-70" : undefined}>
@@ -160,7 +160,7 @@ export function TeamTable({ members, sites, canManage, meId }: { members: Profil
                 <TableCell>
                   {canManage && m.id !== meId ? (
                     <button type="button" onClick={() => save(m, { active: !m.active })} className="rounded-full focus-visible:ring-2 focus-visible:ring-ring">
-                      <Badge tone={m.active ? "success" : "neutral"}>{m.active ? "Attivo · disattiva" : "Disattivato · riattiva"}</Badge>
+                      <Badge tone={m.active ? "success" : "neutral"}>{m.active ? "Attivo · disattiva" : "In attesa · attiva"}</Badge>
                     </button>
                   ) : (
                     <Badge tone={m.active ? "success" : "neutral"}>{m.active ? "Attivo" : "Disattivato"}</Badge>
