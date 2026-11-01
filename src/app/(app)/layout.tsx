@@ -19,7 +19,7 @@ import { can, ROLE_LABEL } from "@/lib/permissions";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const user = await getCurrentUser();
-  const hiddenNav = can.viewMoney(user.role) ? [] : ["/incassi"];
+  const hiddenNav = can.viewMoney(user.role) ? [] : ["/incassi", "/preventivi"];
 
   return (
     <TooltipProvider delayDuration={300}>

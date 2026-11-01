@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Building2 } from "lucide-react";
+import { Building2, FileSignature } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -76,6 +76,14 @@ export function LeadSheet({
                     <Building2 /> Crea cliente da questo lead
                   </Button>
                 )
+              )}
+              {canEdit && lead.stage !== "vinto" && lead.stage !== "perso" && (
+                <Link
+                  href={`/preventivi?nuovo=1&lead=${lead.id}`}
+                  className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-md bg-sales px-2.5 py-1.5 text-[13px] font-semibold text-on-warning hover:bg-sales/90"
+                >
+                  <FileSignature className="size-4" /> Crea preventivo
+                </Link>
               )}
             </DialogHeader>
             <Tabs defaultValue="dettagli" className="p-5">

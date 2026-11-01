@@ -114,7 +114,7 @@ export const MODULES = {
   tempo: { href: "/tempo", label: "Tempo", icon: Clock, area: "work", module: "M6", phase: 2 },
   clienti: { href: "/clienti", label: "Clienti", icon: Users, area: "sales", module: "M2" },
   lead: { href: "/lead", label: "Lead", icon: Target, area: "sales", module: "M2" },
-  preventivi: { href: "/preventivi", label: "Preventivi", icon: FileSignature, area: "sales", module: "M7", phase: 2 },
+  preventivi: { href: "/preventivi", label: "Preventivi", icon: FileSignature, area: "sales", module: "M7" },
   incassi: { href: "/incassi", label: "Incassi", icon: Wallet, area: "money", module: "M8" },
   spese: { href: "/spese", label: "Spese", icon: HandCoins, area: "money", module: "M9" },
   scadenze: { href: "/scadenze", label: "Scadenze", icon: CalendarClock, area: "money", module: "M9" },

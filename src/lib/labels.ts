@@ -3,6 +3,7 @@ import type {
   BillingType,
   ExpenseCategory,
   ExpensePaidWith,
+  QuoteStatus,
   ClientStatus,
   LeadSource,
   LeadStage,
@@ -173,3 +174,15 @@ export const EXPENSE_PAID_WITH: Record<ExpensePaidWith, string> = {
   azienda: "Conto/carta aziendale",
   personale: "Di tasca propria (da rimborsare)",
 };
+
+/** Stato del preventivo. "Scaduto" non è salvato: è un inviato oltre la validità */
+export type QuoteDisplayState = QuoteStatus | "scaduto";
+export const QUOTE_STATE: Record<QuoteDisplayState, { label: string; tone: Tone }> = {
+  bozza: { label: "Bozza", tone: "neutral" },
+  inviato: { label: "Inviato", tone: "primary" },
+  scaduto: { label: "Scaduto", tone: "warning" },
+  accettato: { label: "Accettato", tone: "success" },
+  rifiutato: { label: "Rifiutato", tone: "danger" },
+};
+
+export const QUOTE_UNITS = ["pz", "ore", "giorni", "mesi", "anno", "pagine"] as const;

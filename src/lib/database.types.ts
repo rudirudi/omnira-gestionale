@@ -22,6 +22,7 @@ export type ExpenseCategory =
   | "software" | "hosting" | "domini" | "hardware" | "collaboratori" | "marketing"
   | "trasferte" | "formazione" | "ufficio" | "telefonia" | "tasse" | "banca" | "altro";
 export type ExpensePaidWith = "azienda" | "personale";
+export type QuoteStatus = "bozza" | "inviato" | "accettato" | "rifiutato";
 
 type Timestamps = { created_at: string; updated_at: string };
 
@@ -307,6 +308,42 @@ export type ExpenseSubscriptionRow = Timestamps & {
   deleted_at: string | null;
 };
 
+export type QuoteRow = Timestamps & {
+  id: string;
+  number: string | null;
+  title: string;
+  client_id: string | null;
+  lead_id: string | null;
+  project_id: string | null;
+  status: QuoteStatus;
+  issue_date: string;
+  valid_until: string;
+  intro: string | null;
+  terms: string | null;
+  vat_rate: number;
+  discount_cents: number;
+  deposit_pct: number;
+  owner_id: string | null;
+  sent_at: string | null;
+  decided_at: string | null;
+  refused_reason: string | null;
+  created_by: string | null;
+  deleted_at: string | null;
+};
+
+export type QuoteItemRow = {
+  id: string;
+  quote_id: string;
+  position: number;
+  description: string;
+  details: string | null;
+  quantity: number;
+  unit: string;
+  unit_price_cents: number;
+  frequency: RenewalFrequency | null;
+  created_at: string;
+};
+
 /** Campi generati dal DB → opzionali in inserimento */
 type InsertOf<R, Required extends keyof R> = Pick<R, Required> & Partial<Omit<R, Required>>;
 
@@ -490,6 +527,23 @@ export type Database = {
           { foreignKeyName: "expense_subscriptions_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ];
       };
+      quotes: {
+        Row: QuoteRow;
+        Insert: InsertOf<QuoteRow, "title">;
+        Update: Partial<QuoteRow>;
+        Relationships: [
+          { foreignKeyName: "quotes_client_id_fkey"; columns: ["client_id"]; isOneToOne: false; referencedRelation: "clients"; referencedColumns: ["id"] },
+          { foreignKeyName: "quotes_lead_id_fkey"; columns: ["lead_id"]; isOneToOne: false; referencedRelation: "leads"; referencedColumns: ["id"] },
+          { foreignKeyName: "quotes_project_id_fkey"; columns: ["project_id"]; isOneToOne: false; referencedRelation: "projects"; referencedColumns: ["id"] },
+          { foreignKeyName: "quotes_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
+      };
+      quote_items: {
+        Row: QuoteItemRow;
+        Insert: InsertOf<QuoteItemRow, "quote_id" | "description">;
+        Update: Partial<QuoteItemRow>;
+        Relationships: [{ foreignKeyName: "quote_items_quote_id_fkey"; columns: ["quote_id"]; isOneToOne: false; referencedRelation: "quotes"; referencedColumns: ["id"] }];
+      };
     };
     Views: {
       project_progress: { Row: ProjectProgressRow; Relationships: [] };
@@ -498,6 +552,10 @@ export type Database = {
       current_app_role: { Args: Record<string, never>; Returns: AppRole };
       is_staff: { Args: Record<string, never>; Returns: boolean };
       has_role: { Args: { roles: AppRole[] }; Returns: boolean };
+      accept_quote: {
+        Args: { p_id: string; p_create_project?: boolean; p_project_type?: ProjectType; p_create_receivables?: boolean; p_create_renewals?: boolean };
+        Returns: string | null;
+      };
       renew_renewal: { Args: { p_id: string; p_create_receivable?: boolean; p_create_expense?: boolean }; Returns: string };
     };
     Enums: {
@@ -517,6 +575,7 @@ export type Database = {
       renewal_frequency: RenewalFrequency;
       expense_category: ExpenseCategory;
       expense_paid_with: ExpensePaidWith;
+      quote_status: QuoteStatus;
     };
     CompositeTypes: Record<never, never>;
   };
