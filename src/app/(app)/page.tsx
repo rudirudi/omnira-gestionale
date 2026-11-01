@@ -32,6 +32,19 @@ function greeting() {
   return h < 13 ? "Buongiorno" : h < 18 ? "Buon pomeriggio" : "Buonasera";
 }
 
+/** Importo in euro senza centesimi, per i numeri grandi delle card */
+const euroWhole = (cents: number) =>
+  (cents / 100).toLocaleString("it-IT", { style: "currency", currency: "EUR", maximumFractionDigits: 0, useGrouping: "always" } as Intl.NumberFormatOptions);
+
+/** Colori dell'area sullo sfondo blu dell'intestazione */
+const GLASS: Record<Area, { chip: string; bar: string }> = {
+  work: { chip: "bg-[oklch(0.6_0.16_255)] text-white", bar: "bg-[oklch(0.72_0.14_250)]" },
+  sales: { chip: "bg-sales text-on-warning", bar: "bg-sales" },
+  money: { chip: "bg-[oklch(0.6_0.15_150)] text-white", bar: "bg-[oklch(0.75_0.16_150)]" },
+  support: { chip: "bg-support text-white", bar: "bg-[oklch(0.7_0.18_25)]" },
+  system: { chip: "bg-white/20 text-white", bar: "bg-white/40" },
+};
+
 const STAGE_BAR: Record<string, string> = {
   nuovo: "bg-muted-foreground/40",
   call: "bg-primary/60",
@@ -55,14 +68,14 @@ export default async function DashboardPage() {
     { label: "Progetti attivi", value: String(d.activeProjects), sub: "in lavorazione", icon: Briefcase, href: "/progetti?stato=attivo", area: "work" },
     { label: "Clienti attivi", value: String(d.activeClients), sub: `${d.openLeads} lead aperti`, icon: Users, href: "/clienti?stato=attivo", area: "sales" },
     showMoney
-      ? { label: "Da incassare", value: formatEuro(d.toCollectCents), sub: d.overdueCents ? `${formatEuro(d.overdueCents)} scaduti` : "nessun ritardo", icon: Wallet, href: "/incassi", area: "money" }
-      : { label: "Vinti questo mese", value: formatEuro(d.wonMonthCents), sub: `${d.wonMonthCount} lead chiusi`, icon: TrendingUp, href: "/lead", area: "money" },
+      ? { label: "Da incassare", value: euroWhole(d.toCollectCents), sub: d.overdueCents ? `${formatEuro(d.overdueCents)} scaduti` : "nessun ritardo", icon: Wallet, href: "/incassi", area: "money" }
+      : { label: "Vinti questo mese", value: euroWhole(d.wonMonthCents), sub: `${d.wonMonthCount} lead chiusi`, icon: TrendingUp, href: "/lead", area: "money" },
   ];
 
   return (
     <PageBody className="flex flex-col gap-6">
       {/* Benvenuto */}
-      <section className="relative -mx-4 -mt-6 overflow-hidden border-white/60 bg-sidebar px-5 py-5 lg:border-l text-sidebar-foreground sm:-mx-6 sm:px-7 sm:py-6">
+      <section className="relative -mx-4 -mt-6 overflow-hidden border-white/60 bg-sidebar px-5 pt-5 pb-6 text-sidebar-foreground sm:-mx-6 sm:px-7 sm:pb-7 lg:border-l">
         <div className="absolute -top-20 -right-16 size-72 rounded-full bg-white/[0.06]" aria-hidden />
         <div className="absolute -bottom-24 right-40 size-56 rounded-full bg-white/[0.04]" aria-hidden />
         <div className="relative mb-4 flex items-center gap-2 sm:mb-1">
@@ -72,7 +85,7 @@ export default async function DashboardPage() {
             <HeaderTools onDark />
           </div>
         </div>
-        <div className="relative flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+        <div className="relative mt-1 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between xl:gap-8">
           <div className="min-w-0">
             <h1 className="text-[28px] leading-tight font-semibold">
               {greeting()}, {firstName}
@@ -91,23 +104,28 @@ export default async function DashboardPage() {
             </p>
           </div>
 
-          {/* Numeri chiave, colorati per area: compatti dentro l'intestazione */}
-          <div className="grid shrink-0 grid-cols-2 gap-2.5 md:grid-cols-4 xl:w-[680px]">
+          {/* Numeri chiave dentro l'intestazione: riquadri "in vetro", colore dell'area su icona e filo in basso */}
+          <div className="grid shrink-0 grid-cols-2 gap-3 md:grid-cols-4 xl:w-[700px]">
             {kpis.map((k) => {
-              const a = AREA[k.area];
+              const g = GLASS[k.area];
               return (
-                <Link key={k.label} href={k.href} className={cn("group overflow-hidden rounded-lg border bg-card text-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md", a.bandBorder)}>
-                  <div className={cn("flex items-center justify-between gap-2 px-3 py-1.5 text-white", a.band)}>
-                    <p className="truncate text-[12px] font-semibold">{k.label}</p>
-                    <k.icon className="size-3.5 shrink-0 opacity-90" strokeWidth={2} aria-hidden />
-                  </div>
-                  <div className="px-3 pt-2 pb-2">
-                    <p className="truncate text-[22px] leading-tight font-semibold tracking-tight tabular">{k.value}</p>
-                    <p className="flex items-center gap-1 truncate text-[11px] text-muted-foreground">
-                      <span className="truncate">{k.sub}</span>
-                      <ArrowRight className="ml-auto size-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
-                    </p>
-                  </div>
+                <Link
+                  key={k.label}
+                  href={k.href}
+                  className="group relative overflow-hidden rounded-xl bg-white/[0.07] px-3.5 pt-3 pb-3.5 ring-1 ring-white/[0.12] backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-white/[0.12] hover:ring-white/25"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className={cn("flex size-7 shrink-0 items-center justify-center rounded-lg shadow-sm", g.chip)}>
+                      <k.icon className="size-3.5" strokeWidth={2.2} aria-hidden />
+                    </span>
+                    <span className="truncate text-[12px] font-medium text-white/75">{k.label}</span>
+                  </span>
+                  <span className={cn("mt-2.5 block truncate leading-none font-semibold tracking-tight text-white tabular", k.value.length > 9 ? "text-[21px]" : "text-[26px]")}>{k.value}</span>
+                  <span className="mt-1.5 flex items-center gap-1 text-[11.5px] text-white/60">
+                    <span className="truncate">{k.sub}</span>
+                    <ArrowRight className="ml-auto size-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
+                  </span>
+                  <span className={cn("absolute inset-x-0 bottom-0 h-[3px]", g.bar)} aria-hidden />
                 </Link>
               );
             })}
