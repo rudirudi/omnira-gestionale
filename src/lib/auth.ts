@@ -9,15 +9,15 @@ export type CurrentUser = Pick<ProfileRow, "id" | "full_name" | "email" | "role"
 /** Utente corrente (una lettura per richiesta). Reindirizza al login se manca o è disattivato. */
 export const getCurrentUser = cache(async (): Promise<CurrentUser> => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  // Verifica locale del token (nessuna chiamata di rete con chiavi asimmetriche)
+  const { data } = await supabase.auth.getClaims();
+  const userId = data?.claims?.sub;
+  if (!userId) redirect("/login");
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("id, full_name, email, role, site_id, job_title, active")
-    .eq("id", user.id)
+    .eq("id", userId)
     .single();
 
   if (!profile || !profile.active) {

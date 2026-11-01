@@ -28,10 +28,10 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  // Non inserire codice tra createServerClient e getUser: serve a rinnovare il token.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Non inserire codice tra createServerClient e getClaims: serve a rinnovare il token.
+  // getClaims verifica il token localmente (chiavi asimmetriche), senza andata e ritorno al server Auth.
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims?.sub ? { id: data.claims.sub } : null;
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();

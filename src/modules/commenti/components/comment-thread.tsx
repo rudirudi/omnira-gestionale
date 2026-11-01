@@ -57,6 +57,16 @@ export function CommentThread({
   const [highlight, setHighlight] = React.useState(0);
   const [sending, startSend] = React.useTransition();
   const ref = React.useRef<HTMLTextAreaElement>(null);
+  // posizione del cursore da ripristinare subito dopo l'inserimento di una menzione
+  const pendingCaret = React.useRef<number | null>(null);
+  React.useLayoutEffect(() => {
+    const el = ref.current;
+    if (el && pendingCaret.current !== null) {
+      el.focus();
+      el.setSelectionRange(pendingCaret.current, pendingCaret.current);
+      pendingCaret.current = null;
+    }
+  }, [text]);
   const key = `${entityType}:${entityId}`;
 
   const load = React.useCallback(() => {
@@ -83,13 +93,10 @@ export function CommentThread({
     const caret = el?.selectionStart ?? text.length;
     const before = text.slice(0, caret).replace(/@([\p{L}' ]{0,30})$/u, `@${member.full_name} `);
     const next = before + text.slice(caret);
+    pendingCaret.current = before.length;
     setText(next);
     setMentioned((m) => [...new Set([...m, member.id])]);
     setQuery(null);
-    requestAnimationFrame(() => {
-      el?.focus();
-      el?.setSelectionRange(before.length, before.length);
-    });
   }
 
   function submit() {

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { requireRole } from "@/lib/auth";
+import { getCurrentUser, requireRole } from "@/lib/auth";
 import { type ActionResult, fromDbError, fromZodError } from "@/lib/action-result";
 import { activitySchema, clientSchema, contactSchema } from "./schema";
 
@@ -69,11 +69,8 @@ export async function deleteContactAction(id: string, clientId: string): Promise
 }
 
 export async function addActivityAction(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  const user = await getCurrentUser();
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Sessione scaduta, accedi di nuovo." };
 
   const raw = Object.fromEntries(formData);
   const parsed = activitySchema.safeParse({
