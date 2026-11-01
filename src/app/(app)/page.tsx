@@ -65,7 +65,7 @@ export default async function DashboardPage() {
   return (
     <PageBody className="flex flex-col gap-6">
       {/* Benvenuto */}
-      <section className="relative -mx-4 -mt-6 overflow-hidden bg-sidebar px-5 py-5 text-sidebar-foreground sm:-mx-6 sm:px-7 sm:py-6">
+      <section className="relative -mx-4 -mt-6 overflow-hidden border-white/60 bg-sidebar px-5 py-5 lg:border-l text-sidebar-foreground sm:-mx-6 sm:px-7 sm:py-6">
         <div className="absolute -top-20 -right-16 size-72 rounded-full bg-white/[0.06]" aria-hidden />
         <div className="absolute -bottom-24 right-40 size-56 rounded-full bg-white/[0.04]" aria-hidden />
         <div className="relative mb-4 flex items-center gap-2 sm:mb-1">
