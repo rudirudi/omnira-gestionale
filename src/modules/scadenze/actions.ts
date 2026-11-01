@@ -58,14 +58,15 @@ export async function updateRenewalAction(id: string, _prev: ActionResult, formD
 }
 
 /** Rinnovato: la scadenza passa al periodo successivo; facoltativo l'importo da far pagare al cliente */
-export async function renewAction(id: string, createReceivable: boolean): Promise<ActionResult> {
+export async function renewAction(id: string, createReceivable: boolean, createExpense = true): Promise<ActionResult> {
   await requireRole([...MONEY]);
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("renew_renewal", { p_id: z.guid().parse(id), p_create_receivable: createReceivable });
+  const { data, error } = await supabase.rpc("renew_renewal", { p_id: z.guid().parse(id), p_create_receivable: createReceivable, p_create_expense: createExpense });
   if (error) return fromDbError(error);
   revalidateAll();
+  revalidatePath("/spese");
   const next = new Date(`${data}T00:00:00`).toLocaleDateString("it-IT");
-  return { ok: true, message: `Rinnovato: prossima scadenza ${next}${createReceivable ? " · importo aggiunto agli incassi" : ""}` };
+  return { ok: true, message: `Rinnovato: prossima scadenza ${next}${createReceivable ? " · importo aggiunto agli incassi" : ""}${createExpense ? " · costo registrato nelle spese" : ""}` };
 }
 
 export async function setRenewalActiveAction(id: string, active: boolean): Promise<ActionResult> {

@@ -82,6 +82,7 @@ export function RenewalsView({
   const [editing, setEditing] = React.useState(false);
   const [renewing, setRenewing] = React.useState<RenewalItem | null>(null);
   const [createRec, setCreateRec] = React.useState(true);
+  const [createExp, setCreateExp] = React.useState(true);
   const [busy, start] = React.useTransition();
   const setOpen = (id: string | null) => {
     const next = new URLSearchParams(params);
@@ -249,6 +250,15 @@ export function RenewalsView({
               ) : (
                 <p className="text-[13px] text-muted-foreground">Nessun prezzo al cliente impostato: non verrà creato nessun importo da incassare.</p>
               )}
+              {renewing.cost_cents ? (
+                <label className="flex items-start gap-2 rounded-lg border border-destructive/25 bg-destructive/[0.04] p-3 text-[13px]">
+                  <input type="checkbox" checked={createExp} onChange={(e) => setCreateExp(e.target.checked)} className="mt-0.5 size-4 accent-[var(--primary)]" />
+                  <span>
+                    Registra <strong>{formatEuro(renewing.cost_cents)}</strong> tra le spese{renewing.provider ? ` (${renewing.provider})` : ""}
+                    <span className="block text-xs text-muted-foreground">È quanto paghi tu al fornitore per il rinnovo.</span>
+                  </span>
+                </label>
+              ) : null}
               <DialogFooter>
                 <Button variant="ghost" onClick={() => setRenewing(null)}>Annulla</Button>
                 <Button
@@ -256,7 +266,7 @@ export function RenewalsView({
                   disabled={busy}
                   onClick={() =>
                     start(async () => {
-                      const x = await renewAction(renewing.id, createRec && Boolean(renewing.client_id && renewing.price_cents));
+                      const x = await renewAction(renewing.id, createRec && Boolean(renewing.client_id && renewing.price_cents), createExp && Boolean(renewing.cost_cents));
                       if (x.ok) {
                         toast.success(x.message);
                         setRenewing(null);

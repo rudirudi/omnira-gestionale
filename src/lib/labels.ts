@@ -1,6 +1,8 @@
 import type {
   ActivityType,
   BillingType,
+  ExpenseCategory,
+  ExpensePaidWith,
   ClientStatus,
   LeadSource,
   LeadStage,
@@ -144,4 +146,30 @@ export const RECEIVABLE_STATE: Record<ReceivableState, { label: string; tone: To
   parziale: { label: "Pagato in parte", tone: "warning" },
   pagato: { label: "Pagato", tone: "success" },
   scaduto: { label: "Scaduto", tone: "danger" },
+};
+
+/** Categorie di spesa: etichetta + colore del pallino (palette del brand) */
+export const EXPENSE_CATEGORIES: { value: ExpenseCategory; label: string; color: string }[] = [
+  { value: "software", label: "Software e abbonamenti", color: "bg-primary" },
+  { value: "hosting", label: "Hosting e server", color: "bg-work" },
+  { value: "domini", label: "Domini", color: "bg-[oklch(0.7_0.12_250)]" },
+  { value: "collaboratori", label: "Collaboratori", color: "bg-sales" },
+  { value: "marketing", label: "Marketing e pubblicità", color: "bg-support" },
+  { value: "hardware", label: "Hardware", color: "bg-[oklch(0.45_0.05_260)]" },
+  { value: "trasferte", label: "Trasferte", color: "bg-[oklch(0.75_0.15_70)]" },
+  { value: "formazione", label: "Formazione", color: "bg-success" },
+  { value: "ufficio", label: "Ufficio", color: "bg-[oklch(0.6_0.08_200)]" },
+  { value: "telefonia", label: "Telefonia e internet", color: "bg-[oklch(0.62_0.13_300)]" },
+  { value: "tasse", label: "Tasse e contributi", color: "bg-destructive" },
+  { value: "banca", label: "Banca e commissioni", color: "bg-[oklch(0.55_0.03_260)]" },
+  { value: "altro", label: "Altro", color: "bg-muted-foreground/50" },
+];
+export const EXPENSE_CATEGORY = Object.fromEntries(EXPENSE_CATEGORIES.map((c) => [c.value, c])) as Record<
+  ExpenseCategory,
+  (typeof EXPENSE_CATEGORIES)[number]
+>;
+
+export const EXPENSE_PAID_WITH: Record<ExpensePaidWith, string> = {
+  azienda: "Conto/carta aziendale",
+  personale: "Di tasca propria (da rimborsare)",
 };

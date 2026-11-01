@@ -18,6 +18,10 @@ export type TaskPriority = "bassa" | "media" | "alta" | "urgente";
 export type PaymentMethod = "bonifico" | "carta" | "contanti" | "paypal" | "stripe" | "riba" | "altro";
 export type RenewalType = "dominio" | "hosting" | "server" | "ssl" | "email" | "licenza" | "saas" | "manutenzione" | "altro";
 export type RenewalFrequency = "mensile" | "trimestrale" | "semestrale" | "annuale" | "biennale";
+export type ExpenseCategory =
+  | "software" | "hosting" | "domini" | "hardware" | "collaboratori" | "marketing"
+  | "trasferte" | "formazione" | "ufficio" | "telefonia" | "tasse" | "banca" | "altro";
+export type ExpensePaidWith = "azienda" | "personale";
 
 type Timestamps = { created_at: string; updated_at: string };
 
@@ -263,6 +267,46 @@ export type PaymentRow = {
   created_at: string;
 };
 
+export type ExpenseRow = Timestamps & {
+  id: string;
+  spent_on: string;
+  description: string;
+  amount_cents: number;
+  category: ExpenseCategory;
+  supplier: string | null;
+  paid_by: string | null;
+  paid_with: ExpensePaidWith;
+  method: PaymentMethod;
+  reimbursed_on: string | null;
+  client_id: string | null;
+  project_id: string | null;
+  subscription_id: string | null;
+  renewal_id: string | null;
+  notes: string | null;
+  created_by: string | null;
+  deleted_at: string | null;
+};
+
+export type ExpenseSubscriptionRow = Timestamps & {
+  id: string;
+  name: string;
+  supplier: string | null;
+  category: ExpenseCategory;
+  amount_cents: number;
+  frequency: RenewalFrequency;
+  start_date: string;
+  end_date: string | null;
+  charges_count: number;
+  next_charge_date: string;
+  paid_by: string | null;
+  paid_with: ExpensePaidWith;
+  method: PaymentMethod;
+  active: boolean;
+  notes: string | null;
+  created_by: string | null;
+  deleted_at: string | null;
+};
+
 /** Campi generati dal DB → opzionali in inserimento */
 type InsertOf<R, Required extends keyof R> = Pick<R, Required> & Partial<Omit<R, Required>>;
 
@@ -424,6 +468,28 @@ export type Database = {
         Update: Partial<PaymentRow>;
         Relationships: [{ foreignKeyName: "payments_receivable_id_fkey"; columns: ["receivable_id"]; isOneToOne: false; referencedRelation: "receivables"; referencedColumns: ["id"] }];
       };
+      expenses: {
+        Row: ExpenseRow;
+        Insert: InsertOf<ExpenseRow, "description" | "amount_cents">;
+        Update: Partial<ExpenseRow>;
+        Relationships: [
+          { foreignKeyName: "expenses_paid_by_fkey"; columns: ["paid_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "expenses_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "expenses_client_id_fkey"; columns: ["client_id"]; isOneToOne: false; referencedRelation: "clients"; referencedColumns: ["id"] },
+          { foreignKeyName: "expenses_project_id_fkey"; columns: ["project_id"]; isOneToOne: false; referencedRelation: "projects"; referencedColumns: ["id"] },
+          { foreignKeyName: "expenses_subscription_id_fkey"; columns: ["subscription_id"]; isOneToOne: false; referencedRelation: "expense_subscriptions"; referencedColumns: ["id"] },
+          { foreignKeyName: "expenses_renewal_id_fkey"; columns: ["renewal_id"]; isOneToOne: false; referencedRelation: "renewals"; referencedColumns: ["id"] },
+        ];
+      };
+      expense_subscriptions: {
+        Row: ExpenseSubscriptionRow;
+        Insert: InsertOf<ExpenseSubscriptionRow, "name" | "amount_cents">;
+        Update: Partial<ExpenseSubscriptionRow>;
+        Relationships: [
+          { foreignKeyName: "expense_subscriptions_paid_by_fkey"; columns: ["paid_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "expense_subscriptions_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
+      };
     };
     Views: {
       project_progress: { Row: ProjectProgressRow; Relationships: [] };
@@ -432,7 +498,7 @@ export type Database = {
       current_app_role: { Args: Record<string, never>; Returns: AppRole };
       is_staff: { Args: Record<string, never>; Returns: boolean };
       has_role: { Args: { roles: AppRole[] }; Returns: boolean };
-      renew_renewal: { Args: { p_id: string; p_create_receivable?: boolean }; Returns: string };
+      renew_renewal: { Args: { p_id: string; p_create_receivable?: boolean; p_create_expense?: boolean }; Returns: string };
     };
     Enums: {
       app_role: AppRole;
@@ -449,6 +515,8 @@ export type Database = {
       payment_method: PaymentMethod;
       renewal_type: RenewalType;
       renewal_frequency: RenewalFrequency;
+      expense_category: ExpenseCategory;
+      expense_paid_with: ExpensePaidWith;
     };
     CompositeTypes: Record<never, never>;
   };

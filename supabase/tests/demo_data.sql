@@ -119,3 +119,21 @@ from (values
   (null, 'dominio', 'omnirasoft.it', 'Aruba', 'annuale', 160, 900, null),
   ('Templana', 'licenza', 'Licenza OCR documenti', 'ABBYY', 'annuale', 220, 30000, 45000)
 ) as v(client, type, name, provider, freq, d, cost, price);
+
+-- Spese e abbonamenti (Rudi = 1111…, Shkelzen = 2222…)
+insert into public.expense_subscriptions (name, supplier, category, amount_cents, frequency, start_date, paid_by, paid_with, created_by)
+values
+  ('Claude Max', 'Anthropic', 'software', 9000, 'mensile', (date_trunc('month', current_date) - interval '7 months')::date + 4, '11111111-1111-1111-1111-111111111111', 'azienda', '11111111-1111-1111-1111-111111111111'),
+  ('Lovable Pro', 'Lovable', 'software', 2500, 'mensile', (date_trunc('month', current_date) - interval '4 months')::date + 11, '22222222-2222-2222-2222-222222222222', 'personale', '22222222-2222-2222-2222-222222222222'),
+  ('Google Workspace', 'Google', 'software', 1380, 'mensile', (date_trunc('month', current_date) - interval '10 months')::date, '11111111-1111-1111-1111-111111111111', 'azienda', '11111111-1111-1111-1111-111111111111'),
+  ('Figma Professional', 'Figma', 'software', 14400, 'annuale', (current_date - interval '3 months')::date, '11111111-1111-1111-1111-111111111111', 'azienda', '11111111-1111-1111-1111-111111111111');
+
+insert into public.expenses (spent_on, description, amount_cents, category, supplier, paid_by, paid_with, method, project_id, created_by)
+values
+  (current_date - 2, 'Monitor 27" per postazione Terni', 22900, 'hardware', 'Amazon', '11111111-1111-1111-1111-111111111111', 'azienda', 'carta', null, '11111111-1111-1111-1111-111111111111'),
+  (current_date - 5, 'Treno Terni–Roma incontro cliente', 4580, 'trasferte', 'Trenitalia', '22222222-2222-2222-2222-222222222222', 'personale', 'carta', null, '22222222-2222-2222-2222-222222222222'),
+  (current_date - 9, 'Copywriter testi e-commerce', 35000, 'collaboratori', 'M. Ferri', '11111111-1111-1111-1111-111111111111', 'azienda', 'bonifico', (select id from public.projects where code = 'P-2026-002'), '11111111-1111-1111-1111-111111111111'),
+  (current_date - 12, 'Campagna Meta Ads ottobre', 15000, 'marketing', 'Meta', '22222222-2222-2222-2222-222222222222', 'azienda', 'carta', null, '22222222-2222-2222-2222-222222222222'),
+  (current_date - 35, 'Corso Next.js avanzato', 12900, 'formazione', 'Udemy', '22222222-2222-2222-2222-222222222222', 'personale', 'paypal', null, '22222222-2222-2222-2222-222222222222'),
+  (current_date - 40, 'Plugin WooCommerce abbonamenti', 19900, 'software', 'WooCommerce', '11111111-1111-1111-1111-111111111111', 'azienda', 'carta', (select id from public.projects where code = 'P-2026-002'), '11111111-1111-1111-1111-111111111111'),
+  (current_date - 50, 'F24 contributi', 120000, 'tasse', 'Agenzia Entrate', '11111111-1111-1111-1111-111111111111', 'azienda', 'bonifico', null, '11111111-1111-1111-1111-111111111111');

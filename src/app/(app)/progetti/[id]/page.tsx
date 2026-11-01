@@ -19,6 +19,8 @@ import { listProjectTasks } from "@/modules/task/queries";
 import { listActiveTeam } from "@/modules/team/queries";
 import { ReceivablesView } from "@/modules/incassi/components/receivables-view";
 import { listProjectOptions, listReceivables } from "@/modules/incassi/queries";
+import { ProjectCosts } from "@/modules/spese/components/project-costs";
+import { listExpenses } from "@/modules/spese/queries";
 
 const UUID = /^[0-9a-f-]{36}$/i;
 
@@ -36,12 +38,13 @@ export default async function ProgettoPage({ params, searchParams }: PageProps<"
   const [user, project] = await Promise.all([getCurrentUser(), getProject(id)]);
   if (!project) notFound();
   const showMoney = can.viewMoney(user.role);
-  const [tasks, team, clients, receivables, projectOptions] = await Promise.all([
+  const [tasks, team, clients, receivables, projectOptions, costs] = await Promise.all([
     listProjectTasks(id),
     listActiveTeam(),
     listClientOptions(),
     showMoney ? listReceivables({ projectId: id }) : Promise.resolve([]),
     showMoney ? listProjectOptions() : Promise.resolve([]),
+    showMoney ? listExpenses({ projectId: id }) : Promise.resolve([]),
   ]);
   const canManage = can.manageProjects(user.role);
   const tab = typeof sp.scheda === "string" ? sp.scheda : "task";
@@ -115,7 +118,7 @@ export default async function ProgettoPage({ params, searchParams }: PageProps<"
           <TabsList>
             <TabsTrigger value="task">Task ({total})</TabsTrigger>
             <TabsTrigger value="piano">Fasi e milestone</TabsTrigger>
-            {showMoney && <TabsTrigger value="pagamenti">Pagamenti</TabsTrigger>}
+            {showMoney && <TabsTrigger value="pagamenti">Pagamenti e costi</TabsTrigger>}
             <TabsTrigger value="team">Team ({project.members.length})</TabsTrigger>
             <TabsTrigger value="discussione">Discussione</TabsTrigger>
             <TabsTrigger value="dettagli">Dettagli</TabsTrigger>
@@ -143,7 +146,8 @@ export default async function ProgettoPage({ params, searchParams }: PageProps<"
             </section>
           </TabsContent>
           {showMoney && (
-            <TabsContent value="pagamenti" className="max-w-4xl">
+            <TabsContent value="pagamenti" className="flex max-w-4xl flex-col gap-8">
+              <div>
               {!project.client_id ? (
                 <p className="text-[13px] text-muted-foreground">Progetto interno: collega un cliente (scheda Dettagli) per gestire i pagamenti.</p>
               ) : (
@@ -165,6 +169,17 @@ export default async function ProgettoPage({ params, searchParams }: PageProps<"
                   }}
                 />
               )}
+              </div>
+              <ProjectCosts
+                projectId={id}
+                items={costs}
+                paidCents={receivables.reduce((s, r) => s + r.paid, 0)}
+                people={team}
+                projects={projectOptions}
+                meId={user.id}
+                canManage={can.manageMoney(user.role)}
+                isAdmin={user.role === "admin"}
+              />
             </TabsContent>
           )}
           <TabsContent value="team" className="max-w-3xl">

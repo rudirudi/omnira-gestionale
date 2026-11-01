@@ -6,6 +6,7 @@ import {
   CheckSquare,
   Clock,
   FileSignature,
+  HandCoins,
   LayoutDashboard,
   LifeBuoy,
   Receipt,
@@ -20,7 +21,7 @@ import {
  * icone e grafici: l'occhio capisce dove si trova senza leggere.
  *  - operativo  = blu    (progetti, task, tempo)
  *  - commerciale = giallo (clienti, lead, preventivi)
- *  - economia   = verde  (fatture, canoni, report)
+ *  - economia   = verde  (incassi, spese, scadenze, fatture, report)
  *  - assistenza = rosso  (ticket)
  *  - sistema    = grigio-blu (dashboard, impostazioni)
  * Le classi sono scritte per esteso perché Tailwind le trovi nel codice.
@@ -103,6 +104,7 @@ export const MODULES = {
   lead: { href: "/lead", label: "Lead", icon: Target, area: "sales", module: "M2" },
   preventivi: { href: "/preventivi", label: "Preventivi", icon: FileSignature, area: "sales", module: "M7", phase: 2 },
   incassi: { href: "/incassi", label: "Incassi", icon: Wallet, area: "money", module: "M8" },
+  spese: { href: "/spese", label: "Spese", icon: HandCoins, area: "money", module: "M9" },
   scadenze: { href: "/scadenze", label: "Scadenze", icon: CalendarClock, area: "money", module: "M9" },
   fatture: { href: "/fatture", label: "Fatture", icon: Receipt, area: "money", module: "M8", phase: 2 },
   report: { href: "/report", label: "Report", icon: BarChart3, area: "money", module: "M12", phase: 4 },
