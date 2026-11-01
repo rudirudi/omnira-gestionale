@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import { HeaderMenuButton, HeaderTools } from "@/components/layout/header-tools";
 import { AREA, type Area } from "@/lib/areas";
 import { cn } from "@/lib/utils";
 
@@ -24,10 +25,13 @@ export function PageHeader({
 }) {
   const a = AREA[area];
   return (
-    <div className={cn("relative flex flex-col gap-4 border-b px-4 pt-6 pb-5 sm:px-6", a.headerBg, className)}>
+    <div className={cn("relative flex flex-col gap-4 border-b px-4 pt-5 pb-5 sm:px-6", a.headerBg, className)}>
       <span className={cn("absolute inset-x-0 top-0 h-[3px]", a.stripe)} aria-hidden />
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex min-w-0 items-start gap-3.5">
+      <div className="flex flex-wrap items-start justify-between gap-3 lg:flex-nowrap">
+        <div className="flex min-w-0 flex-1 items-start gap-3.5">
+          <span className="-ml-1.5 lg:hidden">
+            <HeaderMenuButton />
+          </span>
           {Icon && (
             <span className={cn("mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-xl shadow-sm", a.tile)}>
               <Icon className="size-[22px]" strokeWidth={1.9} />
@@ -39,7 +43,10 @@ export function PageHeader({
             {description && <p className="mt-1 text-[13px] text-muted-foreground">{description}</p>}
           </div>
         </div>
-        {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+        <div className="ml-auto flex shrink-0 items-center gap-3">
+          {actions && <div className="flex items-center gap-2">{actions}</div>}
+          <HeaderTools />
+        </div>
       </div>
       {children}
     </div>

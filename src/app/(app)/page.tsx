@@ -15,17 +15,14 @@ import {
 } from "lucide-react";
 import { EmptyState } from "@/components/app/empty-state";
 import { PageBody } from "@/components/app/page-header";
-import { SearchButton } from "@/components/layout/command-palette";
-import { MobileNav } from "@/components/layout/mobile-nav";
-import { UserMenu } from "@/components/layout/user-menu";
+import { HeaderMenuButton, HeaderTools } from "@/components/layout/header-tools";
 import { Badge } from "@/components/ui/badge";
 import { AREA, type Area } from "@/lib/areas";
 import { getCurrentUser } from "@/lib/auth";
 import { LEAD_STAGE, LEAD_STAGES, TASK_STATUS } from "@/lib/labels";
-import { can, ROLE_LABEL } from "@/lib/permissions";
+import { can } from "@/lib/permissions";
 import { cn, formatEuro } from "@/lib/utils";
 import { getDashboardData } from "@/modules/dashboard/queries";
-import { NotificationBell } from "@/modules/notifiche/components/notification-bell";
 import { dueInfo, DueLabel, PriorityFlag, TaskCode } from "@/modules/task/components/task-meta";
 
 export const metadata = { title: "Dashboard" };
@@ -69,13 +66,10 @@ export default async function DashboardPage() {
         <div className="absolute -top-20 -right-16 size-72 rounded-full bg-white/[0.06]" aria-hidden />
         <div className="absolute -bottom-24 right-40 size-56 rounded-full bg-white/[0.04]" aria-hidden />
         <div className="relative mb-4 flex items-center gap-2 sm:mb-1">
-          <MobileNav hidden={showMoney ? [] : ["/incassi", "/preventivi"]} onDark />
+          <HeaderMenuButton onDark />
           <p className="text-[13px] font-medium text-sidebar-muted first-letter:uppercase">{today}</p>
-          <div className="ml-auto flex items-center gap-1.5">
-            <SearchButton onDark className="hidden w-64 md:flex" />
-            <SearchButton onDark className="w-9 justify-center px-0 md:hidden [&>span]:hidden" />
-            <NotificationBell userId={user.id} onDark />
-            <UserMenu name={user.full_name} email={user.email} roleLabel={ROLE_LABEL[user.role]} onDark />
+          <div className="ml-auto">
+            <HeaderTools onDark />
           </div>
         </div>
         <div className="relative flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">

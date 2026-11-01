@@ -226,7 +226,7 @@ export function QuoteEditor({
   return (
     <div className="flex flex-col gap-5">
       {/* Barra azioni */}
-      <div className="sticky top-14 z-20 -mx-4 flex flex-wrap items-center gap-2 border-b bg-background/90 px-4 py-2.5 backdrop-blur sm:-mx-6 sm:px-6">
+      <div className="sticky top-0 z-20 -mx-4 flex flex-wrap items-center gap-2 border-b bg-background/90 px-4 py-2.5 backdrop-blur sm:-mx-6 sm:px-6">
         <Badge dot tone={QUOTE_STATE[state].tone}>{QUOTE_STATE[state].label}</Badge>
         {dirty && !closed && <span className="text-xs font-medium text-sales-ink">Modifiche non salvate</span>}
         <div className="ml-auto flex flex-wrap items-center gap-2">
@@ -484,7 +484,7 @@ export function QuoteEditor({
         </div>
 
         {/* Totali */}
-        <aside className="flex flex-col gap-4 lg:sticky lg:top-28 lg:self-start">
+        <aside className="flex flex-col gap-4 lg:sticky lg:top-16 lg:self-start">
           <div className="overflow-hidden rounded-xl border border-[oklch(0.62_0.145_68)] bg-card shadow-xs">
             <div className="flex items-center gap-2 bg-gradient-to-r from-[oklch(0.58_0.14_62)] to-[oklch(0.66_0.15_75)] px-4 py-2.5 text-[14px] font-semibold text-white">
               <FileText className="size-4" /> {quote.number}
