@@ -14,6 +14,10 @@ import { ArchiveClientButton } from "@/modules/clienti/components/archive-client
 import { ClientForm } from "@/modules/clienti/components/client-form";
 import { ContactsPanel } from "@/modules/clienti/components/contacts-panel";
 import { getClient, getClientRelated, listTeam } from "@/modules/clienti/queries";
+import { ReceivablesView } from "@/modules/incassi/components/receivables-view";
+import { listProjectOptions, listReceivables } from "@/modules/incassi/queries";
+import { RenewalsView } from "@/modules/scadenze/components/renewals-view";
+import { listRenewals } from "@/modules/scadenze/queries";
 
 const UUID = /^[0-9a-f-]{36}$/i;
 
@@ -30,7 +34,14 @@ export default async function ClientePage({ params, searchParams }: PageProps<"/
   if (!UUID.test(id)) notFound();
   const [user, client, team] = await Promise.all([getCurrentUser(), getClient(id), listTeam()]);
   if (!client) notFound();
-  const { contacts, activities, leads } = await getClientRelated(id);
+  const showMoney = can.viewMoney(user.role);
+  const [{ contacts, activities, leads }, receivables, renewals, projectOptions] = await Promise.all([
+    getClientRelated(id),
+    showMoney ? listReceivables({ clientId: id }) : Promise.resolve([]),
+    listRenewals({ clientId: id }),
+    listProjectOptions(),
+  ]);
+  const clientOption = [{ id: client.id, name: client.name }];
   const canEdit = can.editClients(user.role);
   const tab = typeof sp.scheda === "string" ? sp.scheda : "panoramica";
   const update = updateClientAction.bind(null, id);
@@ -88,6 +99,8 @@ export default async function ClientePage({ params, searchParams }: PageProps<"/
             <TabsTrigger value="referenti">Referenti ({contacts.length})</TabsTrigger>
             <TabsTrigger value="attivita">Attività ({activities.length})</TabsTrigger>
             <TabsTrigger value="lead">Lead ({leads.length})</TabsTrigger>
+            {showMoney && <TabsTrigger value="pagamenti">Pagamenti</TabsTrigger>}
+            <TabsTrigger value="scadenze">Scadenze ({renewals.length})</TabsTrigger>
           </TabsList>
           <TabsContent value="panoramica" className="max-w-3xl">
             <ClientForm action={update} defaults={client} team={team} submitLabel="Salva modifiche" readOnly={!canEdit} />
@@ -97,6 +110,30 @@ export default async function ClientePage({ params, searchParams }: PageProps<"/
           </TabsContent>
           <TabsContent value="attivita" className="max-w-3xl">
             <ActivityTimeline activities={activities} clientId={id} />
+          </TabsContent>
+          {showMoney && (
+            <TabsContent value="pagamenti" className="max-w-4xl">
+              <ReceivablesView
+                items={receivables}
+                clients={clientOption}
+                projects={projectOptions.filter((p) => p.client_id === id)}
+                canManage={can.manageMoney(user.role)}
+                canDelete={user.role === "admin"}
+                showClient={false}
+                newDefaults={{ client_id: id }}
+              />
+            </TabsContent>
+          )}
+          <TabsContent value="scadenze" className="max-w-4xl">
+            <RenewalsView
+              items={renewals}
+              clients={clientOption}
+              projects={projectOptions.filter((p) => p.client_id === id)}
+              canManage={can.manageMoney(user.role)}
+              defaultClientId={id}
+              showClient={false}
+              compact
+            />
           </TabsContent>
           <TabsContent value="lead">
             {leads.length === 0 ? (

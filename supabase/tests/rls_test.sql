@@ -99,3 +99,35 @@ insert into auth.users (id, email, raw_user_meta_data, invited_at) values
   ('00000000-0000-0000-0000-000000000011', 'esterno@gmail.com', '{"name":"Mario Esterno"}', null);
 select email, full_name, role, active from public.profiles where email in ('invitato@omnirasoft.it', 'esterno@gmail.com') order by email;
 select u.email as admin_notificato, n.title from public.notifications n join public.profiles u on u.id = n.user_id where n.type = 'nuovo_utente';
+
+-- ===================== Incassi e scadenze =====================
+set role authenticated;
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', false);
+insert into public.receivables (client_id, description, amount_cents, due_date)
+  select id, 'Sito vetrina', 80000, current_date - 5 from public.clients limit 1;
+insert into public.payments (receivable_id, amount_cents) select id, 30000 from public.receivables;
+select r.description, r.amount_cents, coalesce(sum(p.amount_cents), 0) as pagato from public.receivables r left join public.payments p on p.receivable_id = r.id group by r.id;
+insert into public.renewals (client_id, type, name, provider, frequency, next_due_date, price_cents, cost_cents)
+  select id, 'dominio', 'cliente.it', 'Aruba', 'annuale', current_date + 20, 2500, 900 from public.clients limit 1;
+insert into public.renewals (type, name, frequency, next_due_date) values ('server', 'VPS interna', 'mensile', current_date - 1);
+select public.renew_renewal(id, true) as nuova_scadenza from public.renewals where name = 'cliente.it';
+select description, amount_cents, due_date = current_date + 20 as scadenza_ok from public.receivables where renewal_id is not null;
+
+-- team: non vede incassi, vede scadenze, non le crea
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000002', false);
+select count(*) as incassi_visti_team from public.receivables;
+select count(*) as scadenze_viste_team from public.renewals;
+do $$ begin
+  begin
+    insert into public.renewals (type, name, next_due_date) values ('dominio', 'x.it', current_date);
+    raise exception 'FALLITO: team ha creato una scadenza';
+  exception when insufficient_privilege then raise notice 'OK: team non crea scadenze';
+  end;
+end $$;
+reset role;
+
+-- avvisi: la VPS (scaduta ieri) e nulla per cliente.it (spostato di un anno); seconda chiamata non duplica
+update public.renewals set next_due_date = current_date + 30 where name = 'cliente.it';
+select public.notify_upcoming_renewals() as avvisi_inviati;
+select public.notify_upcoming_renewals() as avvisi_ripetuti;
+select title, body from public.notifications where type = 'scadenza' order by title;

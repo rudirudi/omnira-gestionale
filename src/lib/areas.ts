@@ -2,16 +2,17 @@ import type { LucideIcon } from "lucide-react";
 import {
   BarChart3,
   Briefcase,
+  CalendarClock,
   CheckSquare,
   Clock,
   FileSignature,
   LayoutDashboard,
   LifeBuoy,
   Receipt,
-  Repeat,
   Settings,
   Target,
   Users,
+  Wallet,
 } from "lucide-react";
 
 /**
@@ -101,8 +102,9 @@ export const MODULES = {
   clienti: { href: "/clienti", label: "Clienti", icon: Users, area: "sales", module: "M2" },
   lead: { href: "/lead", label: "Lead", icon: Target, area: "sales", module: "M2" },
   preventivi: { href: "/preventivi", label: "Preventivi", icon: FileSignature, area: "sales", module: "M7", phase: 2 },
+  incassi: { href: "/incassi", label: "Incassi", icon: Wallet, area: "money", module: "M8" },
+  scadenze: { href: "/scadenze", label: "Scadenze", icon: CalendarClock, area: "money", module: "M9" },
   fatture: { href: "/fatture", label: "Fatture", icon: Receipt, area: "money", module: "M8", phase: 2 },
-  canoni: { href: "/canoni", label: "Canoni", icon: Repeat, area: "money", module: "M9", phase: 2 },
   report: { href: "/report", label: "Report", icon: BarChart3, area: "money", module: "M12", phase: 4 },
   ticket: { href: "/ticket", label: "Ticket", icon: LifeBuoy, area: "support", module: "M10", phase: 3 },
   impostazioni: { href: "/impostazioni", label: "Impostazioni", icon: Settings, area: "system", module: "M0" },

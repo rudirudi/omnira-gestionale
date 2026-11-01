@@ -1,13 +1,14 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 
-export async function getDashboardData(userId: string) {
+export async function getDashboardData(userId: string, withMoney = false) {
   const supabase = await createClient();
   const now = new Date();
   const in7 = new Date(now.getTime() + 7 * 86400000).toISOString();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
-  const [clients, openLeads, wonMonth, dueActivities, recentLeads, activeProjects, myTasks] = await Promise.all([
+  const in30 = new Date(now.getTime() + 30 * 86400000).toISOString().slice(0, 10);
+  const [clients, openLeads, wonMonth, dueActivities, recentLeads, activeProjects, myTasks, renewals, receivables] = await Promise.all([
     supabase.from("clients").select("id", { count: "exact", head: true }).eq("status", "attivo").is("deleted_at", null),
     supabase.from("leads").select("estimated_value_cents, stage").is("deleted_at", null).not("stage", "in", "(vinto,perso)"),
     supabase.from("leads").select("estimated_value_cents").eq("stage", "vinto").gte("closed_at", monthStart).is("deleted_at", null),
@@ -34,7 +35,26 @@ export async function getDashboardData(userId: string) {
       .neq("status", "fatto")
       .order("due_date", { ascending: true, nullsFirst: false })
       .limit(8),
+    supabase
+      .from("renewals")
+      .select("id, name, type, next_due_date, price_cents, client:clients(name)")
+      .eq("active", true)
+      .is("deleted_at", null)
+      .lte("next_due_date", in30)
+      .order("next_due_date")
+      .limit(8),
+    withMoney
+      ? supabase.from("receivables").select("amount_cents, due_date, payments(amount_cents)").is("deleted_at", null)
+      : Promise.resolve({ data: [] as { amount_cents: number; due_date: string | null; payments: { amount_cents: number }[] }[] }),
   ]);
+  const today = now.toISOString().slice(0, 10);
+  let toCollect = 0;
+  let overdue = 0;
+  for (const r of receivables.data ?? []) {
+    const rem = Math.max(0, r.amount_cents - r.payments.reduce((s, p) => s + p.amount_cents, 0));
+    toCollect += rem;
+    if (rem && r.due_date && r.due_date < today) overdue += rem;
+  }
 
   const pipeline = (openLeads.data ?? []).reduce((s, l) => s + (l.estimated_value_cents ?? 0), 0);
   const byStage = new Map<string, { count: number; value: number }>();
@@ -58,6 +78,9 @@ export async function getDashboardData(userId: string) {
     recentLeads: recentLeads.data ?? [],
     activeProjects: activeProjects.count ?? 0,
     pipelineByStage: Object.fromEntries(byStage),
+    renewals: renewals.data ?? [],
+    toCollectCents: toCollect,
+    overdueCents: overdue,
     myTasks: myTasks.data ?? [],
   };
 }

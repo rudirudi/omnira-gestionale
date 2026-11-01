@@ -10,7 +10,7 @@ function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
+export function SidebarNav({ onNavigate, hidden = [] }: { onNavigate?: () => void; hidden?: string[] }) {
   const pathname = usePathname();
   return (
     <nav className="flex flex-1 flex-col gap-4 overflow-y-auto px-3 py-3" aria-label="Navigazione principale">
@@ -22,7 +22,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
               {section.label}
             </p>
           )}
-          {section.items.map((item) => {
+          {section.items.filter((item) => !hidden.includes(item.href)).map((item) => {
             const active = isActive(pathname, item.href);
             const Icon = item.icon;
             const area = AREA[item.area];

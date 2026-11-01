@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Brand, SidebarNav } from "./sidebar";
 
-export function MobileNav() {
+export function MobileNav({ hidden = [] }: { hidden?: string[] }) {
   const [open, setOpen] = React.useState(false);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -18,7 +18,7 @@ export function MobileNav() {
       <DialogContent side="left" className="flex flex-col gap-0 border-sidebar-border bg-sidebar text-sidebar-foreground [&>button]:text-sidebar-foreground">
         <DialogTitle className="sr-only">Menu</DialogTitle>
         <Brand />
-        <SidebarNav onNavigate={() => setOpen(false)} />
+        <SidebarNav hidden={hidden} onNavigate={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );

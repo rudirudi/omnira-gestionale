@@ -86,3 +86,36 @@ select t.id, (select id from public.profiles order by created_at, email limit 1)
 insert into public.task_assignees (task_id, user_id)
 select t.id, (select id from public.profiles order by created_at, email offset 2 limit 1) from public.tasks t where t.title in
   ('Integrazione API gestionale Templana', 'Pagamenti e spedizioni');
+
+-- ---------------- Incassi e scadenze demo ----------------
+insert into public.receivables (client_id, project_id, description, amount_cents, due_date)
+select c.id, p.id, v.descr, v.amount, current_date + v.d
+from (values
+  ('Bottega Rossi', 'E-commerce Shopify', 'E-commerce Shopify – acconto 50%', 99950, -20),
+  ('Bottega Rossi', 'E-commerce Shopify', 'E-commerce Shopify – saldo', 99950, 15),
+  ('Templana', 'Automazione fatture fornitori', 'Automazione fatture – progetto', 600000, -3),
+  ('Studio Legale Bianchi', null, 'Sito vetrina', 80000, 10)
+) as v(client, project, descr, amount, d)
+join public.clients c on c.name = v.client
+left join public.projects p on p.name = v.project;
+
+insert into public.payments (receivable_id, amount_cents, paid_on, method, note)
+select r.id, v.amount, current_date + v.d, v.m::public.payment_method, v.note
+from (values
+  ('E-commerce Shopify – acconto 50%', 99950, -18, 'bonifico', 'Acconto'),
+  ('Automazione fatture – progetto', 200000, -10, 'bonifico', 'Prima tranche'),
+  ('Sito vetrina', 30000, -2, 'carta', null)
+) as v(descr, amount, d, m, note)
+join public.receivables r on r.description = v.descr;
+
+insert into public.renewals (client_id, type, name, provider, frequency, next_due_date, cost_cents, price_cents)
+select (select id from public.clients where name = v.client), v.type::public.renewal_type, v.name, v.provider,
+       v.freq::public.renewal_frequency, current_date + v.d, v.cost, v.price
+from (values
+  ('Bottega Rossi', 'dominio', 'bottegarossi.it', 'Aruba', 'annuale', 12, 900, 2500),
+  ('Templana', 'server', 'VPS gestionale Templana', 'Hetzner', 'mensile', 4, 1500, 4900),
+  ('Studio Legale Bianchi', 'hosting', 'Hosting studiobianchi.it', 'SiteGround', 'annuale', -3, 8000, 15000),
+  ('Studio Legale Bianchi', 'ssl', 'Certificato SSL wildcard', 'Sectigo', 'annuale', 75, 4000, 9000),
+  (null, 'dominio', 'omnirasoft.it', 'Aruba', 'annuale', 160, 900, null),
+  ('Templana', 'licenza', 'Licenza OCR documenti', 'ABBYY', 'annuale', 220, 30000, 45000)
+) as v(client, type, name, provider, freq, d, cost, price);

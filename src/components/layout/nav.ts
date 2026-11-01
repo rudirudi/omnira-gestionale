@@ -8,7 +8,7 @@ export const NAV: NavSection[] = [
   { label: null, area: "system", items: [MODULES.dashboard] },
   { label: "Operativo", area: "work", items: [MODULES.progetti, MODULES.task, MODULES.tempo] },
   { label: "Commerciale", area: "sales", items: [MODULES.clienti, MODULES.lead, MODULES.preventivi] },
-  { label: "Economia", area: "money", items: [MODULES.fatture, MODULES.canoni, MODULES.report] },
+  { label: "Economia", area: "money", items: [MODULES.incassi, MODULES.scadenze, MODULES.fatture, MODULES.report] },
   { label: "Assistenza", area: "support", items: [MODULES.ticket] },
   { label: "Sistema", area: "system", items: [MODULES.impostazioni] },
 ];

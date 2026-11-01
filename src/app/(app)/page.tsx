@@ -11,6 +11,8 @@ import {
   Target,
   TrendingUp,
   Users,
+  Wallet,
+  CalendarClock as CalendarIcon,
 } from "lucide-react";
 import { EmptyState } from "@/components/app/empty-state";
 import { PageBody, SectionTitle } from "@/components/app/page-header";
@@ -40,7 +42,8 @@ const STAGE_BAR: Record<string, string> = {
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
-  const d = await getDashboardData(user.id);
+  const showMoney = can.viewMoney(user.role);
+  const d = await getDashboardData(user.id, showMoney);
   const firstName = user.full_name.split(" ")[0];
   const today = new Date().toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Rome" });
   const lateTasks = d.myTasks.filter((t) => dueInfo(t.due_date, t.status)?.late).length;
@@ -52,7 +55,9 @@ export default async function DashboardPage() {
     { label: "I miei task aperti", value: d.myTasks.length === 8 ? "8+" : String(d.myTasks.length), sub: lateTasks ? `${lateTasks} in ritardo` : "nessun ritardo", icon: CheckSquare, href: "/task", area: "work" },
     { label: "Progetti attivi", value: String(d.activeProjects), sub: "in lavorazione", icon: Briefcase, href: "/progetti?stato=attivo", area: "work" },
     { label: "Clienti attivi", value: String(d.activeClients), sub: `${d.openLeads} lead aperti`, icon: Users, href: "/clienti?stato=attivo", area: "sales" },
-    { label: "Vinti questo mese", value: formatEuro(d.wonMonthCents), sub: `${d.wonMonthCount} lead chiusi`, icon: TrendingUp, href: "/lead", area: "money" },
+    showMoney
+      ? { label: "Da incassare", value: formatEuro(d.toCollectCents), sub: d.overdueCents ? `${formatEuro(d.overdueCents)} scaduti` : "nessun ritardo", icon: Wallet, href: "/incassi", area: "money" }
+      : { label: "Vinti questo mese", value: formatEuro(d.wonMonthCents), sub: `${d.wonMonthCount} lead chiusi`, icon: TrendingUp, href: "/lead", area: "money" },
   ];
 
   return (
@@ -216,6 +221,43 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Scadenze rinnovi */}
+      {d.renewals.length > 0 && (
+        <Card className="overflow-hidden rounded-xl shadow-xs">
+          <CardHeader className="pb-1">
+            <SectionTitle
+              icon={CalendarIcon}
+              area="money"
+              action={
+                <Link href="/scadenze" className="flex items-center gap-1 text-[13px] font-medium text-primary hover:underline">
+                  Tutte le scadenze <ArrowRight className="size-3.5" />
+                </Link>
+              }
+            >
+              Rinnovi entro 30 giorni
+            </SectionTitle>
+          </CardHeader>
+          <CardContent className="grid gap-2 pt-2 sm:grid-cols-2 xl:grid-cols-4">
+            {d.renewals.map((r) => {
+              const days = Math.round((new Date(`${r.next_due_date}T00:00:00`).getTime() - new Date(new Date().toDateString()).getTime()) / 86400000);
+              return (
+                <Link
+                  key={r.id}
+                  href={`/scadenze?aperto=${r.id}`}
+                  className={cn("rounded-lg border border-l-4 p-3 transition-colors hover:bg-muted/50", days < 0 ? "border-l-destructive bg-destructive/[0.03]" : "border-l-warning")}
+                >
+                  <p className="truncate text-[13px] font-semibold">{r.name}</p>
+                  <p className="truncate text-xs text-muted-foreground">{r.client?.name ?? "Interno Omnira"}</p>
+                  <p className={cn("mt-1 text-xs font-semibold", days < 0 ? "text-destructive" : "text-[oklch(0.55_0.13_75)] dark:text-warning")}>
+                    {days < 0 ? `Scaduto da ${-days} g` : days === 0 ? "Scade oggi" : `Tra ${days} giorni`} · {new Date(`${r.next_due_date}T00:00:00`).toLocaleDateString("it-IT")}
+                  </p>
+                </Link>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Pipeline commerciale */}
       <Card className="overflow-hidden rounded-xl shadow-xs">

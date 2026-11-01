@@ -107,3 +107,41 @@ export const TASK_PRIORITY: Record<TaskPriority, { label: string; tone: Tone; ra
   media: { label: "Media", tone: "neutral", rank: 2 },
   bassa: { label: "Bassa", tone: "neutral", rank: 3 },
 };
+
+export const PAYMENT_METHOD: Record<string, string> = {
+  bonifico: "Bonifico",
+  carta: "Carta",
+  contanti: "Contanti",
+  paypal: "PayPal",
+  stripe: "Stripe",
+  riba: "Ri.Ba.",
+  altro: "Altro",
+};
+
+export const RENEWAL_TYPE: Record<string, string> = {
+  dominio: "Dominio",
+  hosting: "Hosting",
+  server: "Server",
+  ssl: "Certificato SSL",
+  email: "Caselle email",
+  licenza: "Licenza",
+  saas: "Abbonamento SaaS",
+  manutenzione: "Manutenzione",
+  altro: "Altro",
+};
+
+export const RENEWAL_FREQUENCY: Record<string, { label: string; perYear: number }> = {
+  mensile: { label: "Mensile", perYear: 12 },
+  trimestrale: { label: "Trimestrale", perYear: 4 },
+  semestrale: { label: "Semestrale", perYear: 2 },
+  annuale: { label: "Annuale", perYear: 1 },
+  biennale: { label: "Ogni 2 anni", perYear: 0.5 },
+};
+
+export type ReceivableState = "da_pagare" | "parziale" | "pagato" | "scaduto";
+export const RECEIVABLE_STATE: Record<ReceivableState, { label: string; tone: Tone }> = {
+  da_pagare: { label: "Da pagare", tone: "neutral" },
+  parziale: { label: "Pagato in parte", tone: "warning" },
+  pagato: { label: "Pagato", tone: "success" },
+  scaduto: { label: "Scaduto", tone: "danger" },
+};

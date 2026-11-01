@@ -9,6 +9,8 @@ export const can = {
   deleteRecords: (r: AppRole) => r === "admin",
   editCompanySettings: (r: AppRole) => r === "admin" || r === "amministrazione",
   manageTeam: (r: AppRole) => r === "admin",
+  viewMoney: (r: AppRole) => ["admin", "amministrazione", "project_manager", "commerciale"].includes(r),
+  manageMoney: (r: AppRole) => ["admin", "amministrazione", "project_manager"].includes(r),
 };
 
 export const ROLE_LABEL: Record<AppRole, string> = {

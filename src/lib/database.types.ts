@@ -15,6 +15,9 @@ export type BillingType = "corpo" | "ore" | "canone";
 export type PhaseStatus = "da_iniziare" | "in_corso" | "completata";
 export type TaskStatus = "da_fare" | "in_corso" | "in_review" | "test" | "fatto";
 export type TaskPriority = "bassa" | "media" | "alta" | "urgente";
+export type PaymentMethod = "bonifico" | "carta" | "contanti" | "paypal" | "stripe" | "riba" | "altro";
+export type RenewalType = "dominio" | "hosting" | "server" | "ssl" | "email" | "licenza" | "saas" | "manutenzione" | "altro";
+export type RenewalFrequency = "mensile" | "trimestrale" | "semestrale" | "annuale" | "biennale";
 
 type Timestamps = { created_at: string; updated_at: string };
 
@@ -215,6 +218,51 @@ export type ProjectProgressRow = {
   estimated_hours: number | null;
 };
 
+export type RenewalRow = Timestamps & {
+  id: string;
+  client_id: string | null;
+  project_id: string | null;
+  type: RenewalType;
+  name: string;
+  provider: string | null;
+  frequency: RenewalFrequency;
+  next_due_date: string;
+  cost_cents: number | null;
+  price_cents: number | null;
+  auto_renew: boolean;
+  notify_days_before: number;
+  notified_for: string | null;
+  notified_expired_for: string | null;
+  active: boolean;
+  notes: string | null;
+  created_by: string | null;
+  deleted_at: string | null;
+};
+
+export type ReceivableRow = Timestamps & {
+  id: string;
+  client_id: string;
+  project_id: string | null;
+  renewal_id: string | null;
+  description: string;
+  amount_cents: number;
+  due_date: string | null;
+  notes: string | null;
+  created_by: string | null;
+  deleted_at: string | null;
+};
+
+export type PaymentRow = {
+  id: string;
+  receivable_id: string;
+  amount_cents: number;
+  paid_on: string;
+  method: PaymentMethod;
+  note: string | null;
+  created_by: string | null;
+  created_at: string;
+};
+
 /** Campi generati dal DB → opzionali in inserimento */
 type InsertOf<R, Required extends keyof R> = Pick<R, Required> & Partial<Omit<R, Required>>;
 
@@ -351,6 +399,31 @@ export type Database = {
           { foreignKeyName: "notifications_actor_id_fkey"; columns: ["actor_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ];
       };
+      renewals: {
+        Row: RenewalRow;
+        Insert: InsertOf<RenewalRow, "name" | "next_due_date">;
+        Update: Partial<RenewalRow>;
+        Relationships: [
+          { foreignKeyName: "renewals_client_id_fkey"; columns: ["client_id"]; isOneToOne: false; referencedRelation: "clients"; referencedColumns: ["id"] },
+          { foreignKeyName: "renewals_project_id_fkey"; columns: ["project_id"]; isOneToOne: false; referencedRelation: "projects"; referencedColumns: ["id"] },
+        ];
+      };
+      receivables: {
+        Row: ReceivableRow;
+        Insert: InsertOf<ReceivableRow, "client_id" | "description" | "amount_cents">;
+        Update: Partial<ReceivableRow>;
+        Relationships: [
+          { foreignKeyName: "receivables_client_id_fkey"; columns: ["client_id"]; isOneToOne: false; referencedRelation: "clients"; referencedColumns: ["id"] },
+          { foreignKeyName: "receivables_project_id_fkey"; columns: ["project_id"]; isOneToOne: false; referencedRelation: "projects"; referencedColumns: ["id"] },
+          { foreignKeyName: "receivables_renewal_id_fkey"; columns: ["renewal_id"]; isOneToOne: false; referencedRelation: "renewals"; referencedColumns: ["id"] },
+        ];
+      };
+      payments: {
+        Row: PaymentRow;
+        Insert: InsertOf<PaymentRow, "receivable_id" | "amount_cents">;
+        Update: Partial<PaymentRow>;
+        Relationships: [{ foreignKeyName: "payments_receivable_id_fkey"; columns: ["receivable_id"]; isOneToOne: false; referencedRelation: "receivables"; referencedColumns: ["id"] }];
+      };
     };
     Views: {
       project_progress: { Row: ProjectProgressRow; Relationships: [] };
@@ -359,6 +432,7 @@ export type Database = {
       current_app_role: { Args: Record<string, never>; Returns: AppRole };
       is_staff: { Args: Record<string, never>; Returns: boolean };
       has_role: { Args: { roles: AppRole[] }; Returns: boolean };
+      renew_renewal: { Args: { p_id: string; p_create_receivable?: boolean }; Returns: string };
     };
     Enums: {
       app_role: AppRole;
@@ -372,6 +446,9 @@ export type Database = {
       phase_status: PhaseStatus;
       task_status: TaskStatus;
       task_priority: TaskPriority;
+      payment_method: PaymentMethod;
+      renewal_type: RenewalType;
+      renewal_frequency: RenewalFrequency;
     };
     CompositeTypes: Record<never, never>;
   };

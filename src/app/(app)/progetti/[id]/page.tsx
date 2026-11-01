@@ -17,6 +17,8 @@ import { getProject, listClientOptions } from "@/modules/progetti/queries";
 import { TaskWorkspace } from "@/modules/task/components/task-workspace";
 import { listProjectTasks } from "@/modules/task/queries";
 import { listActiveTeam } from "@/modules/team/queries";
+import { ReceivablesView } from "@/modules/incassi/components/receivables-view";
+import { listProjectOptions, listReceivables } from "@/modules/incassi/queries";
 
 const UUID = /^[0-9a-f-]{36}$/i;
 
@@ -33,7 +35,14 @@ export default async function ProgettoPage({ params, searchParams }: PageProps<"
   if (!UUID.test(id)) notFound();
   const [user, project] = await Promise.all([getCurrentUser(), getProject(id)]);
   if (!project) notFound();
-  const [tasks, team, clients] = await Promise.all([listProjectTasks(id), listActiveTeam(), listClientOptions()]);
+  const showMoney = can.viewMoney(user.role);
+  const [tasks, team, clients, receivables, projectOptions] = await Promise.all([
+    listProjectTasks(id),
+    listActiveTeam(),
+    listClientOptions(),
+    showMoney ? listReceivables({ projectId: id }) : Promise.resolve([]),
+    showMoney ? listProjectOptions() : Promise.resolve([]),
+  ]);
   const canManage = can.manageProjects(user.role);
   const tab = typeof sp.scheda === "string" ? sp.scheda : "task";
   const total = project.progress?.total_tasks ?? 0;
@@ -106,6 +115,7 @@ export default async function ProgettoPage({ params, searchParams }: PageProps<"
           <TabsList>
             <TabsTrigger value="task">Task ({total})</TabsTrigger>
             <TabsTrigger value="piano">Fasi e milestone</TabsTrigger>
+            {showMoney && <TabsTrigger value="pagamenti">Pagamenti</TabsTrigger>}
             <TabsTrigger value="team">Team ({project.members.length})</TabsTrigger>
             <TabsTrigger value="discussione">Discussione</TabsTrigger>
             <TabsTrigger value="dettagli">Dettagli</TabsTrigger>
@@ -132,6 +142,31 @@ export default async function ProgettoPage({ params, searchParams }: PageProps<"
               <MilestonesPanel projectId={id} milestones={project.milestones} canEdit={canManage} />
             </section>
           </TabsContent>
+          {showMoney && (
+            <TabsContent value="pagamenti" className="max-w-4xl">
+              {!project.client_id ? (
+                <p className="text-[13px] text-muted-foreground">Progetto interno: collega un cliente (scheda Dettagli) per gestire i pagamenti.</p>
+              ) : (
+                <ReceivablesView
+                  items={receivables}
+                  clients={clientOptions}
+                  projects={projectOptions}
+                  canManage={can.manageMoney(user.role)}
+                  canDelete={user.role === "admin"}
+                  showClient={false}
+                  showProject={false}
+                  showFilters={false}
+                  compact
+                  newDefaults={{
+                    client_id: project.client_id,
+                    project_id: id,
+                    description: receivables.length ? "" : project.name,
+                    amount_cents: receivables.length ? undefined : (project.budget_cents ?? undefined),
+                  }}
+                />
+              )}
+            </TabsContent>
+          )}
           <TabsContent value="team" className="max-w-3xl">
             <MembersPanel projectId={id} members={project.members} team={team} managerId={project.manager_id} canEdit={canManage} />
           </TabsContent>
