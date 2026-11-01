@@ -78,9 +78,10 @@ export async function POST(req: Request) {
           send({ type: "break" });
         }
       } catch (e) {
-        const msg = e instanceof Anthropic.APIError ? `${e.status ?? ""} ${e.message}` : (e as Error).message;
-        console.error("[assistente]", msg);
-        send({ type: "error", text: "Non riesco a rispondere in questo momento. Riprova tra poco." });
+        const status = e instanceof Anthropic.APIError ? e.status : undefined;
+        const raw = e instanceof Anthropic.APIError ? e.message : (e as Error).message;
+        console.error("[assistente]", status, raw);
+        send({ type: "error", text: explainError(status, raw) });
       }
       send({ type: "done" });
       controller.close();
@@ -88,4 +89,20 @@ export async function POST(req: Request) {
   });
 
   return new Response(stream, { headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store" } });
+}
+
+/** Traduce gli errori dell'API Anthropic in istruzioni comprensibili (senza mai mostrare la chiave) */
+function explainError(status: number | undefined, raw: string) {
+  const m = raw.toLowerCase();
+  if (status === 401 || m.includes("authentication") || m.includes("x-api-key"))
+    return "Anthropic rifiuta la chiave (401): la chiave ANTHROPIC_API_KEY su Vercel non è valida. Ricreala su platform.claude.com, aggiornala su Vercel e rifai il deploy.";
+  if (m.includes("credit balance") || m.includes("billing") || status === 402)
+    return "Credito Anthropic esaurito o assente: aggiungi credito in Billing su platform.claude.com, poi riprova (non serve rifare il deploy).";
+  if (status === 403 || m.includes("permission"))
+    return "La chiave non ha i permessi per questo modello (403). Controlla su platform.claude.com che la chiave sia attiva e nell'organizzazione giusta.";
+  if (status === 404 || m.includes("model"))
+    return `Modello non disponibile per questa chiave (${MODEL}). Imposta ASSISTANT_MODEL su Vercel (es. claude-haiku-5-5) o verifica l'accesso al modello.`;
+  if (status === 429) return "Troppe richieste ad Anthropic in poco tempo (429): aspetta un minuto e riprova.";
+  if (status === 529 || (status ?? 0) >= 500) return "Anthropic è momentaneamente sovraccarico: riprova tra poco.";
+  return `Non riesco a rispondere (${status ?? "errore di rete"}): ${raw.slice(0, 160)}`;
 }
