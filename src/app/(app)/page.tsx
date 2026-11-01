@@ -78,8 +78,8 @@ export default async function DashboardPage() {
             <UserMenu name={user.full_name} email={user.email} roleLabel={ROLE_LABEL[user.role]} onDark />
           </div>
         </div>
-        <div className="relative flex flex-wrap items-end justify-between gap-5">
-          <div>
+        <div className="relative flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div className="min-w-0">
             <h1 className="text-[28px] leading-tight font-semibold">
               {greeting()}, {firstName}
             </h1>
@@ -96,30 +96,30 @@ export default async function DashboardPage() {
               </span>
             </p>
           </div>
+
+          {/* Numeri chiave, colorati per area: compatti dentro l'intestazione */}
+          <div className="grid shrink-0 grid-cols-2 gap-2.5 md:grid-cols-4 xl:w-[680px]">
+            {kpis.map((k) => {
+              const a = AREA[k.area];
+              return (
+                <Link key={k.label} href={k.href} className={cn("group overflow-hidden rounded-lg border bg-card text-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md", a.bandBorder)}>
+                  <div className={cn("flex items-center justify-between gap-2 px-3 py-1.5 text-white", a.band)}>
+                    <p className="truncate text-[12px] font-semibold">{k.label}</p>
+                    <k.icon className="size-3.5 shrink-0 opacity-90" strokeWidth={2} aria-hidden />
+                  </div>
+                  <div className="px-3 pt-2 pb-2">
+                    <p className="truncate text-[22px] leading-tight font-semibold tracking-tight tabular">{k.value}</p>
+                    <p className="flex items-center gap-1 truncate text-[11px] text-muted-foreground">
+                      <span className="truncate">{k.sub}</span>
+                      <ArrowRight className="ml-auto size-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </section>
-
-      {/* Numeri chiave, colorati per area */}
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {kpis.map((k) => {
-          const a = AREA[k.area];
-          return (
-            <Link key={k.label} href={k.href} className={cn("group overflow-hidden rounded-xl border bg-card shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md", a.bandBorder)}>
-              <div className={cn("flex items-center justify-between gap-3 px-4 py-2.5 text-white", a.band)}>
-                <p className="text-[13px] font-semibold">{k.label}</p>
-                <k.icon className="size-4.5 opacity-90" strokeWidth={2} aria-hidden />
-              </div>
-              <div className="px-4 pt-3.5 pb-3">
-                <p className="text-[34px] leading-none font-semibold tracking-tight tabular">{k.value}</p>
-                <p className="mt-2.5 flex items-center gap-1 text-xs text-muted-foreground">
-                  {k.sub}
-                  <ArrowRight className="ml-auto size-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
-                </p>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
 
       <div className="grid gap-6 xl:grid-cols-5">
         {/* I miei task */}
