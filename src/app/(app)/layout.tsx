@@ -4,6 +4,7 @@ import { CurrentUserProvider } from "@/components/layout/user-context";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { getCurrentUser } from "@/lib/auth";
 import { can, ROLE_LABEL } from "@/lib/permissions";
+import { Assistant } from "@/modules/assistente/components/assistant";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const user = await getCurrentUser();
@@ -23,6 +24,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           </div>
         </div>
         <CommandPalette />
+        <Assistant />
       </TooltipProvider>
     </CurrentUserProvider>
   );

@@ -154,3 +154,15 @@
     font-variant-numeric: tabular-nums;
   }
 }
+
+/* Risposte dell'assistente (markdown) */
+.assistant-md > * + * { margin-top: 0.6em; }
+.assistant-md ul { list-style: disc; padding-left: 1.2em; }
+.assistant-md ol { list-style: decimal; padding-left: 1.3em; }
+.assistant-md li + li { margin-top: 0.2em; }
+.assistant-md strong { font-weight: 600; }
+.assistant-md h1, .assistant-md h2, .assistant-md h3 { font-weight: 600; font-size: 1.02em; }
+.assistant-md table { width: 100%; border-collapse: collapse; font-size: 0.95em; display: block; overflow-x: auto; }
+.assistant-md th, .assistant-md td { border-bottom: 1px solid var(--border); padding: 0.35em 0.6em 0.35em 0; text-align: left; white-space: nowrap; }
+.assistant-md th { font-weight: 600; color: var(--muted-foreground); }
+.assistant-md code { font-family: var(--font-mono); font-size: 0.92em; background: var(--muted); border-radius: 4px; padding: 0.05em 0.3em; }

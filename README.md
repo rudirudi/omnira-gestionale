@@ -104,3 +104,12 @@ psql -d omnira_test -f supabase/tests/rls_test.sql   # stampa "OK: ..." per ogni
 ## Da completare
 
 - **Tipi del database**: dopo aver collegato Supabase, rigenerare `src/lib/database.types.ts` con `npx supabase gen types typescript`.
+
+## Assistente virtuale
+
+Il pulsante "Chiedi all'assistente" (o Ctrl+J) apre una chat con Claude che legge i dati del gestionale.
+
+- Gli strumenti sono **solo lettura** e girano con la sessione dell'utente: le policy RLS valgono anche per l'assistente, che vede solo ciò che vede l'utente.
+- Serve la variabile d'ambiente `ANTHROPIC_API_KEY` su Vercel (Settings → Environment Variables → Production e Preview), poi un nuovo deploy.
+- Modello predefinito `claude-sonnet-5-5`; si può cambiare con `ASSISTANT_MODEL`.
+- La conversazione resta solo nel browser di chi la usa (localStorage).
