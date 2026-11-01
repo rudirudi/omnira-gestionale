@@ -23,6 +23,9 @@ export type ExpenseCategory =
   | "trasferte" | "formazione" | "ufficio" | "telefonia" | "tasse" | "banca" | "altro";
 export type ExpensePaidWith = "azienda" | "personale";
 export type QuoteStatus = "bozza" | "inviato" | "accettato" | "rifiutato";
+export type ServiceCategory =
+  | "sito" | "ecommerce" | "software" | "gestionale" | "app" | "automazione_ai" | "seo"
+  | "grafica" | "hosting" | "assistenza" | "altro";
 
 type Timestamps = { created_at: string; updated_at: string };
 
@@ -344,6 +347,20 @@ export type QuoteItemRow = {
   created_at: string;
 };
 
+export type ServiceRow = Timestamps & {
+  id: string;
+  name: string;
+  description: string | null;
+  category: ServiceCategory;
+  unit: string;
+  price_cents: number | null;
+  frequency: RenewalFrequency | null;
+  active: boolean;
+  position: number;
+  created_by: string | null;
+  deleted_at: string | null;
+};
+
 /** Campi generati dal DB → opzionali in inserimento */
 type InsertOf<R, Required extends keyof R> = Pick<R, Required> & Partial<Omit<R, Required>>;
 
@@ -538,6 +555,12 @@ export type Database = {
           { foreignKeyName: "quotes_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ];
       };
+      services: {
+        Row: ServiceRow;
+        Insert: InsertOf<ServiceRow, "name">;
+        Update: Partial<ServiceRow>;
+        Relationships: [];
+      };
       quote_items: {
         Row: QuoteItemRow;
         Insert: InsertOf<QuoteItemRow, "quote_id" | "description">;
@@ -576,6 +599,7 @@ export type Database = {
       expense_category: ExpenseCategory;
       expense_paid_with: ExpensePaidWith;
       quote_status: QuoteStatus;
+      service_category: ServiceCategory;
     };
     CompositeTypes: Record<never, never>;
   };

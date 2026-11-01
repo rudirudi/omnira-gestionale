@@ -97,6 +97,11 @@ export const TOOLS: Anthropic.Tool[] = [
     input_schema: { type: "object", properties: { stato: { type: "string" } } },
   },
   {
+    name: "listino",
+    description: "Listino servizi con prezzi standard IVA esclusa (null = prezzo da definire), unità e canoni.",
+    input_schema: { type: "object", properties: { testo: { type: "string" } } },
+  },
+  {
     name: "persone",
     description: "Persone del team con ruolo.",
     input_schema: { type: "object", properties: {} },
@@ -412,6 +417,14 @@ export async function runTool(name: string, input: Record<string, unknown>, meId
         .filter((q) => !s("stato") || q.stato === s("stato"));
     }
 
+    case "listino": {
+      let q = db.from("services").select("name, description, category, unit, price_cents, frequency").eq("active", true).is("deleted_at", null).order("category").order("position");
+      if (s("testo")) q = q.or(`name.ilike.${like(s("testo")!)},description.ilike.${like(s("testo")!)}`);
+      const { data, error } = await q;
+      if (error) return { errore: error.message };
+      return { servizi: data.map((x) => ({ ...x, prezzo_eur: eur(x.price_cents), price_cents: undefined })), link: "/listino" };
+    }
+
     case "persone": {
       const { data } = await db.from("profiles").select("full_name, role, job_title, email").eq("active", true).order("full_name");
       return data;
@@ -437,5 +450,6 @@ export const TOOL_LABEL: Record<string, string> = {
   elenco_abbonamenti: "Leggo gli abbonamenti",
   elenco_scadenze: "Controllo le scadenze",
   elenco_preventivi: "Leggo i preventivi",
+  listino: "Leggo il listino",
   persone: "Guardo il team",
 };

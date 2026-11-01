@@ -4,6 +4,7 @@ import type {
   ExpenseCategory,
   ExpensePaidWith,
   QuoteStatus,
+  ServiceCategory,
   ClientStatus,
   LeadSource,
   LeadStage,
@@ -186,3 +187,18 @@ export const QUOTE_STATE: Record<QuoteDisplayState, { label: string; tone: Tone 
 };
 
 export const QUOTE_UNITS = ["pz", "ore", "giorni", "mesi", "anno", "pagine"] as const;
+
+export const SERVICE_CATEGORIES: { value: ServiceCategory; label: string }[] = [
+  { value: "sito", label: "Siti web" },
+  { value: "ecommerce", label: "E-commerce" },
+  { value: "gestionale", label: "Gestionali" },
+  { value: "software", label: "Software su misura" },
+  { value: "app", label: "App mobile" },
+  { value: "automazione_ai", label: "Automazioni e AI" },
+  { value: "seo", label: "SEO e marketing" },
+  { value: "grafica", label: "Grafica" },
+  { value: "hosting", label: "Hosting, domini, email" },
+  { value: "assistenza", label: "Assistenza e formazione" },
+  { value: "altro", label: "Altro" },
+];
+export const SERVICE_CATEGORY = Object.fromEntries(SERVICE_CATEGORIES.map((c) => [c.value, c.label])) as Record<ServiceCategory, string>;

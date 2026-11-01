@@ -16,6 +16,7 @@ import {
   Printer,
   Repeat,
   Save,
+  Tags,
   Send,
   Target,
   Trash2,
@@ -44,6 +45,9 @@ import {
   type QuotePayload,
 } from "../actions";
 import type { QuoteDetail } from "../queries";
+import type { ServiceItem } from "@/modules/listino/queries";
+import { priceLabel } from "@/modules/listino/components/price-list";
+import { SERVICE_CATEGORIES } from "@/lib/labels";
 import { displayState, euroField, lineTotal, parseEuro, quoteTotals } from "../totals";
 
 type ItemDraft = {
@@ -78,11 +82,13 @@ function guessProjectType(title: string): ProjectType {
 
 export function QuoteEditor({
   quote,
+  services,
   canAccept,
   canCreateProject,
   isAdmin,
 }: {
   quote: QuoteDetail;
+  services: ServiceItem[];
   canAccept: boolean;
   canCreateProject: boolean;
   isAdmin: boolean;
@@ -139,6 +145,25 @@ export function QuoteEditor({
         { key: newKey(), description: "", details: "", showDetails: false, quantity: "1", unit: recurring ? "anno" : "pz", price: "", frequency: recurring ? "annuale" : null },
       ],
     }));
+
+  const addFromList = (sv: ServiceItem) =>
+    setForm((f) => ({
+      ...f,
+      items: [
+        ...f.items.filter((i) => i.description.trim() || i.price.trim()), // via le righe vuote
+        {
+          key: newKey(),
+          description: sv.name,
+          details: sv.description ?? "",
+          showDetails: !!sv.description,
+          quantity: "1",
+          unit: sv.unit,
+          price: sv.price_cents != null ? euroField(sv.price_cents) : "",
+          frequency: sv.frequency,
+        },
+      ],
+    }));
+  const [picking, setPicking] = React.useState(false);
 
   const dirty = JSON.stringify(form) !== JSON.stringify(initial);
   const [pending, start] = React.useTransition();
@@ -460,6 +485,9 @@ export function QuoteEditor({
             {form.items.length === 0 && <p className="text-[13px] text-muted-foreground">Nessuna voce: aggiungi la prima.</p>}
             {!closed && (
               <div className="flex flex-wrap gap-2">
+                <Button size="sm" className="bg-sales text-on-warning hover:bg-sales/90" onClick={() => setPicking(true)}>
+                  <Tags /> Aggiungi dal listino
+                </Button>
                 <Button variant="outline" size="sm" onClick={() => addItem(false)}>
                   <Plus /> Aggiungi voce
                 </Button>
@@ -557,6 +585,7 @@ export function QuoteEditor({
           )
         }
       />
+      <ServicePicker open={picking} onOpenChange={setPicking} services={services} onPick={addFromList} />
       <RefuseDialog open={refusing} onOpenChange={setRefusing} pending={pending} onConfirm={(reason) => run(() => refuseQuoteAction(quote.id, reason), () => setRefusing(false))} />
     </div>
   );
@@ -713,5 +742,93 @@ function MiniField({ label, children }: { label: string; children: React.ReactNo
       <span className="text-[10.5px] font-medium tracking-wide text-muted-foreground uppercase">{label}</span>
       {children}
     </label>
+  );
+}
+
+function ServicePicker({
+  open,
+  onOpenChange,
+  services,
+  onPick,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  services: ServiceItem[];
+  onPick: (s: ServiceItem) => void;
+}) {
+  const [query, setQuery] = React.useState("");
+  const [added, setAdded] = React.useState<string[]>([]);
+  const q = query.trim().toLowerCase();
+  const groups = SERVICE_CATEGORIES.map((c) => ({
+    ...c,
+    items: services.filter((s) => s.category === c.value && (!q || `${s.name} ${s.description ?? ""}`.toLowerCase().includes(q))),
+  })).filter((g) => g.items.length);
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        onOpenChange(o);
+        if (!o) {
+          setQuery("");
+          setAdded([]);
+        }
+      }}
+    >
+      <DialogContent className="flex max-h-[85vh] max-w-xl flex-col">
+        <DialogHeader>
+          <DialogTitle>Aggiungi dal listino</DialogTitle>
+          <DialogDescription>Clicca i servizi da inserire: puoi sceglierne più di uno. Prezzi e dettagli restano modificabili.</DialogDescription>
+        </DialogHeader>
+        <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cerca un servizio…" aria-label="Cerca nel listino" autoFocus />
+        <div className="-mx-1 flex-1 overflow-y-auto px-1">
+          {groups.length === 0 ? (
+            <p className="py-8 text-center text-[13px] text-muted-foreground">
+              {services.length ? "Nessun servizio trovato." : "Il listino è vuoto: aggiungi i servizi dalla pagina Listino."}
+            </p>
+          ) : (
+            groups.map((g) => (
+              <section key={g.value} className="mb-3">
+                <p className="mb-1 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">{g.label}</p>
+                <ul className="flex flex-col gap-1">
+                  {g.items.map((sv) => {
+                    const n = added.filter((x) => x === sv.id).length;
+                    const price = priceLabel(sv);
+                    return (
+                      <li key={sv.id}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onPick(sv);
+                            setAdded((a) => [...a, sv.id]);
+                          }}
+                          className={cn("flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left transition-colors hover:border-sales hover:bg-sales/10", n && "border-success/50 bg-success/[0.06]")}
+                        >
+                          <span className="min-w-0 flex-1">
+                            <span className="flex items-center gap-1.5 text-[13px] font-medium">
+                              {sv.frequency && <Repeat className="size-3.5 text-money-ink" />}
+                              {sv.name}
+                            </span>
+                            {sv.description && <span className="block truncate text-xs text-muted-foreground">{sv.description}</span>}
+                          </span>
+                          <span className={cn("shrink-0 text-xs font-semibold tabular", !price && "text-sales-ink")}>{price ?? "da definire"}</span>
+                          {n > 0 ? (
+                            <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-success px-1.5 text-[11px] font-semibold text-white">{n}</span>
+                          ) : (
+                            <Plus className="size-4 shrink-0 text-muted-foreground" />
+                          )}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            ))
+          )}
+        </div>
+        <DialogFooter>
+          <Button onClick={() => onOpenChange(false)}>{added.length ? `Fatto (${added.length} aggiunt${added.length === 1 ? "a" : "e"})` : "Chiudi"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

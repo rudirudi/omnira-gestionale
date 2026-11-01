@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { can } from "@/lib/permissions";
 import { formatDate } from "@/lib/utils";
 import { QuoteEditor } from "@/modules/preventivi/components/quote-editor";
+import { listServices } from "@/modules/listino/queries";
 import { getQuote } from "@/modules/preventivi/queries";
 
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -22,7 +23,7 @@ export default async function PreventivoPage({ params }: PageProps<"/preventivi/
   if (!UUID.test(id)) notFound();
   const user = await getCurrentUser();
   if (!can.viewMoney(user.role)) redirect("/");
-  const quote = await getQuote(id);
+  const [quote, services] = await Promise.all([getQuote(id), listServices({ onlyActive: true })]);
   if (!quote) notFound();
   return (
     <>
@@ -39,7 +40,7 @@ export default async function PreventivoPage({ params }: PageProps<"/preventivi/
         }
       />
       <PageBody className="pt-0">
-        <QuoteEditor quote={quote} canAccept={can.manageMoney(user.role)} canCreateProject={can.manageProjects(user.role)} isAdmin={user.role === "admin"} />
+        <QuoteEditor quote={quote} services={services} canAccept={can.manageMoney(user.role)} canCreateProject={can.manageProjects(user.role)} isAdmin={user.role === "admin"} />
       </PageBody>
     </>
   );

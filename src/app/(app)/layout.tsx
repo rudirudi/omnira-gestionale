@@ -9,7 +9,7 @@ import { Assistant } from "@/modules/assistente/components/assistant";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const user = await getCurrentUser();
-  const hiddenNav = can.viewMoney(user.role) ? [] : ["/incassi", "/preventivi"];
+  const hiddenNav = can.viewMoney(user.role) ? [] : ["/incassi", "/preventivi", "/listino"];
 
   return (
     <CurrentUserProvider value={{ id: user.id, fullName: user.full_name, email: user.email, roleLabel: ROLE_LABEL[user.role], hiddenNav }}>
