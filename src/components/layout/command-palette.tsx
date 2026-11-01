@@ -1,5 +1,7 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Briefcase, Building2, Plus, Search, Target } from "lucide-react";
@@ -108,16 +110,22 @@ export function CommandPalette() {
   );
 }
 
-export function SearchButton() {
+export function SearchButton({ onDark = false, className }: { onDark?: boolean; className?: string }) {
   return (
     <button
       type="button"
       onClick={() => window.dispatchEvent(new Event("open-command-palette"))}
-      className="flex h-8 w-full max-w-sm items-center gap-2 rounded-md border bg-card px-2.5 text-[13px] text-muted-foreground shadow-xs transition-colors hover:bg-muted"
+      className={cn(
+        "flex h-8 w-full max-w-sm items-center gap-2 rounded-md px-2.5 text-[13px] transition-colors",
+        onDark
+          ? "bg-white/10 text-white/75 ring-1 ring-white/20 hover:bg-white/15 hover:text-white"
+          : "border bg-card text-muted-foreground shadow-xs hover:bg-muted",
+        className,
+      )}
     >
       <Search className="size-4" />
       <span className="flex-1 text-left">Cerca…</span>
-      <kbd className="hidden rounded border bg-muted px-1.5 font-mono text-[10px] sm:inline">Ctrl K</kbd>
+      <kbd className={cn("hidden rounded px-1.5 font-mono text-[10px] sm:inline", onDark ? "bg-white/15 text-white/80" : "border bg-muted")}>Ctrl K</kbd>
     </button>
   );
 }

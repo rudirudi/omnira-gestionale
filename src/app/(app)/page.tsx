@@ -15,15 +15,18 @@ import {
   CalendarClock as CalendarIcon,
 } from "lucide-react";
 import { EmptyState } from "@/components/app/empty-state";
-import { PageBody, SectionTitle } from "@/components/app/page-header";
+import { PageBody } from "@/components/app/page-header";
+import { SearchButton } from "@/components/layout/command-palette";
+import { MobileNav } from "@/components/layout/mobile-nav";
+import { UserMenu } from "@/components/layout/user-menu";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { AREA, type Area } from "@/lib/areas";
 import { getCurrentUser } from "@/lib/auth";
 import { LEAD_STAGE, LEAD_STAGES, TASK_STATUS } from "@/lib/labels";
-import { can } from "@/lib/permissions";
+import { can, ROLE_LABEL } from "@/lib/permissions";
 import { cn, formatEuro } from "@/lib/utils";
 import { getDashboardData } from "@/modules/dashboard/queries";
+import { NotificationBell } from "@/modules/notifiche/components/notification-bell";
 import { dueInfo, DueLabel, PriorityFlag, TaskCode } from "@/modules/task/components/task-meta";
 
 export const metadata = { title: "Dashboard" };
@@ -63,13 +66,22 @@ export default async function DashboardPage() {
   return (
     <PageBody className="flex flex-col gap-6">
       {/* Benvenuto */}
-      <section className="relative overflow-hidden rounded-2xl bg-sidebar p-6 text-sidebar-foreground shadow-sm sm:p-7">
+      <section className="relative overflow-hidden rounded-2xl bg-sidebar p-5 text-sidebar-foreground shadow-sm sm:px-7 sm:py-6">
         <div className="absolute -top-20 -right-16 size-72 rounded-full bg-white/[0.06]" aria-hidden />
         <div className="absolute -bottom-24 right-40 size-56 rounded-full bg-white/[0.04]" aria-hidden />
+        <div className="relative mb-4 flex items-center gap-2 sm:mb-1">
+          <MobileNav hidden={showMoney ? [] : ["/incassi"]} onDark />
+          <p className="text-[13px] font-medium text-sidebar-muted first-letter:uppercase">{today}</p>
+          <div className="ml-auto flex items-center gap-1.5">
+            <SearchButton onDark className="hidden w-64 md:flex" />
+            <SearchButton onDark className="w-9 justify-center px-0 md:hidden [&>span]:hidden" />
+            <NotificationBell userId={user.id} onDark />
+            <UserMenu name={user.full_name} email={user.email} roleLabel={ROLE_LABEL[user.role]} onDark />
+          </div>
+        </div>
         <div className="relative flex flex-wrap items-end justify-between gap-5">
           <div>
-            <p className="text-[13px] font-medium text-sidebar-muted first-letter:uppercase">{today}</p>
-            <h1 className="mt-1 text-[28px] leading-tight font-semibold">
+            <h1 className="text-[28px] leading-tight font-semibold">
               {greeting()}, {firstName}
             </h1>
             <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-sidebar-foreground/85">
@@ -108,7 +120,7 @@ export default async function DashboardPage() {
         {kpis.map((k) => {
           const a = AREA[k.area];
           return (
-            <Link key={k.label} href={k.href} className="group overflow-hidden rounded-xl border bg-card shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md">
+            <Link key={k.label} href={k.href} className={cn("group overflow-hidden rounded-xl border bg-card shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md", a.bandBorder)}>
               <div className={cn("flex items-center justify-between gap-3 px-4 py-2.5 text-white", a.band)}>
                 <p className="text-[13px] font-semibold">{k.label}</p>
                 <k.icon className="size-4.5 opacity-90" strokeWidth={2} aria-hidden />
@@ -127,21 +139,7 @@ export default async function DashboardPage() {
 
       <div className="grid gap-6 xl:grid-cols-5">
         {/* I miei task */}
-        <Card className="overflow-hidden rounded-xl shadow-xs xl:col-span-3">
-          <CardHeader className="pb-1">
-            <SectionTitle
-              icon={CheckSquare}
-              area="work"
-              action={
-                <Link href="/task" className="flex items-center gap-1 text-[13px] font-medium text-primary hover:underline">
-                  Tutti i task <ArrowRight className="size-3.5" />
-                </Link>
-              }
-            >
-              I miei task
-            </SectionTitle>
-          </CardHeader>
-          <CardContent className="pt-2">
+        <BandCard area="work" icon={CheckSquare} title="I miei task" href="/task" linkLabel="Tutti i task" className="xl:col-span-3">
             {d.myTasks.length === 0 ? (
               <EmptyState area="work" icon={CheckCircle2} title="Niente da fare, per ora" description="I task che ti assegnano compaiono qui, ordinati per scadenza." className="py-8" />
             ) : (
@@ -176,17 +174,10 @@ export default async function DashboardPage() {
                 })}
               </ul>
             )}
-          </CardContent>
-        </Card>
+        </BandCard>
 
-        {/* Scadenze */}
-        <Card className="overflow-hidden rounded-xl shadow-xs xl:col-span-2">
-          <CardHeader className="pb-1">
-            <SectionTitle icon={Bell} area="support">
-              Promemoria della settimana
-            </SectionTitle>
-          </CardHeader>
-          <CardContent className="pt-2">
+        {/* Promemoria */}
+        <BandCard area="support" icon={Bell} title="Promemoria della settimana" className="xl:col-span-2">
             {d.due.length === 0 ? (
               <EmptyState area="support" icon={Bell} title="Niente in scadenza" description="Aggiungi un promemoria da un cliente o da un lead." className="py-8" />
             ) : (
@@ -214,27 +205,12 @@ export default async function DashboardPage() {
                 })}
               </ul>
             )}
-          </CardContent>
-        </Card>
+        </BandCard>
       </div>
 
       {/* Scadenze rinnovi */}
       {d.renewals.length > 0 && (
-        <Card className="overflow-hidden rounded-xl shadow-xs">
-          <CardHeader className="pb-1">
-            <SectionTitle
-              icon={CalendarIcon}
-              area="money"
-              action={
-                <Link href="/scadenze" className="flex items-center gap-1 text-[13px] font-medium text-primary hover:underline">
-                  Tutte le scadenze <ArrowRight className="size-3.5" />
-                </Link>
-              }
-            >
-              Rinnovi entro 30 giorni
-            </SectionTitle>
-          </CardHeader>
-          <CardContent className="grid gap-2 pt-2 sm:grid-cols-2 xl:grid-cols-4">
+        <BandCard area="money" icon={CalendarIcon} title="Rinnovi entro 30 giorni" href="/scadenze" linkLabel="Tutte le scadenze" bodyClassName="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
             {d.renewals.map((r) => {
               const days = Math.round((new Date(`${r.next_due_date}T00:00:00`).getTime() - new Date(new Date().toDateString()).getTime()) / 86400000);
               return (
@@ -251,26 +227,11 @@ export default async function DashboardPage() {
                 </Link>
               );
             })}
-          </CardContent>
-        </Card>
+        </BandCard>
       )}
 
       {/* Pipeline commerciale */}
-      <Card className="overflow-hidden rounded-xl shadow-xs">
-        <CardHeader className="pb-1">
-          <SectionTitle
-            icon={Target}
-            area="sales"
-            action={
-              <Link href="/lead" className="flex items-center gap-1 text-[13px] font-medium text-primary hover:underline">
-                Apri la pipeline <ArrowRight className="size-3.5" />
-              </Link>
-            }
-          >
-            Pipeline commerciale · {formatEuro(d.pipelineCents)}
-          </SectionTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-5 pt-3">
+      <BandCard area="sales" icon={Target} title={`Pipeline commerciale · ${formatEuro(d.pipelineCents)}`} href="/lead" linkLabel="Apri la pipeline" bodyClassName="flex flex-col gap-5">
           <div className="flex h-3 overflow-hidden rounded-full bg-muted" role="img" aria-label="Valore dei lead aperti per fase">
             {openStages.map((s) => {
               const v = d.pipelineByStage[s.value]?.value ?? 0;
@@ -309,8 +270,46 @@ export default async function DashboardPage() {
               </ul>
             </div>
           )}
-        </CardContent>
-      </Card>
+      </BandCard>
     </PageBody>
+  );
+}
+
+/** Card della dashboard: fascia colorata dell'area con titolo bianco, bordo dello stesso colore */
+function BandCard({
+  area,
+  icon: Icon,
+  title,
+  href,
+  linkLabel,
+  className,
+  bodyClassName,
+  children,
+}: {
+  area: Area;
+  icon: typeof Users;
+  title: string;
+  href?: string;
+  linkLabel?: string;
+  className?: string;
+  bodyClassName?: string;
+  children: React.ReactNode;
+}) {
+  const a = AREA[area];
+  return (
+    <section className={cn("overflow-hidden rounded-xl border bg-card shadow-xs", a.bandBorder, className)}>
+      <header className={cn("flex items-center justify-between gap-3 px-4 py-2.5 text-white", a.band)}>
+        <h2 className="flex items-center gap-2 text-[14px] font-semibold">
+          <Icon className="size-4.5 opacity-90" strokeWidth={2} aria-hidden />
+          {title}
+        </h2>
+        {href && (
+          <Link href={href} className="flex items-center gap-1 rounded-md px-2 py-0.5 text-[12px] font-medium text-white/90 transition-colors hover:bg-white/15 hover:text-white">
+            {linkLabel} <ArrowRight className="size-3.5" />
+          </Link>
+        )}
+      </header>
+      <div className={cn("p-4", bodyClassName)}>{children}</div>
+    </section>
   );
 }

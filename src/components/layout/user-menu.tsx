@@ -4,6 +4,7 @@ import { LogOut, Monitor, Moon, Sun, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { Avatar } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,12 +15,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { signOut } from "@/modules/auth/actions";
 
-export function UserMenu({ name, email, roleLabel }: { name: string; email: string; roleLabel: string }) {
+export function UserMenu({ name, email, roleLabel, onDark = false }: { name: string; email: string; roleLabel: string; onDark?: boolean }) {
   const { setTheme } = useTheme();
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-2 rounded-md p-1 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
-        <Avatar name={name} />
+      <DropdownMenuTrigger className={cn("flex items-center gap-2 rounded-md p-1 outline-none focus-visible:ring-2 focus-visible:ring-ring", onDark ? "hover:bg-white/15" : "hover:bg-muted")}>
+        <Avatar name={name} className={onDark ? "bg-white text-[oklch(0.35_0.12_262)] ring-2 ring-white/30" : undefined} />
         <span className="sr-only">Menu utente</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">

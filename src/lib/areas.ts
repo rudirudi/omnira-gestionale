@@ -39,6 +39,7 @@ export const AREA: Record<
     border: string; // bordo colorato
     headerBg: string; // sfondo intestazione pagina
     navIcon: string; // icona su sidebar blu
+    bandBorder: string; // bordo della card con fascia: stesso colore della fascia
     band: string; // fascia piena con testo bianco (card KPI): tonalità scure, leggibili anche in tema scuro
   }
 > = {
@@ -52,6 +53,7 @@ export const AREA: Record<
     headerBg: "bg-gradient-to-b from-work/[0.07] to-transparent",
     navIcon: "text-[oklch(0.8_0.1_250)]",
     band: "bg-gradient-to-r from-[oklch(0.42_0.15_262)] to-[oklch(0.52_0.17_255)]",
+    bandBorder: "border-[oklch(0.47_0.16_258)]",
   },
   sales: {
     label: "Commerciale",
@@ -63,6 +65,7 @@ export const AREA: Record<
     headerBg: "bg-gradient-to-b from-sales/[0.14] to-transparent",
     navIcon: "text-sales",
     band: "bg-gradient-to-r from-[oklch(0.58_0.14_62)] to-[oklch(0.66_0.15_75)]",
+    bandBorder: "border-[oklch(0.62_0.145_68)]",
   },
   money: {
     label: "Economia",
@@ -74,6 +77,7 @@ export const AREA: Record<
     headerBg: "bg-gradient-to-b from-money/[0.09] to-transparent",
     navIcon: "text-[oklch(0.78_0.15_150)]",
     band: "bg-gradient-to-r from-[oklch(0.47_0.13_150)] to-[oklch(0.57_0.15_150)]",
+    bandBorder: "border-[oklch(0.52_0.14_150)]",
   },
   support: {
     label: "Assistenza",
@@ -85,6 +89,7 @@ export const AREA: Record<
     headerBg: "bg-gradient-to-b from-support/[0.08] to-transparent",
     navIcon: "text-[oklch(0.75_0.16_25)]",
     band: "bg-gradient-to-r from-[oklch(0.5_0.19_27)] to-[oklch(0.58_0.21_27)]",
+    bandBorder: "border-[oklch(0.54_0.2_27)]",
   },
   system: {
     label: "Sistema",
@@ -96,6 +101,7 @@ export const AREA: Record<
     headerBg: "bg-gradient-to-b from-primary/[0.06] to-transparent",
     navIcon: "text-sidebar-foreground",
     band: "bg-gradient-to-r from-[oklch(0.35_0.12_262)] to-[oklch(0.45_0.15_262)]",
+    bandBorder: "border-[oklch(0.4_0.13_262)]",
   },
 };
 

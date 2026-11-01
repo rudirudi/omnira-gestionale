@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CommandPalette, SearchButton } from "@/components/layout/command-palette";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { Brand, SidebarNav } from "@/components/layout/sidebar";
+import { TopBar } from "@/components/layout/top-bar";
 import { UserMenu } from "@/components/layout/user-menu";
 import { NotificationBell } from "@/modules/notifiche/components/notification-bell";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           <div className="border-t border-sidebar-border px-5 py-3 text-[11px] text-sidebar-muted">Omnira Soft · uso interno</div>
         </aside>
         <div className="flex min-w-0 flex-1 flex-col">
+          <TopBar>
           <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b bg-background/85 px-4 backdrop-blur sm:px-6">
             <MobileNav hidden={hiddenNav} />
             <SearchButton />
@@ -60,6 +62,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
               <UserMenu name={user.full_name} email={user.email} roleLabel={ROLE_LABEL[user.role]} />
             </div>
           </header>
+          </TopBar>
           <main className="flex flex-1 flex-col">{children}</main>
         </div>
       </div>

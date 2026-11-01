@@ -19,7 +19,7 @@ function when(iso: string) {
   return new Date(iso).toLocaleDateString("it-IT", { day: "numeric", month: "short" });
 }
 
-export function NotificationBell({ userId }: { userId: string }) {
+export function NotificationBell({ userId, onDark = false }: { userId: string; onDark?: boolean }) {
   const router = useRouter();
   const [items, setItems] = React.useState<NotificationItem[]>([]);
   const unread = items.filter((n) => !n.read_at).length;
@@ -54,7 +54,7 @@ export function NotificationBell({ userId }: { userId: string }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon-sm" className="relative" aria-label={unread ? `Notifiche, ${unread} non lette` : "Notifiche"}>
+        <Button variant="ghost" size="icon-sm" className={cn("relative", onDark && "text-white hover:bg-white/15 hover:text-white")} aria-label={unread ? `Notifiche, ${unread} non lette` : "Notifiche"}>
           <Bell />
           {unread > 0 && (
             <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-white tabular">
