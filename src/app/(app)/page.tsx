@@ -7,7 +7,6 @@ import {
   CalendarClock,
   CheckCircle2,
   CheckSquare,
-  Plus,
   Target,
   TrendingUp,
   Users,
@@ -66,7 +65,7 @@ export default async function DashboardPage() {
   return (
     <PageBody className="flex flex-col gap-6">
       {/* Benvenuto */}
-      <section className="relative overflow-hidden rounded-2xl bg-sidebar p-5 text-sidebar-foreground shadow-sm sm:px-7 sm:py-6">
+      <section className="relative -mx-4 -mt-6 overflow-hidden bg-sidebar px-5 py-5 text-sidebar-foreground sm:-mx-6 sm:px-7 sm:py-6">
         <div className="absolute -top-20 -right-16 size-72 rounded-full bg-white/[0.06]" aria-hidden />
         <div className="absolute -bottom-24 right-40 size-56 rounded-full bg-white/[0.04]" aria-hidden />
         <div className="relative mb-4 flex items-center gap-2 sm:mb-1">
@@ -96,21 +95,6 @@ export default async function DashboardPage() {
                 <span className="size-2 rounded-full bg-[oklch(0.8_0.1_250)]" /> {d.due.length} promemoria questa settimana
               </span>
             </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Link href="/task?nuovo=1" className="flex h-9 items-center gap-1.5 rounded-lg bg-warning px-3.5 text-[13px] font-semibold text-on-warning transition-transform hover:-translate-y-0.5">
-              <Plus className="size-4" /> Nuovo task
-            </Link>
-            {can.editLeads(user.role) && (
-              <Link href="/lead?nuovo=1" className="flex h-9 items-center gap-1.5 rounded-lg bg-white/10 px-3.5 text-[13px] font-semibold ring-1 ring-white/20 transition-colors hover:bg-white/15">
-                <Plus className="size-4" /> Nuovo lead
-              </Link>
-            )}
-            {can.manageProjects(user.role) && (
-              <Link href="/progetti?nuovo=1" className="flex h-9 items-center gap-1.5 rounded-lg bg-white/10 px-3.5 text-[13px] font-semibold ring-1 ring-white/20 transition-colors hover:bg-white/15">
-                <Plus className="size-4" /> Nuovo progetto
-              </Link>
-            )}
           </div>
         </div>
       </section>
