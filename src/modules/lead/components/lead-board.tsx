@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { replaceUrl } from "@/lib/url-state";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Building2, CalendarDays, GripVertical, Plus, Target, UserRound } from "lucide-react";
@@ -51,7 +52,7 @@ export function LeadBoard({ leads: initial, team, canEdit }: { leads: LeadWithRe
     const next = new URLSearchParams(params);
     if (value) next.set(key, value);
     else next.delete(key);
-    router.replace(`/lead?${next.toString()}`, { scroll: false });
+    replaceUrl(`/lead?${next.toString()}`);
   };
 
   const byStage = React.useMemo(() => {

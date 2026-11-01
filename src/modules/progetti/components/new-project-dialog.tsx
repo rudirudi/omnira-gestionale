@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { replaceUrl } from "@/lib/url-state";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -9,13 +10,12 @@ import { ProjectForm } from "./project-form";
 
 export function NewProjectDialog({ clients, team }: { clients: { id: string; name: string }[]; team: { id: string; full_name: string }[] }) {
   const params = useSearchParams();
-  const router = useRouter();
   const open = params.get("nuovo") === "1";
   const setOpen = (o: boolean) => {
     const next = new URLSearchParams(params);
     if (o) next.set("nuovo", "1");
     else next.delete("nuovo");
-    router.replace(`/progetti?${next.toString()}`, { scroll: false });
+    replaceUrl(`/progetti?${next.toString()}`);
   };
   return (
     <Dialog open={open} onOpenChange={setOpen}>

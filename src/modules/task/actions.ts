@@ -122,8 +122,8 @@ export async function deleteTaskAction(id: string): Promise<ActionResult> {
 }
 
 export async function fetchTaskDetailAction(id: string) {
-  await getCurrentUser();
-  return getTaskDetail(id);
+  // Nessun controllo extra: la lettura passa dalle regole RLS del database
+  return getTaskDetail(z.guid().parse(id));
 }
 
 export async function quickAddSubtaskAction(parentId: string, title: string): Promise<ActionResult> {

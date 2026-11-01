@@ -55,14 +55,23 @@ function withSubtaskCounts<T extends { children: { status: string; deleted_at: s
 }
 export type TaskListItem = Awaited<ReturnType<typeof listProjectTasks>>[number];
 
+/** Dettaglio task in UNA query: progetto con le sue fasi e sotto-task inclusi */
 export async function getTaskDetail(id: string) {
   const supabase = await createClient();
-  const { data: task } = await supabase.from("tasks").select(TASK_SELECT).eq("id", id).is("deleted_at", null).maybeSingle();
+  const { data: task } = await supabase
+    .from("tasks")
+    .select(
+      "*, project:projects(id, code, name, phases:project_phases(id, name, position)), phase:project_phases(id, name), assignees:task_assignees(user_id, profile:profiles!task_assignees_user_id_fkey(id, full_name)), children:tasks!parent_id(id, title, status, number, position, deleted_at)",
+    )
+    .eq("id", id)
+    .is("deleted_at", null)
+    .maybeSingle();
   if (!task) return null;
-  const [subtasks, phases] = await Promise.all([
-    supabase.from("tasks").select("id, title, status, number").eq("parent_id", id).is("deleted_at", null).order("position").order("number"),
-    supabase.from("project_phases").select("id, name").eq("project_id", task.project_id).order("position"),
-  ]);
-  return { ...task, subtaskList: subtasks.data ?? [], phases: phases.data ?? [] };
+  const { children, ...rest } = task;
+  return {
+    ...rest,
+    subtaskList: children.filter((c) => !c.deleted_at).sort((a, b) => a.position - b.position || (a.number ?? 0) - (b.number ?? 0)),
+    phases: [...(task.project?.phases ?? [])].sort((a, b) => a.position - b.position),
+  };
 }
 export type TaskDetail = NonNullable<Awaited<ReturnType<typeof getTaskDetail>>>;

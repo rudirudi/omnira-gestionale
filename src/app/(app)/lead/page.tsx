@@ -1,7 +1,6 @@
 import { PageBody, PageHeader } from "@/components/app/page-header";
-import { Button } from "@/components/ui/button";
+import { UrlParamButton } from "@/components/app/url-button";
 import { Plus, Target } from "lucide-react";
-import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { can } from "@/lib/permissions";
 import { formatEuro } from "@/lib/utils";
@@ -26,11 +25,9 @@ export default async function LeadPage() {
         description={`${open.length} aperti · ${formatEuro(value)} in pipeline${canEdit ? " · trascina le card per cambiare fase" : ""}`}
         actions={
           canEdit && (
-            <Button asChild>
-              <Link href="/lead?nuovo=1" scroll={false}>
-                <Plus /> Nuovo lead
-              </Link>
-            </Button>
+            <UrlParamButton param="nuovo">
+              <Plus /> Nuovo lead
+            </UrlParamButton>
           )
         }
       />

@@ -22,6 +22,8 @@ import {
   updateTaskAction,
 } from "../actions";
 import type { TaskDetail } from "../queries";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { TaskListItem } from "../queries";
 import { TaskCode } from "./task-meta";
 
 type Team = { id: string; full_name: string }[];
@@ -42,7 +44,9 @@ export function TaskSheet({
   isAdmin,
   canDelete,
   onClose,
+  preview,
 }: {
+  preview?: Pick<TaskListItem, "id" | "title" | "number" | "project"> | null;
   taskId: string | null;
   team: Team;
   meId: string;
@@ -74,9 +78,38 @@ export function TaskSheet({
     <Dialog open={!!taskId} onOpenChange={(o) => !o && onClose()}>
       <DialogContent side="right" className="flex max-w-2xl flex-col gap-0 overflow-y-auto p-0">
         {task === undefined ? (
-          <div className="flex flex-1 items-center justify-center gap-2 text-[13px] text-muted-foreground">
-            <DialogTitle className="sr-only">Caricamento task</DialogTitle>
-            <Loader2 className="size-4 animate-spin" /> Carico il task…
+          // Apertura immediata con i dati già noti dalla lista; il resto arriva subito dopo
+          <div className="flex flex-col" aria-busy="true">
+            <div className="border-b p-5 pr-12">
+              {preview?.id === taskId ? (
+                <>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <TaskCode code={preview.project?.code} number={preview.number} />
+                    <span>·</span>
+                    <span className="truncate">{preview.project?.name}</span>
+                  </div>
+                  <DialogTitle className="mt-2 px-1 text-lg font-semibold">{preview.title}</DialogTitle>
+                </>
+              ) : (
+                <>
+                  <DialogTitle className="sr-only">Caricamento task</DialogTitle>
+                  <Skeleton className="h-3 w-40" />
+                  <Skeleton className="mt-3 h-6 w-3/4" />
+                </>
+              )}
+              <DialogDescription className="sr-only">Caricamento dettagli</DialogDescription>
+            </div>
+            <div className="flex flex-col gap-3 px-5 py-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="grid grid-cols-[120px_1fr] items-center gap-3">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-8 w-44" />
+                </div>
+              ))}
+              <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                <Loader2 className="size-3.5 animate-spin" /> Carico i dettagli…
+              </p>
+            </div>
           </div>
         ) : task === null ? (
           <div className="p-6">

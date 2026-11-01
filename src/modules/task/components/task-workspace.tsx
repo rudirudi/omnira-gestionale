@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { replaceUrl } from "@/lib/url-state";
+import { useSearchParams } from "next/navigation";
 import { CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Columns3, List, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { AvatarStack } from "@/components/app/avatar-stack";
@@ -63,7 +64,6 @@ export function TaskWorkspace({
   isAdmin: boolean;
   showProject?: boolean;
 }) {
-  const router = useRouter();
   const params = useSearchParams();
   const [tasks, setTasks] = React.useState(initial);
   const [prev, setPrev] = React.useState(initial);
@@ -89,9 +89,9 @@ export function TaskWorkspace({
       if (value) next.set(key, value);
       else next.delete(key);
       if (key !== "scheda" && projectId) next.set("scheda", "task");
-      router.replace(`${basePath}?${next.toString()}`, { scroll: false });
+      replaceUrl(`${basePath}?${next.toString()}`);
     },
-    [params, router, basePath, projectId],
+    [params, basePath, projectId],
   );
 
   const filtered = tasks.filter((t) => {
@@ -247,7 +247,7 @@ export function TaskWorkspace({
       )}
 
       <NewTaskDialog open={newOpen} onOpenChange={(o) => setParam("nuovo", o ? "1" : null)} projectId={projectId} phases={phases} projects={projects} />
-      <TaskSheet taskId={openId} team={team} meId={me} isAdmin={isAdmin} canDelete={canDelete} onClose={() => setParam("aperto", null)} />
+      <TaskSheet taskId={openId} preview={tasks.find((t) => t.id === openId) ?? null} team={team} meId={me} isAdmin={isAdmin} canDelete={canDelete} onClose={() => setParam("aperto", null)} />
     </div>
   );
 }

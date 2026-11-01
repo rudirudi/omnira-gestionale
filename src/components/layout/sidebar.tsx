@@ -30,6 +30,9 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
               <Link
                 key={item.href}
                 href={item.href}
+                // Precarica tutta la pagina (dati inclusi) appena il menu è visibile: il clic è istantaneo.
+                // I moduli ancora in costruzione restano col precaricamento standard.
+                prefetch={item.phase && item.phase > 1 ? null : true}
                 onClick={onNavigate}
                 aria-current={active ? "page" : undefined}
                 className={cn(
