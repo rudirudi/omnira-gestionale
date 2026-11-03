@@ -13,7 +13,7 @@ export const metadata = { title: "Task" };
 export default async function TaskPage({ searchParams }: PageProps<"/task">) {
   const sp = await searchParams;
   const user = await getCurrentUser();
-  const all = sp.tutti === "1";
+  const all = sp.miei !== "1";
   const [tasks, team, projects] = await Promise.all([
     listTasks({ userId: user.id, mine: !all }),
     listActiveTeam(),
@@ -24,7 +24,7 @@ export default async function TaskPage({ searchParams }: PageProps<"/task">) {
   return (
     <>
       <PageHeader
-        title={all ? "Task del team" : "I miei task"}
+        title={all ? "Task" : "I miei task"}
         area="work"
         icon={CheckSquare}
         description={`${open} aperti`}

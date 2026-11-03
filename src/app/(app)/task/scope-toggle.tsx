@@ -8,15 +8,15 @@ export function TaskScopeToggle({ all }: { all: boolean }) {
   const params = useSearchParams();
   const set = (v: boolean) => {
     const next = new URLSearchParams(params);
-    if (v) next.set("tutti", "1");
-    else next.delete("tutti");
+    if (v) next.delete("miei");
+    else next.set("miei", "1");
     router.replace(`/task?${next.toString()}`, { scroll: false });
   };
   return (
     <div className="flex items-center gap-1 rounded-md border bg-card p-0.5" role="group" aria-label="Quali task">
       {[
-        { v: false, l: "Miei" },
-        { v: true, l: "Tutto il team" },
+        { v: true, l: "Tutti" },
+        { v: false, l: "Solo i miei" },
       ].map((o) => (
         <button
           key={o.l}

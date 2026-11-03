@@ -64,7 +64,7 @@ export function SpeseView({
   isAdmin: boolean;
   showBalance: boolean;
 }) {
-  const [period, setPeriod] = React.useState<Period>("mese");
+  const [period, setPeriod] = React.useState<Period>("tutto");
   const [anchor, setAnchor] = React.useState(() => new Date());
   const [person, setPerson] = React.useState<string>("tutti");
   const [category, setCategory] = React.useState<ExpenseCategory | null>(null);
@@ -122,7 +122,7 @@ export function SpeseView({
       {/* Periodo, persone, azioni */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-1 rounded-md border bg-card p-0.5" role="group" aria-label="Periodo">
-          {(["mese", "anno", "tutto"] as const).map((p) => (
+          {(["tutto", "mese", "anno"] as const).map((p) => (
             <button
               key={p}
               type="button"

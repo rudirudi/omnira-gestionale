@@ -19,11 +19,11 @@ type Opt = { id: string; name: string };
 type ProjectOpt = { id: string; code: string | null; name: string; client_id: string | null };
 
 const FILTERS: { value: "aperti" | ReceivableState | "tutti"; label: string }[] = [
+  { value: "tutti", label: "Tutti" },
   { value: "aperti", label: "Da incassare" },
   { value: "scaduto", label: "Scaduti" },
   { value: "parziale", label: "Pagati in parte" },
   { value: "pagato", label: "Pagati" },
-  { value: "tutti", label: "Tutti" },
 ];
 
 /** Barra pagato/residuo: verde pagato, rosso se scaduto, giallo se parziale */
@@ -59,7 +59,7 @@ export function ReceivablesView({
   showFilters?: boolean;
   compact?: boolean;
 }) {
-  const [filter, setFilter] = React.useState<(typeof FILTERS)[number]["value"]>(showFilters ? "aperti" : "tutti");
+  const [filter, setFilter] = React.useState<(typeof FILTERS)[number]["value"]>("tutti");
   const [openId, setOpenId] = React.useState<string | null>(null);
   const [creating, setCreating] = React.useState(false);
   const [editing, setEditing] = React.useState(false);

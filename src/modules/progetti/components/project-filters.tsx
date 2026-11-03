@@ -4,12 +4,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const STATI = [
-  { value: "", label: "Aperti" },
+  { value: "", label: "Tutti" },
+  { value: "aperti", label: "Aperti" },
   { value: "attivo", label: "Attivi" },
   { value: "pianificato", label: "Pianificati" },
   { value: "in_pausa", label: "In pausa" },
   { value: "completato", label: "Completati" },
-  { value: "tutti", label: "Tutti" },
 ];
 
 export function ProjectFilters() {

@@ -64,7 +64,7 @@ export default async function DashboardPage() {
   const pipelineTotal = Math.max(1, d.pipelineCents);
 
   const kpis: { label: string; value: string; sub: string; icon: typeof Users; href: string; area: Area }[] = [
-    { label: "I miei task aperti", value: d.myTasks.length === 8 ? "8+" : String(d.myTasks.length), sub: lateTasks ? `${lateTasks} in ritardo` : "nessun ritardo", icon: CheckSquare, href: "/task", area: "work" },
+    { label: "I miei task aperti", value: d.myTasks.length === 8 ? "8+" : String(d.myTasks.length), sub: lateTasks ? `${lateTasks} in ritardo` : "nessun ritardo", icon: CheckSquare, href: "/task?miei=1", area: "work" },
     { label: "Progetti attivi", value: String(d.activeProjects), sub: "in lavorazione", icon: Briefcase, href: "/progetti?stato=attivo", area: "work" },
     { label: "Clienti attivi", value: String(d.activeClients), sub: `${d.openLeads} lead aperti`, icon: Users, href: "/clienti?stato=attivo", area: "sales" },
     showMoney

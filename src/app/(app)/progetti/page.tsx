@@ -23,7 +23,7 @@ export default async function ProgettiPage({ searchParams }: PageProps<"/progett
   const user = await getCurrentUser();
   const statoParam = typeof sp.stato === "string" ? sp.stato : "";
   const status: ProjectStatus | "aperti" | undefined =
-    statoParam === "tutti" ? undefined : statoParam in PROJECT_STATUS ? (statoParam as ProjectStatus) : "aperti";
+    statoParam === "aperti" ? "aperti" : statoParam in PROJECT_STATUS ? (statoParam as ProjectStatus) : undefined;
   const [projects, clients, team] = await Promise.all([
     listProjects({ status, mine: sp.miei === "1", userId: user.id }),
     listClientOptions(),
