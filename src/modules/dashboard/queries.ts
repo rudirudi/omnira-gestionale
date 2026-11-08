@@ -92,7 +92,7 @@ export async function getDashboardData(userId: string, withMoney = false) {
     toCollectCents: toCollect,
     overdueCents: overdue,
     myTasks: myTasks.data ?? [],
-    unassigned: unassigned.slice(0, 6).map((t) => ({ id: t.id, title: t.title, number: t.number, status: t.status, priority: t.priority, due_date: t.due_date, project: t.project })),
+    unassigned: unassigned.slice(0, 10).map((t) => ({ id: t.id, title: t.title, number: t.number, status: t.status, priority: t.priority, due_date: t.due_date, project: t.project })),
     unassignedCount: unassigned.length,
   };
 }

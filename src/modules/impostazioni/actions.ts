@@ -85,22 +85,95 @@ export async function updateMemberAction(input: z.input<typeof memberSchema>): P
   return { ok: true, message: "Membro aggiornato" };
 }
 
-export async function setEmailNotificationsAction(enabled: boolean): Promise<ActionResult> {
+const prefsSchema = z.object({
+  email_on: z.literal("on").optional(),
+  email_mode: z.enum(["registrazione", "altra"]).default("registrazione"),
+  notification_email: z.string().trim().optional(),
+  telegram_on: z.literal("on").optional(),
+  whatsapp_on: z.literal("on").optional(),
+  whatsapp_number: z.string().trim().optional(),
+});
+
+/** Preferenze personali di notifica: canali e indirizzi */
+export async function saveNotificationPrefsAction(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   const me = await getCurrentUser();
+  const parsed = prefsSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return fromZodError(parsed.error);
+  const d = parsed.data;
+  const other = d.email_mode === "altra" ? (d.notification_email ?? "") : "";
+  if (d.email_mode === "altra" && !z.email().safeParse(other).success) {
+    return { ok: false, error: "Scrivi un'email valida", fieldErrors: { notification_email: ["Email non valida"] } };
+  }
+  const phone = (d.whatsapp_number ?? "").replace(/\s+/g, " ");
+  if (d.whatsapp_on && !/^\+?[0-9 ]{8,20}$/.test(phone)) {
+    return { ok: false, error: "Scrivi il numero WhatsApp con il prefisso, es. +39 333 1234567", fieldErrors: { whatsapp_number: ["Numero non valido"] } };
+  }
   const supabase = await createClient();
-  const { error } = await supabase.from("profiles").update({ email_notifications: enabled }).eq("id", me.id);
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      email_notifications: !!d.email_on,
+      notification_email: other || null,
+      notify_telegram: !!d.telegram_on,
+      notify_whatsapp: !!d.whatsapp_on,
+      whatsapp_number: phone || null,
+    })
+    .eq("id", me.id);
   if (error) return fromDbError(error);
   revalidatePath("/impostazioni");
-  return { ok: true, message: enabled ? "Riceverai gli avvisi anche via email" : "Avvisi via email disattivati" };
+  return { ok: true, message: "Preferenze di notifica salvate" };
+}
+
+/** Prepara il link per collegare Telegram: il bot riceve /start <codice> */
+export async function telegramConnectAction(): Promise<ActionResult<{ url: string }>> {
+  const me = await getCurrentUser();
+  const supabase = await createClient();
+  const { data: ch } = await supabase.rpc("notification_channels");
+  const bot = ch?.[0]?.telegram_bot;
+  if (!bot) return { ok: false, error: "Telegram non è ancora disponibile: riprova più tardi." };
+  const code = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+  const { error } = await supabase.from("profiles").update({ telegram_link_code: code }).eq("id", me.id);
+  if (error) return fromDbError(error) as ActionResult<{ url: string }>;
+  return { ok: true, data: { url: `https://t.me/${bot}?start=${code}` } };
+}
+
+export async function telegramDisconnectAction(): Promise<ActionResult> {
+  const me = await getCurrentUser();
+  const supabase = await createClient();
+  const { error } = await supabase.from("profiles").update({ telegram_chat_id: null, telegram_username: null, notify_telegram: false }).eq("id", me.id);
+  if (error) return fromDbError(error);
+  revalidatePath("/impostazioni");
+  return { ok: true, message: "Telegram scollegato" };
 }
 
 export async function sendTestEmailAction(): Promise<ActionResult> {
-  const me = await getCurrentUser();
-  if (me.role !== "admin") return { ok: false, error: "Solo un amministratore può inviare l'email di prova." };
+  await getCurrentUser();
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("send_test_email");
   if (error) return fromDbError(error);
   revalidatePath("/impostazioni");
-  if (data === "senza_chiave") return { ok: false, error: "Manca la chiave Resend nel Vault di Supabase: segui i passaggi qui sotto." };
-  return { ok: true, message: `Email di prova inviata a ${me.email}: controlla la posta (anche lo spam) tra un minuto` };
+  if (!data?.startsWith("inviata")) return { ok: false, error: "Le email non sono ancora attive: la prova non è partita." };
+  return { ok: true, message: `Email di prova inviata a ${data.slice("inviata:".length)}: controlla anche lo spam` };
+}
+
+export async function sendTestTelegramAction(): Promise<ActionResult> {
+  await getCurrentUser();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("send_test_telegram");
+  if (error) return fromDbError(error);
+  if (data === "non_collegato") return { ok: false, error: "Prima collega Telegram." };
+  if (data !== "inviata") return { ok: false, error: "Telegram non è ancora attivo." };
+  return { ok: true, message: "Messaggio di prova inviato su Telegram" };
+}
+
+/** Solo admin: ricollega il bot Telegram al gestionale e ne legge il nome */
+export async function telegramSetupAction(): Promise<ActionResult> {
+  const me = await getCurrentUser();
+  if (me.role !== "admin") return { ok: false, error: "Solo un amministratore." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("telegram_setup");
+  if (error) return fromDbError(error);
+  if (data === "senza_token") return { ok: false, error: "Il bot Telegram non è ancora configurato." };
+  revalidatePath("/impostazioni");
+  return { ok: true, message: "Bot Telegram verificato: aggiorna la pagina tra qualche secondo" };
 }

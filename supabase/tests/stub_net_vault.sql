@@ -13,3 +13,5 @@ end $$;
 create schema if not exists vault;
 create table if not exists vault.secrets_raw (name text primary key, decrypted_secret text);
 create or replace view vault.decrypted_secrets as select name, decrypted_secret from vault.secrets_raw;
+create or replace function vault.create_secret(new_secret text, new_name text) returns uuid language plpgsql as $$
+begin insert into vault.secrets_raw values (new_name, new_secret) on conflict (name) do update set decrypted_secret = excluded.decrypted_secret; return gen_random_uuid(); end $$;

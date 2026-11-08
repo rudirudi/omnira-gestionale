@@ -2,14 +2,14 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { AtSign, Bell, CheckCheck, MessageSquare, UserPlus } from "lucide-react";
+import { AlarmClock, AtSign, Bell, CalendarClock, CheckCheck, MessageSquare, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { listNotificationsAction, markNotificationsReadAction, type NotificationItem } from "../actions";
 
-const ICON: Record<string, typeof Bell> = { menzione: AtSign, commento: MessageSquare, task_assegnato: UserPlus };
+const ICON: Record<string, typeof Bell> = { menzione: AtSign, commento: MessageSquare, task_assegnato: UserPlus, promemoria: AlarmClock, scadenza: CalendarClock };
 
 function when(iso: string) {
   const s = (Date.now() - new Date(iso).getTime()) / 1000;

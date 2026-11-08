@@ -1,13 +1,9 @@
 import Link from "next/link";
 import {
-  AlertTriangle,
   ArrowRight,
-  Bell,
   Briefcase,
-  CalendarClock,
   CheckCircle2,
   CheckSquare,
-  Target,
   UserPlus,
   TrendingUp,
   Users,
@@ -15,13 +11,12 @@ import {
   CalendarClock as CalendarIcon,
 } from "lucide-react";
 import { EmptyState } from "@/components/app/empty-state";
-import { ExpandableStrip, StripPill } from "@/components/app/expandable-strip";
 import { PageBody } from "@/components/app/page-header";
 import { HeaderMenuButton, HeaderTools } from "@/components/layout/header-tools";
 import { Badge } from "@/components/ui/badge";
 import { AREA, type Area } from "@/lib/areas";
 import { getCurrentUser } from "@/lib/auth";
-import { LEAD_STAGE, LEAD_STAGES, TASK_STATUS } from "@/lib/labels";
+import { TASK_STATUS } from "@/lib/labels";
 import { can } from "@/lib/permissions";
 import { cn, formatEuro } from "@/lib/utils";
 import { getDashboardData } from "@/modules/dashboard/queries";
@@ -49,13 +44,6 @@ const GLASS: Record<Area, { chip: string; bar: string }> = {
   system: { chip: "bg-white/20 text-white", bar: "bg-white/40" },
 };
 
-const STAGE_BAR: Record<string, string> = {
-  nuovo: "bg-muted-foreground/40",
-  call: "bg-primary/60",
-  analisi: "bg-primary",
-  preventivo: "bg-warning",
-};
-
 export default async function DashboardPage() {
   const user = await getCurrentUser();
   const showMoney = can.viewMoney(user.role);
@@ -64,9 +52,6 @@ export default async function DashboardPage() {
   const today = new Date().toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Rome" });
   const lateTasks = d.myTasks.filter((t) => dueInfo(t.due_date, t.status)?.late).length;
   const todayTasks = d.myTasks.filter((t) => dueInfo(t.due_date, t.status)?.diff === 0).length;
-  const openStages = LEAD_STAGES.filter((s) => s.value !== "vinto" && s.value !== "perso");
-  const pipelineTotal = Math.max(1, d.pipelineCents);
-  const lateDue = d.due.filter((a) => new Date(a.due_at!) < new Date()).length;
 
   // I miei task divisi per urgenza: colori forti dove serve agire subito
   const byDiff = (fn: (diff: number | null) => boolean) => d.myTasks.filter((t) => fn(dueInfo(t.due_date, t.status)?.diff ?? null));
@@ -147,126 +132,6 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      {/* Strisce espandibili: promemoria (rosso) e pipeline (giallo) */}
-      <div className="-mt-2 flex flex-col gap-2.5">
-        <ExpandableStrip
-          id="promemoria"
-          icon={<Bell />}
-          title="Promemoria"
-          band={AREA.support.band}
-          border={AREA.support.bandBorder}
-          summary={
-            d.due.length === 0 ? (
-              <span>niente in programma questa settimana</span>
-            ) : (
-              <>
-                {lateDue > 0 && <StripPill className="bg-white font-semibold text-[oklch(0.45_0.19_27)]">{lateDue} scadut{lateDue === 1 ? "o" : "i"}</StripPill>}
-                {d.due.length - lateDue > 0 && <StripPill>{d.due.length - lateDue} questa settimana</StripPill>}
-                <span className="hidden truncate lg:inline">{d.due[0]!.subject}{d.due.length > 1 ? "…" : ""}</span>
-              </>
-            )
-          }
-        >
-          {d.due.length === 0 ? (
-            <p className="text-[13px] text-muted-foreground">Aggiungi un promemoria dalla scheda di un cliente o di un lead (tab Attività).</p>
-          ) : (
-            <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-              {d.due.map((a) => {
-                const late = new Date(a.due_at!) < new Date();
-                const href = a.client ? `/clienti/${a.client.id}?scheda=attivita` : `/lead?aperto=${a.lead_id}`;
-                return (
-                  <li key={a.id}>
-                    <Link href={href} className={cn("flex items-start gap-3 rounded-lg border border-l-4 p-2.5 transition-colors hover:bg-muted/50", late ? "border-l-destructive bg-destructive/[0.04]" : "border-l-warning")}>
-                      <span className={cn("mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg", late ? "bg-destructive/10 text-destructive" : "bg-warning/25 text-on-warning dark:text-warning")}>
-                        {late ? <AlertTriangle className="size-3.5" /> : <CalendarClock className="size-3.5" />}
-                      </span>
-                      <div className="min-w-0">
-                        <p className="truncate text-[13px] font-medium">{a.subject}</p>
-                        <p className={cn("truncate text-xs", late ? "font-medium text-destructive" : "text-muted-foreground")}>
-                          {late ? "Scaduto · " : ""}
-                          {new Date(a.due_at!).toLocaleString("it-IT", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                          {a.client ? ` · ${a.client.name}` : ""}
-                        </p>
-                      </div>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </ExpandableStrip>
-
-        <ExpandableStrip
-          id="pipeline"
-          icon={<Target />}
-          title="Pipeline lead"
-          band={AREA.sales.band}
-          border={AREA.sales.bandBorder}
-          href="/lead"
-          linkLabel="Apri la pipeline"
-          summary={
-            <>
-              <StripPill className="bg-white font-semibold text-[oklch(0.42_0.11_65)]">{formatEuro(d.pipelineCents)}</StripPill>
-              <StripPill>{d.openLeads} lead aperti</StripPill>
-              <span className="hidden h-2 w-40 overflow-hidden rounded-full bg-white/25 md:flex" aria-hidden>
-                {openStages.map((s) => {
-                  const v = d.pipelineByStage[s.value]?.value ?? 0;
-                  return v ? <span key={s.value} className="h-full bg-white" style={{ width: `${(v / pipelineTotal) * 100}%`, opacity: 0.45 + openStages.indexOf(s) * 0.18 }} /> : null;
-                })}
-              </span>
-            </>
-          }
-        >
-          <div className="flex flex-col gap-5">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {openStages.map((s) => {
-                const st = d.pipelineByStage[s.value];
-                return (
-                  <Link key={s.value} href="/lead" className="rounded-lg border p-3 transition-colors hover:bg-muted/50">
-                    <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                      <span className={cn("size-2 rounded-full", STAGE_BAR[s.value])} /> {s.label}
-                    </p>
-                    <p className="mt-1.5 text-lg font-semibold tabular">{formatEuro(st?.value ?? 0)}</p>
-                    <p className="text-xs text-muted-foreground tabular">{st?.count ?? 0} lead</p>
-                  </Link>
-                );
-              })}
-            </div>
-            {d.recentLeads.length > 0 && (
-              <div>
-                <p className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">Ultimi arrivati</p>
-                <ul className="flex flex-wrap gap-2">
-                  {d.recentLeads.map((l) => (
-                    <li key={l.id}>
-                      <Link href={`/lead?aperto=${l.id}`} className="flex items-center gap-2 rounded-full border bg-card py-1 pr-3 pl-1.5 text-[13px] hover:bg-muted/60">
-                        <Badge dot tone={LEAD_STAGE[l.stage].tone}>
-                          {LEAD_STAGE[l.stage].label}
-                        </Badge>
-                        <span className="max-w-56 truncate font-medium">{l.title}</span>
-                        <span className="text-muted-foreground tabular">{formatEuro(l.estimated_value_cents)}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        </ExpandableStrip>
-      </div>
-
-      {/* Task senza assegnatario: da prendere in carico */}
-      {d.unassignedCount > 0 && (
-        <BandCard
-          area="work"
-          icon={UserPlus}
-          title={`Da assegnare · ${d.unassignedCount} task senza nessuno`}
-          href="/task?chi=nessuno"
-          linkLabel={d.unassignedCount > d.unassigned.length ? `Vedi tutti (${d.unassignedCount})` : "Apri i task"}
-        >
-          <UnassignedTasks tasks={d.unassigned} people={team} meId={user.id} />
-        </BandCard>
-      )}
-
       {/* I miei task, divisi per urgenza */}
       <BandCard area="work" icon={CheckSquare} title={`I miei task · ${d.myTasks.length} aperti`} href="/task?miei=1" linkLabel="Tutti i miei task" bodyClassName="p-3 sm:p-4">
         {d.myTasks.length === 0 ? (
@@ -321,6 +186,19 @@ export default async function DashboardPage() {
           </div>
         )}
       </BandCard>
+
+      {/* Task senza assegnatario: da prendere in carico */}
+      {d.unassignedCount > 0 && (
+        <BandCard
+          area="work"
+          icon={UserPlus}
+          title={`Da assegnare · ${d.unassignedCount} task senza nessuno`}
+          href="/task?chi=nessuno"
+          linkLabel={d.unassignedCount > d.unassigned.length ? `Vedi tutti (${d.unassignedCount})` : "Apri i task"}
+        >
+          <UnassignedTasks tasks={d.unassigned} people={team} meId={user.id} />
+        </BandCard>
+      )}
 
       {/* Scadenze rinnovi */}
       {d.renewals.length > 0 && (

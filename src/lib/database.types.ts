@@ -41,6 +41,13 @@ export type ProfileRow = Timestamps & {
   hourly_cost_cents: number | null;
   active: boolean;
   email_notifications: boolean;
+  notification_email: string | null;
+  notify_telegram: boolean;
+  telegram_chat_id: number | null;
+  telegram_username: string | null;
+  telegram_link_code: string | null;
+  notify_whatsapp: boolean;
+  whatsapp_number: string | null;
 };
 
 export type CompanySettingsRow = {
@@ -59,6 +66,8 @@ export type CompanySettingsRow = {
   updated_at: string;
   app_url: string;
   email_from: string;
+  telegram_bot_username: string | null;
+  telegram_getme_request: number | null;
 };
 
 export type AuditLogRow = {
@@ -220,6 +229,7 @@ export type NotificationRow = {
   read_at: string | null;
   created_at: string;
   emailed_at: string | null;
+  delivered_at: string | null;
 };
 
 export type ProjectProgressRow = {
@@ -584,6 +594,10 @@ export type Database = {
         Returns: string | null;
       };
       send_test_email: { Args: Record<string, never>; Returns: string };
+      send_test_telegram: { Args: Record<string, never>; Returns: string };
+      telegram_setup: { Args: Record<string, never>; Returns: string };
+      telegram_link: { Args: { p_secret: string; p_code: string; p_chat: number; p_username: string | null }; Returns: string };
+      notification_channels: { Args: Record<string, never>; Returns: { email_ready: boolean; telegram_ready: boolean; telegram_bot: string | null }[] };
       email_status: {
         Args: Record<string, never>;
         Returns: {

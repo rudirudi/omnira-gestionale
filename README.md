@@ -124,3 +124,11 @@ Ogni mattina (07:05 UTC, dopo il controllo scadenze delle 07:00) `send_renewal_d
   (per cambiarla: `select vault.update_secret((select id from vault.secrets where name = 'resend_api_key'), 're_…');`).
 - Senza chiave le notifiche restano nella campanella e verranno inviate al primo giro con chiave (entro 24 ore).
 - Impostazioni → Email (solo admin): stato, ultimi invii con l'esito di Resend, email di prova.
+
+## Notifiche su più canali
+
+- Impostazioni → **Notifiche** (per tutti): email (di registrazione o un'altra), Telegram (collegamento con un clic), WhatsApp (preferenza salvata, servizio non ancora attivo).
+- Ogni 10 minuti (`omnira-consegna-notifiche`): `notify_due_activities()` trasforma i promemoria arrivati all'ora in notifiche,
+  `deliver_notifications()` consegna scadenze e promemoria nuovi sui canali scelti. Canale non attivo = la notifica aspetta (max 24 ore).
+- Segreti solo nel Vault: `resend_api_key`, `telegram_bot_token`, `telegram_webhook_secret` (creato da `telegram_setup()`).
+- Telegram: webhook `/api/telegram/webhook` (`/start <codice>` collega, `/stop` scollega); `telegram_setup()` (admin, pulsante "Verifica") imposta il webhook e legge il nome del bot.

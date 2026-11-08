@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { SUPABASE_KEY, SUPABASE_URL, isSupabaseConfigured } from "./env";
 
-const PUBLIC_PATHS = ["/login", "/registrati", "/auth", "/configurazione"];
+const PUBLIC_PATHS = ["/login", "/registrati", "/auth", "/configurazione", "/api/telegram"];
 
 /** Rinnova la sessione a ogni richiesta e manda al login chi non è autenticato. */
 export async function updateSession(request: NextRequest) {
