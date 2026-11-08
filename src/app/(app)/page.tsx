@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   CheckSquare,
   Target,
+  UserPlus,
   TrendingUp,
   Users,
   Wallet,
@@ -24,6 +25,8 @@ import { can } from "@/lib/permissions";
 import { cn, formatEuro } from "@/lib/utils";
 import { getDashboardData } from "@/modules/dashboard/queries";
 import { dueInfo, DueLabel, PriorityFlag, TaskCode } from "@/modules/task/components/task-meta";
+import { UnassignedTasks } from "@/modules/task/components/unassigned-tasks";
+import { listActiveTeam } from "@/modules/team/queries";
 
 export const metadata = { title: "Dashboard" };
 
@@ -55,7 +58,7 @@ const STAGE_BAR: Record<string, string> = {
 export default async function DashboardPage() {
   const user = await getCurrentUser();
   const showMoney = can.viewMoney(user.role);
-  const d = await getDashboardData(user.id, showMoney);
+  const [d, team] = await Promise.all([getDashboardData(user.id, showMoney), listActiveTeam()]);
   const firstName = user.full_name.split(" ")[0];
   const today = new Date().toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Rome" });
   const lateTasks = d.myTasks.filter((t) => dueInfo(t.due_date, t.status)?.late).length;
@@ -132,6 +135,19 @@ export default async function DashboardPage() {
           </div>
         </div>
       </section>
+
+      {/* Task senza assegnatario: da prendere in carico */}
+      {d.unassignedCount > 0 && (
+        <BandCard
+          area="work"
+          icon={UserPlus}
+          title={`Da assegnare · ${d.unassignedCount} ${d.unassignedCount === 1 ? "task senza nessuno" : "task senza nessuno"}`}
+          href="/task?chi=nessuno"
+          linkLabel={d.unassignedCount > d.unassigned.length ? `Vedi tutti (${d.unassignedCount})` : "Apri i task"}
+        >
+          <UnassignedTasks tasks={d.unassigned} people={team} meId={user.id} />
+        </BandCard>
+      )}
 
       <div className="grid gap-6 xl:grid-cols-5">
         {/* I miei task */}

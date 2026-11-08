@@ -72,7 +72,8 @@ export function TaskWorkspace({
     setTasks(initial);
   }
   const [q, setQ] = React.useState("");
-  const [who, setWho] = React.useState<string>("tutti");
+  // "?chi=nessuno" (dal riquadro "Da assegnare" in dashboard) apre già filtrato
+  const [who, setWho] = React.useState<string>(() => params.get("chi") ?? "tutti");
   const [dragId, setDragId] = React.useState<string | null>(null);
   const [over, setOver] = React.useState<TaskStatus | null>(null);
   const [month, setMonth] = React.useState(() => {

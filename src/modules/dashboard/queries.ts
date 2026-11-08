@@ -8,7 +8,7 @@ export async function getDashboardData(userId: string, withMoney = false) {
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
   const in30 = new Date(now.getTime() + 30 * 86400000).toISOString().slice(0, 10);
-  const [clients, openLeads, wonMonth, dueActivities, recentLeads, activeProjects, myTasks, renewals, receivables] = await Promise.all([
+  const [clients, openLeads, wonMonth, dueActivities, recentLeads, activeProjects, myTasks, renewals, receivables, openTasks] = await Promise.all([
     supabase.from("clients").select("id", { count: "exact", head: true }).eq("status", "attivo").is("deleted_at", null),
     supabase.from("leads").select("estimated_value_cents, stage").is("deleted_at", null).not("stage", "in", "(vinto,perso)"),
     supabase.from("leads").select("estimated_value_cents").eq("stage", "vinto").gte("closed_at", monthStart).is("deleted_at", null),
@@ -46,7 +46,17 @@ export async function getDashboardData(userId: string, withMoney = false) {
     withMoney
       ? supabase.from("receivables").select("amount_cents, due_date, payments(amount_cents)").is("deleted_at", null)
       : Promise.resolve({ data: [] as { amount_cents: number; due_date: string | null; payments: { amount_cents: number }[] }[] }),
+    // Task aperti per trovare quelli senza nessuno assegnato
+    supabase
+      .from("tasks")
+      .select("id, title, number, status, priority, due_date, project:projects(id, code, name), assignees:task_assignees(user_id)")
+      .is("deleted_at", null)
+      .neq("status", "fatto")
+      .order("due_date", { ascending: true, nullsFirst: false })
+      .order("created_at", { ascending: false })
+      .limit(500),
   ]);
+  const unassigned = (openTasks.data ?? []).filter((t) => t.assignees.length === 0);
   const today = now.toISOString().slice(0, 10);
   let toCollect = 0;
   let overdue = 0;
@@ -82,5 +92,7 @@ export async function getDashboardData(userId: string, withMoney = false) {
     toCollectCents: toCollect,
     overdueCents: overdue,
     myTasks: myTasks.data ?? [],
+    unassigned: unassigned.slice(0, 6).map((t) => ({ id: t.id, title: t.title, number: t.number, status: t.status, priority: t.priority, due_date: t.due_date, project: t.project })),
+    unassignedCount: unassigned.length,
   };
 }
