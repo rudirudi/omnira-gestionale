@@ -41,9 +41,9 @@ export function UnassignedTasks({ tasks, people, meId }: { tasks: Item[]; people
   };
 
   return (
-    <ul className="grid gap-2 lg:grid-cols-2">
+    <ul className="grid grid-cols-1 gap-2 lg:grid-cols-2">
       {tasks.map((t) => (
-        <li key={t.id} className="flex items-center gap-3 rounded-lg border border-dashed border-work/40 bg-work/[0.03] p-2.5 pl-3">
+        <li key={t.id} className="flex min-w-0 items-center gap-3 rounded-lg border border-dashed border-work/40 bg-work/[0.03] p-2.5 pl-3">
           <Link href={`/task?aperto=${t.id}`} className="min-w-0 flex-1">
             <p className="flex items-center gap-1.5 truncate text-[13px] font-medium">
               <PriorityFlag priority={t.priority} />
@@ -59,8 +59,8 @@ export function UnassignedTasks({ tasks, people, meId }: { tasks: Item[]; people
             <Loader2 className="size-4 animate-spin text-muted-foreground" />
           ) : (
             <div className="flex shrink-0 items-center">
-              <Button size="sm" className="h-7 rounded-r-none px-2.5" onClick={() => assign(t.id, meId, "Task preso in carico")}>
-                <Hand /> Prendo io
+              <Button size="sm" className="h-7 rounded-r-none px-2.5" aria-label="Prendo io" onClick={() => assign(t.id, meId, "Task preso in carico")}>
+                <Hand /> <span className="hidden sm:inline">Prendo io</span>
               </Button>
               {others.length > 0 && (
                 <DropdownMenu>

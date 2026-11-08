@@ -29,12 +29,12 @@ export async function getDashboardData(userId: string, withMoney = false) {
     supabase.from("projects").select("id", { count: "exact", head: true }).eq("status", "attivo").is("deleted_at", null),
     supabase
       .from("tasks")
-      .select("id, title, number, status, priority, due_date, project:projects(id, code, name), me:task_assignees!inner(user_id)")
+      .select("id, title, number, status, priority, due_date, project:projects(id, code, name, client:clients(id, name)), me:task_assignees!inner(user_id)")
       .eq("me.user_id", userId)
       .is("deleted_at", null)
       .neq("status", "fatto")
       .order("due_date", { ascending: true, nullsFirst: false })
-      .limit(8),
+      .limit(40),
     supabase
       .from("renewals")
       .select("id, name, type, next_due_date, price_cents, client:clients(name)")
