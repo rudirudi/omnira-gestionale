@@ -40,6 +40,7 @@ export type ProfileRow = Timestamps & {
   job_title: string | null;
   hourly_cost_cents: number | null;
   active: boolean;
+  email_notifications: boolean;
 };
 
 export type CompanySettingsRow = {
@@ -56,6 +57,8 @@ export type CompanySettingsRow = {
   invoice_prefix: string;
   default_vat_rate: number;
   updated_at: string;
+  app_url: string;
+  email_from: string;
 };
 
 export type AuditLogRow = {
@@ -216,6 +219,7 @@ export type NotificationRow = {
   actor_id: string | null;
   read_at: string | null;
   created_at: string;
+  emailed_at: string | null;
 };
 
 export type ProjectProgressRow = {
@@ -578,6 +582,20 @@ export type Database = {
       accept_quote: {
         Args: { p_id: string; p_create_project?: boolean; p_project_type?: ProjectType; p_create_receivables?: boolean; p_create_renewals?: boolean };
         Returns: string | null;
+      };
+      send_test_email: { Args: Record<string, never>; Returns: string };
+      email_status: {
+        Args: Record<string, never>;
+        Returns: {
+          created_at: string | null;
+          to_email: string | null;
+          subject: string | null;
+          kind: string | null;
+          status: string | null;
+          http_status: number | null;
+          detail: string | null;
+          key_configured: boolean;
+        }[];
       };
       renew_renewal: { Args: { p_id: string; p_create_receivable?: boolean; p_create_expense?: boolean }; Returns: string };
     };

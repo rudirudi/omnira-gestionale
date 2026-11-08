@@ -113,3 +113,14 @@ Il pulsante "Chiedi all'assistente" (o Ctrl+J) apre una chat con Claude che legg
 - Serve la variabile d'ambiente `ANTHROPIC_API_KEY` su Vercel (Settings → Environment Variables → Production e Preview), poi un nuovo deploy.
 - Modello predefinito `claude-sonnet-5-5`; si può cambiare con `ASSISTANT_MODEL`.
 - La conversazione resta solo nel browser di chi la usa (localStorage).
+
+## Avvisi via email (Resend)
+
+Ogni mattina (07:05 UTC, dopo il controllo scadenze delle 07:00) `send_renewal_digest()` manda a ogni persona attiva con
+«Ricevi avvisi via email» un'unica email con le nuove notifiche di scadenza delle ultime 24 ore.
+
+- Invio dal database con `pg_net` verso l'API di Resend; mittente in `company_settings.email_from`.
+- La chiave Resend sta **solo** nel Vault di Supabase: `select vault.create_secret('re_…', 'resend_api_key');`
+  (per cambiarla: `select vault.update_secret((select id from vault.secrets where name = 'resend_api_key'), 're_…');`).
+- Senza chiave le notifiche restano nella campanella e verranno inviate al primo giro con chiave (entro 24 ore).
+- Impostazioni → Email (solo admin): stato, ultimi invii con l'esito di Resend, email di prova.

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { AppRole, ProfileRow } from "@/lib/database.types";
 
-export type CurrentUser = Pick<ProfileRow, "id" | "full_name" | "email" | "role" | "site_id" | "job_title">;
+export type CurrentUser = Pick<ProfileRow, "id" | "full_name" | "email" | "role" | "site_id" | "job_title" | "email_notifications">;
 
 /** Utente corrente (una lettura per richiesta). Reindirizza al login se manca o è disattivato. */
 export const getCurrentUser = cache(async (): Promise<CurrentUser> => {
@@ -16,7 +16,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser> => {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, full_name, email, role, site_id, job_title, active")
+    .select("id, full_name, email, role, site_id, job_title, active, email_notifications")
     .eq("id", userId)
     .single();
 
@@ -31,6 +31,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser> => {
     role: profile.role,
     site_id: profile.site_id,
     job_title: profile.job_title,
+    email_notifications: profile.email_notifications,
   };
 });
 

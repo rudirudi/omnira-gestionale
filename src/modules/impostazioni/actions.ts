@@ -84,3 +84,23 @@ export async function updateMemberAction(input: z.input<typeof memberSchema>): P
   revalidatePath("/impostazioni");
   return { ok: true, message: "Membro aggiornato" };
 }
+
+export async function setEmailNotificationsAction(enabled: boolean): Promise<ActionResult> {
+  const me = await getCurrentUser();
+  const supabase = await createClient();
+  const { error } = await supabase.from("profiles").update({ email_notifications: enabled }).eq("id", me.id);
+  if (error) return fromDbError(error);
+  revalidatePath("/impostazioni");
+  return { ok: true, message: enabled ? "Riceverai gli avvisi anche via email" : "Avvisi via email disattivati" };
+}
+
+export async function sendTestEmailAction(): Promise<ActionResult> {
+  const me = await getCurrentUser();
+  if (me.role !== "admin") return { ok: false, error: "Solo un amministratore può inviare l'email di prova." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("send_test_email");
+  if (error) return fromDbError(error);
+  revalidatePath("/impostazioni");
+  if (data === "senza_chiave") return { ok: false, error: "Manca la chiave Resend nel Vault di Supabase: segui i passaggi qui sotto." };
+  return { ok: true, message: `Email di prova inviata a ${me.email}: controlla la posta (anche lo spam) tra un minuto` };
+}
