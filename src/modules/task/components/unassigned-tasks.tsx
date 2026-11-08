@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { TaskPriority, TaskStatus } from "@/lib/database.types";
+import { projectColor } from "@/lib/project-color";
 import { cn } from "@/lib/utils";
 import { setAssigneesAction } from "../actions";
 import { DueLabel, PriorityFlag, TaskCode } from "./task-meta";
@@ -53,22 +54,25 @@ export function UnassignedTasks({ tasks, people, meId }: { tasks: Item[]; people
   return (
     <div className={cn("grid grid-cols-1 items-start gap-4", groups.length > 1 && "lg:grid-cols-2")}>
       {groups.map((g) => (
-        <section key={g.key} className="min-w-0 rounded-xl border border-work/25 bg-work/[0.03] p-2.5">
-          <h3 className="mb-2 flex items-center gap-2 px-1 text-[13px] font-semibold">
-            <Briefcase className="size-3.5 shrink-0 text-work-ink" />
-            {g.project ? (
-              <Link href={`/progetti/${g.project.id}`} className="min-w-0 truncate hover:underline">
-                {g.project.code && <span className="mr-1.5 font-mono text-[11px] font-medium text-muted-foreground">{g.project.code}</span>}
-                {g.project.name}
-              </Link>
-            ) : (
-              <span>Senza progetto</span>
-            )}
-            <span className="ml-auto rounded-full bg-work px-1.5 text-[11px] font-semibold text-white tabular">{g.items.length}</span>
-          </h3>
+        <section key={g.key} className="min-w-0 overflow-hidden rounded-xl border-2 bg-card" style={{ borderColor: projectColor(g.project?.id) }}>
+          <header className="relative flex min-h-12 items-center justify-center px-12 py-2.5 text-center text-white" style={{ background: projectColor(g.project?.id) }}>
+            <Briefcase className="absolute left-3.5 size-4 opacity-80" aria-hidden />
+            <div className="min-w-0">
+              {g.project?.code && <p className="font-mono text-[10.5px] leading-none tracking-wider text-white/75">{g.project.code}</p>}
+              {g.project ? (
+                <Link href={`/progetti/${g.project.id}`} className="block truncate text-[15px] font-bold tracking-tight hover:underline">
+                  {g.project.name}
+                </Link>
+              ) : (
+                <p className="text-[15px] font-bold">Senza progetto</p>
+              )}
+            </div>
+            <span className="absolute right-3 rounded-full bg-white/25 px-2 py-0.5 text-[11px] font-bold tabular">{g.items.length}</span>
+          </header>
+          <div className="p-2.5">
           <ul className={cn("grid grid-cols-1 gap-1.5", groups.length === 1 && "lg:grid-cols-2")}>
             {g.items.map((t) => (
-              <li key={t.id} className="flex min-w-0 items-center gap-3 rounded-lg border border-dashed border-work/40 bg-card p-2 pl-3">
+              <li key={t.id} className="flex min-w-0 items-center gap-3 rounded-lg border bg-card p-2 pl-3 hover:bg-muted/40">
                 <Link href={`/task?aperto=${t.id}`} className="min-w-0 flex-1">
                   <p className="flex items-center gap-1.5 truncate text-[13px] font-medium">
                     <PriorityFlag priority={t.priority} />
@@ -108,6 +112,7 @@ export function UnassignedTasks({ tasks, people, meId }: { tasks: Item[]; people
               </li>
             ))}
           </ul>
+          </div>
         </section>
       ))}
     </div>
