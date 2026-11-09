@@ -1,11 +1,24 @@
 {
+  "id": "/",
   "name": "Omnira Gestionale",
   "short_name": "Omnira",
   "description": "Gestionale interno di Omnira Soft",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#fafafb",
-  "theme_color": "#1f4196",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#0b2964",
   "lang": "it",
-  "icons": [{ "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Task", "url": "/task", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Chat", "url": "/chat", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Punti aperti", "url": "/discussioni", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
 }

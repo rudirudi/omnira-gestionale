@@ -3,6 +3,7 @@ import { PageBody, PageHeader } from "@/components/app/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getCurrentUser } from "@/lib/auth";
 import { can } from "@/lib/permissions";
+import { InstallApp } from "@/modules/impostazioni/components/install-app";
 import { NotificationServices, NotificationSettings } from "@/modules/impostazioni/components/notification-settings";
 import { CompanyForm, MyProfileForm, TeamTable } from "@/modules/impostazioni/components/settings-forms";
 import { createClient } from "@/lib/supabase/server";
@@ -41,6 +42,7 @@ export default async function ImpostazioniPage({ searchParams }: PageProps<"/imp
           </TabsList>
           <TabsContent value="profilo">
             <MyProfileForm me={user} sites={sites} />
+            <InstallApp />
           </TabsContent>
           <TabsContent value="team">
             <TeamTable members={members} sites={sites} canManage={can.manageTeam(user.role)} meId={user.id} />

@@ -68,12 +68,12 @@ export default async function StampaPreventivo({ params }: PageProps<"/stampa/pr
         </header>
 
         {/* Destinatario e oggetto */}
-        <section className="mt-6 grid grid-cols-[1fr_auto] gap-8">
+        <section className="mt-6 grid gap-4 sm:grid-cols-[1fr_auto] sm:gap-8 print:grid-cols-[1fr_auto] print:gap-8">
           <div>
             <p className="text-[10.5px] font-semibold tracking-[0.14em] text-[#8a93a6] uppercase">Oggetto</p>
             <h1 className="mt-1 text-[22px] leading-tight font-semibold">{quote.title}</h1>
           </div>
-          <div className="min-w-[60mm] rounded-lg bg-[#f4f6fa] p-3.5 text-[12px] leading-relaxed">
+          <div className="rounded-lg sm:min-w-[60mm] print:min-w-[60mm] bg-[#f4f6fa] p-3.5 text-[12px] leading-relaxed">
             <p className="text-[10.5px] font-semibold tracking-[0.14em] text-[#8a93a6] uppercase">Spett.le</p>
             {recipientLines.filter(Boolean).map((l, i) => (
               <p key={i} className={i === 0 ? "text-[13.5px] font-semibold" : "text-[#5b6478]"}>{l}</p>

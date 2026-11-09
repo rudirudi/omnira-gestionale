@@ -61,7 +61,7 @@ export function NotificationSettings({ prefs, channels }: { prefs: NotificationP
   const linked = !!prefs.telegram_chat_id;
 
   return (
-    <ActionForm action={action} className="grid max-w-3xl gap-4">
+    <ActionForm action={action} className="grid max-w-3xl grid-cols-[minmax(0,1fr)] gap-4">
       <p className="text-[13px] text-muted-foreground">
         Le notifiche compaiono sempre nella campanella in alto. Qui scegli se riceverle anche fuori dal gestionale: avvisi di <strong>scadenze</strong> (domini, hosting, rinnovi) e
         <strong> promemoria</strong> all&apos;ora stabilita.
@@ -216,11 +216,11 @@ export function NotificationServices({ channels, log }: { channels: Channels; lo
   const router = useRouter();
   const rows = log.filter((r) => r.created_at);
   return (
-    <section className="grid max-w-3xl gap-4 border-t pt-6">
+    <section className="grid max-w-3xl grid-cols-[minmax(0,1fr)] gap-4 border-t pt-6">
       <p className="flex items-center gap-2 text-[15px] font-semibold">
         <ShieldCheck className="size-4.5 text-primary" /> Servizi (visibile solo agli amministratori)
       </p>
-      <div className="grid gap-2 sm:grid-cols-3">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-3">
         <Service label="Email" ready={channels.email_ready} />
         <Service label={channels.telegram_bot ? `Telegram · @${channels.telegram_bot}` : "Telegram"} ready={channels.telegram_ready} action={<Button type="button" variant="ghost" size="sm" className="h-7" disabled={pending} onClick={() => run(telegramSetupAction)}>Verifica</Button>} />
         <Service label="WhatsApp" ready={false} />

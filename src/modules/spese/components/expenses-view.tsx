@@ -121,7 +121,7 @@ export function SpeseView({
     <div className="flex flex-col gap-5">
       {/* Periodo, persone, azioni */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-1 rounded-md border bg-card p-0.5" role="group" aria-label="Periodo">
+        <div className="flex max-w-full items-center gap-1 overflow-x-auto rounded-md border bg-card p-0.5 [scrollbar-width:none] [&>*]:shrink-0" role="group" aria-label="Periodo">
           {(["tutto", "mese", "anno"] as const).map((p) => (
             <button
               key={p}
@@ -146,7 +146,7 @@ export function SpeseView({
           </div>
         )}
         {showPeople && (
-          <div className="flex items-center gap-1 rounded-md border bg-card p-0.5" role="group" aria-label="Persona">
+          <div className="flex max-w-full items-center gap-1 overflow-x-auto rounded-md border bg-card p-0.5 [scrollbar-width:none] [&>*]:shrink-0" role="group" aria-label="Persona">
             {[{ id: "tutti", full_name: "Tutti" }, ...people].map((p) => (
               <button
                 key={p.id}

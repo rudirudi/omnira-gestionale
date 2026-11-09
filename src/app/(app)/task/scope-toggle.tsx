@@ -13,7 +13,7 @@ export function TaskScopeToggle({ all }: { all: boolean }) {
     router.replace(`/task?${next.toString()}`, { scroll: false });
   };
   return (
-    <div className="flex items-center gap-1 rounded-md border bg-card p-0.5" role="group" aria-label="Quali task">
+    <div className="flex max-w-full items-center gap-1 overflow-x-auto rounded-md border bg-card p-0.5 [scrollbar-width:none] [&>*]:shrink-0" role="group" aria-label="Quali task">
       {[
         { v: true, l: "Tutti" },
         { v: false, l: "Solo i miei" },

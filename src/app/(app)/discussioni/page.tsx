@@ -43,7 +43,7 @@ export default async function DiscussioniPage({ searchParams }: PageProps<"/disc
             description="Apri un punto quando c'è qualcosa da decidere o risolvere insieme: il team risponde sotto e alla fine lo segnate come risolto."
           />
         ) : (
-          <div className="grid gap-2 xl:grid-cols-2">
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-2 xl:grid-cols-2">
             {items.map((d) => (
               <DiscussionRowItem key={d.id} d={d} meId={user.id} />
             ))}

@@ -128,7 +128,7 @@ export function TaskWorkspace({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-1 rounded-md border bg-card p-0.5" role="tablist" aria-label="Vista">
+        <div className="flex max-w-full items-center gap-1 overflow-x-auto rounded-md border bg-card p-0.5 [scrollbar-width:none] [&>*]:shrink-0" role="tablist" aria-label="Vista">
           {VIEWS.map((v) => (
             <button
               key={v.value}
@@ -304,12 +304,12 @@ function TaskListView({
             </h3>
             <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-xs">
               {[...g.items].sort(sortTasks).map((t) => (
-                <li key={t.id} className="flex items-center gap-3 px-3 py-2 hover:bg-muted/40">
+                <li key={t.id} className="flex items-center gap-3 px-3 py-2.5 hover:bg-muted/40 md:py-2">
                   <input
                     type="checkbox"
                     checked={t.status === "fatto"}
                     onChange={() => onToggle(t)}
-                    className="size-4 shrink-0 accent-[var(--primary)]"
+                    className="size-5 shrink-0 accent-[var(--primary)] md:size-4"
                     aria-label={t.status === "fatto" ? `Riapri ${t.title}` : `Completa ${t.title}`}
                   />
                   <button type="button" onClick={() => onOpen(t.id)} className="flex min-w-0 flex-1 items-center gap-2 text-left">

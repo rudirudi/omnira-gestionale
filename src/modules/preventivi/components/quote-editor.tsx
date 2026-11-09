@@ -402,7 +402,8 @@ export function QuoteEditor({
                 const badPrice = it.price.trim() !== "" && parseEuro(it.price) === null;
                 return (
                   <li key={it.key} className={cn("rounded-lg border p-2.5", it.frequency ? "border-money/30 bg-money/[0.04]" : "bg-card")}>
-                    <div className="flex items-center gap-2">
+                    {/* Telefono: descrizione a tutta riga, sotto totale e pulsanti */}
+                    <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
                       <span className="w-5 shrink-0 text-center text-xs font-semibold text-muted-foreground tabular">{idx + 1}</span>
                       <Input
                         aria-label={`Descrizione voce ${idx + 1}`}
@@ -410,11 +411,11 @@ export function QuoteEditor({
                         onChange={(e) => setItem(it.key, { description: e.target.value })}
                         placeholder="Es. Sviluppo sito 5 pagine"
                         disabled={closed}
-                        className="h-8 flex-1 font-medium"
+                        className="h-8 min-w-0 flex-1 basis-[calc(100%-1.75rem)] font-medium sm:basis-auto"
                       />
-                      <span className="w-28 shrink-0 text-right text-[14px] font-semibold tabular">{formatEuro(total)}</span>
+                      <span className="ml-7 shrink-0 text-[14px] font-semibold tabular sm:ml-0 sm:w-28 sm:text-right">{formatEuro(total)}</span>
                       {!closed && (
-                        <span className="flex shrink-0 gap-0.5">
+                        <span className="ml-auto flex shrink-0 gap-0.5 sm:ml-0">
                           <IconBtn label="Su" onClick={() => move(idx, -1)} disabled={idx === 0}><ArrowUp /></IconBtn>
                           <IconBtn label="Giù" onClick={() => move(idx, 1)} disabled={idx === form.items.length - 1}><ArrowDown /></IconBtn>
                           <IconBtn label="Elimina voce" onClick={() => setForm((f) => ({ ...f, items: f.items.filter((x) => x.key !== it.key) }))} danger>

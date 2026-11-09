@@ -25,7 +25,7 @@ export function ProjectFilters() {
   };
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <div className="flex items-center gap-1 rounded-md border bg-card p-0.5" role="group" aria-label="Filtra per stato">
+      <div className="flex max-w-full items-center gap-1 overflow-x-auto rounded-md border bg-card p-0.5 [scrollbar-width:none] [&>*]:shrink-0" role="group" aria-label="Filtra per stato">
         {STATI.map((s) => (
           <button
             key={s.value}
