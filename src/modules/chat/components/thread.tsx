@@ -11,15 +11,21 @@ import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { chatDeleteAction, chatEditAction, chatMessagesAction, chatSendAction, type ChatMessage, type ChatThread } from "../actions";
 import { dayLabel, initials, renderBody, sameDay, timeLabel } from "../format";
+import { usePresence } from "../presence";
 
-export function Avatar({ id, name, size = "md" }: { id: string | null; name: string | null | undefined; size?: "sm" | "md" }) {
+export function Avatar({ id, name, size = "md", status = false }: { id: string | null; name: string | null | undefined; size?: "sm" | "md"; status?: boolean }) {
+  const { isOnline } = usePresence();
+  const on = status && isOnline(id);
   return (
-    <span
-      className={cn("flex shrink-0 items-center justify-center rounded-full font-semibold text-white", size === "sm" ? "size-7 text-[11px]" : "size-9 text-[12px]")}
-      style={{ background: projectColor(id) }}
-      aria-hidden
-    >
-      {initials(name)}
+    <span className="relative shrink-0">
+      <span
+        className={cn("flex items-center justify-center rounded-full font-semibold text-white", size === "sm" ? "size-7 text-[11px]" : "size-9 text-[12px]")}
+        style={{ background: projectColor(id) }}
+        aria-hidden
+      >
+        {initials(name)}
+      </span>
+      {on && <span className={cn("absolute right-0 bottom-0 rounded-full bg-success ring-2 ring-card", size === "sm" ? "size-2.5" : "size-3")} title="Online" />}
     </span>
   );
 }
@@ -50,6 +56,7 @@ export function Thread({
   /** Finestra piccola del riquadro in basso: niente intestazione (la mette il riquadro) */
   compact?: boolean;
 }) {
+  const presence = usePresence();
   const scroller = React.useRef<HTMLDivElement>(null);
   const atBottom = React.useRef(true);
   const [loadingOlder, setLoadingOlder] = React.useState(false);
@@ -166,12 +173,16 @@ export function Thread({
             <Hash className="size-4" />
           </span>
         ) : (
-          <Avatar id={conv.other_id} name={conv.other_name} />
+          <Avatar id={conv.other_id} name={conv.other_name} status />
         )}
         <div className="min-w-0">
           <h2 className="truncate text-[15px] font-semibold">{conv.kind === "canale" ? `#${title}` : title}</h2>
           <p className="truncate text-[12px] text-muted-foreground">
-            {typing ? <span className="text-primary">{typing.name.split(" ")[0] || "Qualcuno"} sta scrivendo…</span> : conv.kind === "canale" ? "Tutto il team" : "Messaggi diretti"}
+            {typing ? <span className="text-primary">{typing.name.split(" ")[0] || "Qualcuno"} sta scrivendo…</span> : conv.kind === "canale" ? (
+              `Tutto il team · ${presence.onlineCount} online`
+            ) : (
+              <span className={cn(presence.isOnline(conv.other_id) && "font-medium text-success")}>{presence.status(conv.other_id)}</span>
+            )}
           </p>
         </div>
       </header>

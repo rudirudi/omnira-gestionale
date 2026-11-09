@@ -11,6 +11,7 @@ import type { ChatOverviewRow } from "@/lib/database.types";
 import { cn } from "@/lib/utils";
 import { chatOpenDirectAction, chatTeamAction } from "../actions";
 import { shortWhen } from "../format";
+import { usePresence } from "../presence";
 import { useChatData } from "../use-chat-data";
 import { Avatar, convTitle, Thread } from "./thread";
 
@@ -47,6 +48,7 @@ export function ChatDock() {
 
 function DockInner() {
   const { id: meId } = useCurrentUser();
+  const presence = usePresence();
   const [state, setState] = React.useState<DockState>(readState);
   const [team, setTeam] = React.useState<{ id: string; full_name: string }[]>([]);
   const { windows, listOpen } = state;
@@ -162,7 +164,7 @@ function DockInner() {
                     {others.length === 0 && <p className="px-2 py-1.5 text-xs text-muted-foreground">Nessun altro utente attivo</p>}
                     {others.map((p) => (
                       <DropdownMenuItem key={p.id} onSelect={() => void startDirect(p.id)}>
-                        <Avatar id={p.id} name={p.full_name} size="sm" />
+                        <Avatar id={p.id} name={p.full_name} size="sm" status />
                         {p.full_name}
                       </DropdownMenuItem>
                     ))}
@@ -185,7 +187,7 @@ function DockInner() {
                         <Hash className="size-4" />
                       </span>
                     ) : (
-                      <Avatar id={c.other_id} name={c.other_name} />
+                      <Avatar id={c.other_id} name={c.other_name} status />
                     )}
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center gap-2">
@@ -224,9 +226,12 @@ function DockInner() {
                       <Hash className="size-3.5" />
                     </span>
                   ) : (
-                    <Avatar id={c.other_id} name={c.other_name} size="sm" />
+                    <Avatar id={c.other_id} name={c.other_name} size="sm" status />
                   )}
-                  <span className="truncate text-[13.5px] font-semibold">{title}</span>
+                  <span className="flex min-w-0 flex-col leading-tight">
+                    <span className="truncate text-[13.5px] font-semibold">{title}</span>
+                    <span className="truncate text-[10.5px] text-white/75">{c.kind === "canale" ? `${presence.onlineCount} online` : presence.status(c.other_id)}</span>
+                  </span>
                   {alert && <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-white px-1.5 text-[11px] font-bold text-destructive">{c.unread}</span>}
                 </button>
                 <Link href={`/chat?c=${w.id}`} className="flex size-7 items-center justify-center rounded-md hover:bg-white/15" aria-label="Apri a tutta pagina" title="Apri a tutta pagina">

@@ -472,6 +472,12 @@ export type Database = {
           { foreignKeyName: "leads_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ];
       };
+      user_presence: {
+        Row: { user_id: string; last_seen_at: string };
+        Insert: { user_id: string; last_seen_at?: string };
+        Update: { last_seen_at?: string };
+        Relationships: [];
+      };
       chat_conversations: {
         Row: ChatConversationRow;
         Insert: InsertOf<ChatConversationRow, "kind">;
@@ -651,6 +657,7 @@ export type Database = {
       chat_open_direct: { Args: { other: string }; Returns: string };
       chat_mark_read: { Args: { conv: string }; Returns: undefined };
       chat_overview: { Args: Record<string, never>; Returns: ChatOverviewRow[] };
+      chat_heartbeat: { Args: Record<string, never>; Returns: undefined };
       chat_unread_total: { Args: Record<string, never>; Returns: number };
       current_app_role: { Args: Record<string, never>; Returns: AppRole };
       is_staff: { Args: Record<string, never>; Returns: boolean };

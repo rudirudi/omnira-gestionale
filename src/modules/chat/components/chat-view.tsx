@@ -147,7 +147,7 @@ export function ChatView({
               {others.length === 0 && <p className="px-2 py-1.5 text-xs text-muted-foreground">Nessun altro utente attivo</p>}
               {others.map((p) => (
                 <DropdownMenuItem key={p.id} onSelect={() => void startDirect(p.id)}>
-                  <Avatar id={p.id} name={p.full_name} size="sm" />
+                  <Avatar id={p.id} name={p.full_name} size="sm" status />
                   {p.full_name}
                 </DropdownMenuItem>
               ))}
@@ -200,7 +200,7 @@ export function ChatView({
                           <Hash className="size-4" />
                         </span>
                       ) : (
-                        <Avatar id={c.other_id} name={c.other_name} />
+                        <Avatar id={c.other_id} name={c.other_name} status />
                       )}
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center gap-2">

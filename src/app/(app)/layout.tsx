@@ -7,6 +7,7 @@ import { FEATURES } from "@/lib/features";
 import { can, ROLE_LABEL } from "@/lib/permissions";
 import { Assistant } from "@/modules/assistente/components/assistant";
 import { ChatDock } from "@/modules/chat/components/chat-dock";
+import { PresenceProvider } from "@/modules/chat/presence";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const user = await getCurrentUser();
@@ -14,6 +15,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
 
   return (
     <CurrentUserProvider value={{ id: user.id, fullName: user.full_name, email: user.email, roleLabel: ROLE_LABEL[user.role], hiddenNav }}>
+      <PresenceProvider>
       <TooltipProvider delayDuration={300}>
         <div className="flex min-h-svh">
           <aside className="sticky top-0 hidden h-svh w-60 shrink-0 flex-col bg-sidebar lg:flex">
@@ -29,6 +31,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         <ChatDock />
         {FEATURES.assistant && <Assistant />}
       </TooltipProvider>
+      </PresenceProvider>
     </CurrentUserProvider>
   );
 }

@@ -137,3 +137,12 @@ export async function chatTeamAction(): Promise<{ id: string; full_name: string 
   const { data } = await supabase.from("profiles").select("id, full_name").eq("active", true).order("full_name");
   return data ?? [];
 }
+
+/** Segnale "sono online" + chi è online adesso (ultimo segnale per utente) */
+export async function chatPresenceAction(): Promise<Record<string, string>> {
+  await getCurrentUser();
+  const supabase = await createClient();
+  await supabase.rpc("chat_heartbeat");
+  const { data } = await supabase.from("user_presence").select("user_id, last_seen_at");
+  return Object.fromEntries((data ?? []).map((r) => [r.user_id, r.last_seen_at]));
+}
