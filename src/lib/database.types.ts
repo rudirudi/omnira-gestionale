@@ -376,6 +376,44 @@ export type ServiceRow = Timestamps & {
 };
 
 /** Campi generati dal DB → opzionali in inserimento */
+export type ChatConversationRow = {
+  id: string;
+  kind: "diretta" | "canale";
+  name: string | null;
+  slug: string | null;
+  created_by: string | null;
+  last_message_at: string | null;
+  created_at: string;
+};
+export type ChatMemberRow = {
+  conversation_id: string;
+  user_id: string;
+  last_read_at: string;
+  notified_at: string | null;
+  joined_at: string;
+};
+export type ChatMessageRow = {
+  id: string;
+  conversation_id: string;
+  author_id: string | null;
+  body: string;
+  edited_at: string | null;
+  deleted_at: string | null;
+  created_at: string;
+};
+export type ChatOverviewRow = {
+  id: string;
+  kind: "diretta" | "canale";
+  name: string | null;
+  other_id: string | null;
+  other_name: string | null;
+  last_body: string | null;
+  last_author: string | null;
+  last_at: string;
+  last_deleted: boolean | null;
+  unread: number;
+};
+
 type InsertOf<R, Required extends keyof R> = Pick<R, Required> & Partial<Omit<R, Required>>;
 
 export type Database = {
@@ -432,6 +470,30 @@ export type Database = {
           { foreignKeyName: "leads_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
           { foreignKeyName: "leads_client_id_fkey"; columns: ["client_id"]; isOneToOne: false; referencedRelation: "clients"; referencedColumns: ["id"] },
           { foreignKeyName: "leads_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
+      };
+      chat_conversations: {
+        Row: ChatConversationRow;
+        Insert: InsertOf<ChatConversationRow, "kind">;
+        Update: Partial<ChatConversationRow>;
+        Relationships: [];
+      };
+      chat_members: {
+        Row: ChatMemberRow;
+        Insert: InsertOf<ChatMemberRow, "conversation_id" | "user_id">;
+        Update: Partial<ChatMemberRow>;
+        Relationships: [
+          { foreignKeyName: "chat_members_conversation_id_fkey"; columns: ["conversation_id"]; isOneToOne: false; referencedRelation: "chat_conversations"; referencedColumns: ["id"] },
+          { foreignKeyName: "chat_members_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
+      };
+      chat_messages: {
+        Row: ChatMessageRow;
+        Insert: InsertOf<ChatMessageRow, "conversation_id" | "body">;
+        Update: Partial<ChatMessageRow>;
+        Relationships: [
+          { foreignKeyName: "chat_messages_conversation_id_fkey"; columns: ["conversation_id"]; isOneToOne: false; referencedRelation: "chat_conversations"; referencedColumns: ["id"] },
+          { foreignKeyName: "chat_messages_author_id_fkey"; columns: ["author_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ];
       };
       activities: {
@@ -586,6 +648,10 @@ export type Database = {
       project_progress: { Row: ProjectProgressRow; Relationships: [] };
     };
     Functions: {
+      chat_open_direct: { Args: { other: string }; Returns: string };
+      chat_mark_read: { Args: { conv: string }; Returns: undefined };
+      chat_overview: { Args: Record<string, never>; Returns: ChatOverviewRow[] };
+      chat_unread_total: { Args: Record<string, never>; Returns: number };
       current_app_role: { Args: Record<string, never>; Returns: AppRole };
       is_staff: { Args: Record<string, never>; Returns: boolean };
       has_role: { Args: { roles: AppRole[] }; Returns: boolean };

@@ -9,6 +9,7 @@ import {
   HandCoins,
   LayoutDashboard,
   LifeBuoy,
+  MessagesSquare,
   Receipt,
   Settings,
   Tags,
@@ -110,6 +111,7 @@ export type Module = { href: string; label: string; icon: LucideIcon; area: Area
 
 export const MODULES = {
   dashboard: { href: "/", label: "Dashboard", icon: LayoutDashboard, area: "system", module: "M1" },
+  chat: { href: "/chat", label: "Chat", icon: MessagesSquare, area: "system", module: "M13" },
   progetti: { href: "/progetti", label: "Progetti", icon: Briefcase, area: "work", module: "M3" },
   task: { href: "/task", label: "Task", icon: CheckSquare, area: "work", module: "M4" },
   tempo: { href: "/tempo", label: "Tempo", icon: Clock, area: "work", module: "M6", phase: 2 },

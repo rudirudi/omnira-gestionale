@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AREA } from "@/lib/areas";
 import { cn } from "@/lib/utils";
+import { ChatUnreadBadge } from "@/modules/chat/components/chat-unread-badge";
 import { NAV } from "./nav";
 
 function isActive(pathname: string, href: string) {
@@ -50,6 +51,7 @@ export function SidebarNav({ onNavigate, hidden = [] }: { onNavigate?: () => voi
                   <Icon className="size-[15px]" strokeWidth={2} />
                 </span>
                 <span className="truncate">{item.label}</span>
+                {item.href === "/chat" && <ChatUnreadBadge active={active} />}
                 {item.phase && item.phase > 1 ? (
                   <span
                     className={cn(
