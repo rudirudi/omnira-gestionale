@@ -93,7 +93,7 @@ export function RenewalForm({
       </Field>
       <label className="flex items-center gap-2 text-[13px] sm:col-span-2">
         <input type="checkbox" name="auto_renew" defaultChecked={d.auto_renew ?? false} className="size-4 accent-[var(--primary)]" />
-        Si rinnova da solo presso il fornitore (l&apos;avviso arriva comunque, per far pagare il cliente)
+        Rinnovo automatico: alla scadenza crea da solo l&apos;incasso (e la spesa) e passa al periodo successivo
       </label>
       <Field label="Note" htmlFor="rn_notes" className="sm:col-span-2">
         <Textarea id="rn_notes" name="notes" rows={2} defaultValue={d.notes ?? ""} placeholder="Es. account Aruba di riferimento, DNS gestiti da noi" />

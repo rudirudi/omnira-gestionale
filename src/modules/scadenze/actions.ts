@@ -77,3 +77,13 @@ export async function setRenewalActiveAction(id: string, active: boolean): Promi
   revalidateAll();
   return { ok: true, message: active ? "Scadenza riattivata" : "Scadenza disattivata: niente più avvisi" };
 }
+
+/** Rinnovo automatico: alla scadenza il gestionale crea incasso/spesa e passa al periodo dopo */
+export async function setRenewalAutoAction(id: string, auto: boolean): Promise<ActionResult> {
+  await requireRole([...MONEY]);
+  const supabase = await createClient();
+  const { error } = await supabase.from("renewals").update({ auto_renew: auto }).eq("id", z.guid().parse(id));
+  if (error) return fromDbError(error);
+  revalidateAll();
+  return { ok: true, message: auto ? "Rinnovo automatico attivo: alla scadenza l'incasso si crea da solo" : "Rinnovo automatico disattivato: alla scadenza rinnovi tu" };
+}

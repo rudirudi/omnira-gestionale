@@ -27,7 +27,7 @@ import type { RenewalType } from "@/lib/database.types";
 import { RENEWAL_FREQUENCY, RENEWAL_TYPE } from "@/lib/labels";
 import { replaceUrl } from "@/lib/url-state";
 import { cn, formatDate, formatEuro } from "@/lib/utils";
-import { createRenewalAction, renewAction, setRenewalActiveAction, updateRenewalAction } from "../actions";
+import { createRenewalAction, renewAction, setRenewalActiveAction, setRenewalAutoAction, updateRenewalAction } from "../actions";
 import type { RenewalItem } from "../queries";
 import { RenewalForm } from "./renewal-form";
 
@@ -308,9 +308,33 @@ export function RenewalsView({
                     <Info label="Avviso" value={`${open.notify_days_before} giorni prima`} />
                     <Info label="Costo per noi" value={open.cost_cents != null ? formatEuro(open.cost_cents) : "—"} />
                     <Info label="Prezzo al cliente" value={open.price_cents != null ? formatEuro(open.price_cents) : "—"} />
-                    <Info label="Rinnovo automatico" value={open.auto_renew ? "Sì" : "No"} />
                     <Info label="Avviso inviato" value={open.notified_for === open.next_due_date ? "Sì" : "Non ancora"} />
                   </dl>
+                  {/* Rinnovo automatico: si attiva/disattiva qui, al volo */}
+                  <div className={cn("flex items-start gap-3 rounded-lg border p-3", open.auto_renew && "border-money/40 bg-money/[0.06]")}>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13px] font-semibold">Rinnovo automatico</p>
+                      <p className="mt-0.5 text-[12px] text-muted-foreground">
+                        {open.auto_renew
+                          ? "Alla scadenza il gestionale crea da solo l'incasso (e la spesa, se c'è un costo) e passa al periodo successivo. Ti arriva un avviso."
+                          : "Alla scadenza ricevi l'avviso e rinnovi tu con il pulsante Rinnova."}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={open.auto_renew}
+                      aria-label="Rinnovo automatico"
+                      disabled={!canManage || busy || !open.active}
+                      onClick={() => start(async () => { const x = await setRenewalAutoAction(open.id, !open.auto_renew); if (x.ok) toast.success(x.message); else toast.error(x.error); })}
+                      className={cn(
+                        "relative mt-0.5 inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:opacity-50",
+                        open.auto_renew ? "bg-money" : "bg-muted-foreground/30",
+                      )}
+                    >
+                      <span className={cn("inline-block size-5 rounded-full bg-white shadow transition-transform", open.auto_renew ? "translate-x-5.5" : "translate-x-0.5")} />
+                    </button>
+                  </div>
                   {open.notes && <p className="rounded-lg bg-muted/60 p-3 text-[13px] whitespace-pre-wrap">{open.notes}</p>}
                   {canManage && (
                     <div className="flex flex-wrap gap-2 border-t pt-4">
