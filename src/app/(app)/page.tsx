@@ -164,7 +164,16 @@ export default async function DashboardPage() {
       </section>
 
       {/* Task: un solo riquadro con le schede */}
-      <BandCard area="work" icon={CheckSquare} title="Task" href="/task" linkLabel="Apri la pagina Task" bodyClassName="p-2.5 sm:p-3">
+      {/* Altezza fissa = schermo: se il contenuto è di più, si scorre dentro il riquadro */}
+      <BandCard
+        area="work"
+        icon={CheckSquare}
+        title="Task"
+        href="/task"
+        linkLabel="Apri la pagina Task"
+        className="flex h-[calc(100svh-1.5rem)] min-h-[480px] flex-col"
+        bodyClassName="flex min-h-0 flex-1 flex-col p-2.5 sm:p-3"
+      >
         <TaskTabs
           tabs={[
             {

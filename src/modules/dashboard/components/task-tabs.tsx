@@ -10,7 +10,7 @@ export function TaskTabs({ tabs, initial }: { tabs: TaskTab[]; initial?: string 
   const [active, setActive] = React.useState(initial ?? tabs[0]?.key);
   const refs = React.useRef<(HTMLButtonElement | null)[]>([]);
   return (
-    <div className="flex flex-col gap-2.5">
+    <div className="flex min-h-0 flex-1 flex-col gap-2.5">
       <div
         role="tablist"
         aria-label="Task"
@@ -57,7 +57,7 @@ export function TaskTabs({ tabs, initial }: { tabs: TaskTab[]; initial?: string 
         })}
       </div>
       {tabs.map((t) => (
-        <div key={t.key} role="tabpanel" id={`panel-${t.key}`} aria-labelledby={`tab-${t.key}`} hidden={t.key !== active}>
+        <div key={t.key} role="tabpanel" id={`panel-${t.key}`} aria-labelledby={`tab-${t.key}`} hidden={t.key !== active} tabIndex={0} className="-mr-1 min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
           {t.content}
         </div>
       ))}

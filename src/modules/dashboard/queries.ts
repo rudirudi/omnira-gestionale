@@ -92,7 +92,7 @@ export async function getDashboardData(userId: string, withMoney = false) {
     toCollectCents: toCollect,
     overdueCents: overdue,
     myTasks: myTasks.data ?? [],
-    unassigned: unassigned.slice(0, 10).map((t) => ({ id: t.id, title: t.title, number: t.number, status: t.status, priority: t.priority, due_date: t.due_date, project: t.project ? { id: t.project.id, code: t.project.code, name: t.project.name } : null })),
+    unassigned: unassigned.slice(0, 150).map((t) => ({ id: t.id, title: t.title, number: t.number, status: t.status, priority: t.priority, due_date: t.due_date, project: t.project ? { id: t.project.id, code: t.project.code, name: t.project.name } : null })),
     unassignedCount: unassigned.length,
     // Tutto il team: i task aperti con qualcuno assegnato (già in ordine di scadenza)
     teamTasks: (openTasks.data ?? []).filter((t) => t.assignees.length > 0).slice(0, 60),
