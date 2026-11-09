@@ -77,16 +77,16 @@ export default async function DashboardPage() {
   return (
     <PageBody className="flex flex-col gap-3 pt-0 pb-4 sm:px-4">
       {/* Benvenuto */}
-      <section data-hero className={cn("relative pt-3 pb-1", BRAND)}>
-        <div className="relative flex items-center gap-2">
+      {/* Griglia: data e saluto a sinistra uno sotto l'altro, strumenti e numeri a destra */}
+      <section data-hero className={cn("grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-6 pt-3 pb-1 xl:grid-cols-[minmax(0,1fr)_640px]", BRAND)}>
+        <div className="col-start-1 row-start-1 flex min-w-0 items-center gap-2">
           <HeaderMenuButton />
           <p className="text-[13px] font-medium opacity-70 first-letter:uppercase">{today}</p>
-          <div className="ml-auto" data-tools>
-            <HeaderTools />
-          </div>
         </div>
-        <div className="relative mt-3 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between xl:gap-6">
-          <div className="min-w-0">
+        <div className="col-start-2 row-start-1 justify-self-end" data-tools>
+          <HeaderTools />
+        </div>
+          <div className="col-span-2 row-start-2 min-w-0 self-start xl:col-span-1 xl:col-start-1">
             <h1 className="text-[22px] leading-tight font-semibold">
               {greeting()}, {firstName}
             </h1>
@@ -105,7 +105,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Numeri chiave dentro l'intestazione: riquadri "in vetro", colore dell'area su icona e filo in basso */}
-          <div data-kpis className="grid shrink-0 grid-cols-2 gap-2 md:grid-cols-4 xl:w-[640px]">
+          <div data-kpis className="col-span-2 row-start-3 mt-3 grid grid-cols-2 gap-2 md:grid-cols-4 xl:col-span-1 xl:col-start-2 xl:row-span-2 xl:row-start-2">
             {kpis.map((k) => {
               const g = GLASS[k.area];
               return (
@@ -130,7 +130,6 @@ export default async function DashboardPage() {
               );
             })}
           </div>
-        </div>
       </section>
 
       {/* I miei task, divisi per urgenza */}
