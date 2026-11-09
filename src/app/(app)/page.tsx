@@ -72,9 +72,9 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <PageBody className="flex flex-col gap-6">
+    <PageBody className="flex flex-col gap-3 pt-0 pb-4 sm:px-4">
       {/* Benvenuto */}
-      <section data-hero className="relative -mx-4 -mt-6 overflow-hidden border-white/60 bg-sidebar px-5 pt-5 pb-5 text-sidebar-foreground sm:-mx-6 sm:px-7 sm:pb-6 lg:border-l">
+      <section data-hero className="relative -mx-4 overflow-hidden border-white/60 bg-sidebar px-4 pt-3 pb-3 text-sidebar-foreground sm:px-5 lg:border-l">
         <div className="absolute -top-20 -right-16 size-72 rounded-full bg-white/[0.06]" aria-hidden />
         <div className="absolute -bottom-24 right-40 size-56 rounded-full bg-white/[0.04]" aria-hidden />
         <div className="relative flex items-center gap-2">
@@ -84,12 +84,12 @@ export default async function DashboardPage() {
             <HeaderTools onDark />
           </div>
         </div>
-        <div className="relative mt-5 flex flex-col gap-5 sm:mt-6 xl:flex-row xl:items-center xl:justify-between xl:gap-8">
+        <div className="relative mt-3 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between xl:gap-6">
           <div className="min-w-0">
-            <h1 className="text-[28px] leading-tight font-semibold">
+            <h1 className="text-[22px] leading-tight font-semibold">
               {greeting()}, {firstName}
             </h1>
-            <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-sidebar-foreground/85">
+            <p className="mt-1 flex flex-wrap items-center gap-x-3.5 gap-y-0.5 text-[12.5px] text-sidebar-foreground/85">
               <span className="flex items-center gap-1.5">
                 <span className="size-2 rounded-full bg-warning" /> {todayTasks} task in scadenza oggi
               </span>
@@ -104,23 +104,23 @@ export default async function DashboardPage() {
           </div>
 
           {/* Numeri chiave dentro l'intestazione: riquadri "in vetro", colore dell'area su icona e filo in basso */}
-          <div data-kpis className="grid shrink-0 grid-cols-2 gap-3 md:grid-cols-4 xl:w-[700px]">
+          <div data-kpis className="grid shrink-0 grid-cols-2 gap-2 md:grid-cols-4 xl:w-[640px]">
             {kpis.map((k) => {
               const g = GLASS[k.area];
               return (
                 <Link
                   key={k.label}
                   href={k.href}
-                  className="group relative overflow-hidden rounded-xl bg-white/[0.07] px-3.5 pt-3 pb-3.5 ring-1 ring-white/[0.12] backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-white/[0.12] hover:ring-white/25"
+                  className="group relative overflow-hidden rounded-lg bg-white/[0.07] px-3 pt-2 pb-2.5 ring-1 ring-white/[0.12] backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-white/[0.12] hover:ring-white/25"
                 >
                   <span className="flex items-center gap-2">
-                    <span className={cn("flex size-7 shrink-0 items-center justify-center rounded-lg shadow-sm", g.chip)}>
-                      <k.icon className="size-3.5" strokeWidth={2.2} aria-hidden />
+                    <span className={cn("flex size-6 shrink-0 items-center justify-center rounded-md shadow-sm", g.chip)}>
+                      <k.icon className="size-3" strokeWidth={2.2} aria-hidden />
                     </span>
-                    <span className="truncate text-[12px] font-medium text-white/75">{k.label}</span>
+                    <span className="truncate text-[11.5px] font-medium text-white/75">{k.label}</span>
                   </span>
-                  <span className={cn("mt-2.5 block truncate leading-none font-semibold tracking-tight text-white tabular", k.value.length > 9 ? "text-[21px]" : "text-[26px]")}>{k.value}</span>
-                  <span className="mt-1.5 flex items-center gap-1 text-[11.5px] text-white/60">
+                  <span className={cn("mt-1.5 block truncate leading-none font-semibold tracking-tight text-white tabular", k.value.length > 9 ? "text-[18px]" : "text-[21px]")}>{k.value}</span>
+                  <span className="mt-1 flex items-center gap-1 text-[11px] text-white/60">
                     <span className="truncate">{k.sub}</span>
                     <ArrowRight className="ml-auto size-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
                   </span>
@@ -133,11 +133,11 @@ export default async function DashboardPage() {
       </section>
 
       {/* I miei task, divisi per urgenza */}
-      <BandCard area="work" icon={CheckSquare} title={`I miei task · ${d.myTasks.length} aperti`} href="/task?miei=1" linkLabel="Tutti i miei task" bodyClassName="p-3 sm:p-4">
+      <BandCard area="work" icon={CheckSquare} title={`I miei task · ${d.myTasks.length} aperti`} href="/task?miei=1" linkLabel="Tutti i miei task" bodyClassName="p-2.5 sm:p-3">
         {d.myTasks.length === 0 ? (
           <EmptyState area="work" icon={CheckCircle2} title="Niente da fare, per ora" description="I task che ti assegnano (o che prendi in carico) compaiono qui, divisi per urgenza." className="py-8" />
         ) : (
-          <div className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid items-start gap-2.5 md:grid-cols-2 xl:grid-cols-4">
             {taskGroups.map((g) => (
               <section key={g.key} className={cn("flex flex-col gap-2 rounded-xl p-2.5", g.bg)}>
                 <h3 className="flex items-center gap-2 px-1 text-[12.5px] font-semibold">
@@ -248,7 +248,7 @@ function BandCard({
   const a = AREA[area];
   return (
     <section className={cn("overflow-hidden rounded-xl border bg-card shadow-xs", a.bandBorder, className)}>
-      <header className={cn("flex items-center justify-between gap-3 px-4 py-2.5 text-white", a.band)}>
+      <header className={cn("flex items-center justify-between gap-3 px-3.5 py-2 text-white", a.band)}>
         <h2 className="flex items-center gap-2 text-[14px] font-semibold">
           <Icon className="size-4.5 opacity-90" strokeWidth={2} aria-hidden />
           {title}
@@ -259,7 +259,7 @@ function BandCard({
           </Link>
         )}
       </header>
-      <div className={cn("p-4", bodyClassName)}>{children}</div>
+      <div className={cn("p-3", bodyClassName)}>{children}</div>
     </section>
   );
 }

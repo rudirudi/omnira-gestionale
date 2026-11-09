@@ -52,10 +52,10 @@ export function UnassignedTasks({ tasks, people, meId }: { tasks: Item[]; people
   }
 
   return (
-    <div className={cn("grid grid-cols-1 items-start gap-4", groups.length > 1 && "lg:grid-cols-2")}>
+    <div className={cn("grid grid-cols-1 items-start gap-2.5", groups.length > 1 && "lg:grid-cols-2")}>
       {groups.map((g) => (
         <section key={g.key} className="min-w-0 overflow-hidden rounded-xl border-2 bg-card" style={{ borderColor: projectColor(g.project?.id) }}>
-          <header className="relative flex min-h-12 items-center justify-center px-12 py-2.5 text-center text-white" style={{ background: projectColor(g.project?.id) }}>
+          <header className="relative flex min-h-10 items-center justify-center px-12 py-1.5 text-center text-white" style={{ background: projectColor(g.project?.id) }}>
             <Briefcase className="absolute left-3.5 size-4 opacity-80" aria-hidden />
             <div className="min-w-0">
               {g.project?.code && <p className="font-mono text-[10.5px] leading-none tracking-wider text-white/75">{g.project.code}</p>}
@@ -69,7 +69,7 @@ export function UnassignedTasks({ tasks, people, meId }: { tasks: Item[]; people
             </div>
             <span className="absolute right-3 rounded-full bg-white/25 px-2 py-0.5 text-[11px] font-bold tabular">{g.items.length}</span>
           </header>
-          <div className="p-2.5">
+          <div className="p-2">
           <ul className={cn("grid grid-cols-1 gap-1.5", groups.length === 1 && "lg:grid-cols-2")}>
             {g.items.map((t) => (
               <li key={t.id} className="flex min-w-0 items-center gap-3 rounded-lg border bg-card p-2 pl-3 hover:bg-muted/40">
