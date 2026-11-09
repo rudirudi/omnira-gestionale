@@ -166,3 +166,30 @@
 .assistant-md th, .assistant-md td { border-bottom: 1px solid var(--border); padding: 0.35em 0.6em 0.35em 0; text-align: left; white-space: nowrap; }
 .assistant-md th { font-weight: 600; color: var(--muted-foreground); }
 .assistant-md code { font-family: var(--font-mono); font-size: 0.92em; background: var(--muted); border-radius: 4px; padding: 0.05em 0.3em; }
+
+/* Barra di scorrimento blu, sottile e dentro il riquadro (Chrome/Safari: pseudo-elementi; Firefox: proprietà standard) */
+@utility scroll-brand {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  &::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  &::-webkit-scrollbar-track {
+    margin: 4px 0;
+    border-radius: 999px;
+    background: color-mix(in oklch, var(--primary) 9%, transparent);
+  }
+  &::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: var(--primary) padding-box;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in oklch, var(--primary) 80%, black) padding-box;
+  }
+  @supports (-moz-appearance: none) {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) color-mix(in oklch, var(--primary) 9%, transparent);
+  }
+}
