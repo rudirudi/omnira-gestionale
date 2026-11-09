@@ -66,9 +66,9 @@ export function DiscussionRowItem({ d, meId, compact = false }: { d: DiscussionL
     >
       <KindIcon kind={d.kind} resolved={resolved} size={compact ? "sm" : "md"} />
       <div className="min-w-0 flex-1">
-        <p className="flex items-center gap-2">
+        <p className={cn("flex gap-2", compact ? "items-start" : "items-center")}>
           <span className="font-mono text-[11px] text-muted-foreground">#{d.number}</span>
-          <span className={cn("truncate text-[13.5px] font-semibold", resolved && "text-muted-foreground line-through decoration-1")}>{d.title}</span>
+          <span className={cn("text-[13.5px] leading-snug font-semibold", compact ? "line-clamp-2" : "truncate", resolved && "text-muted-foreground line-through decoration-1")}>{d.title}</span>
           {d.priority === "alta" && !resolved && <Flag className="size-3.5 shrink-0 fill-current text-destructive" aria-label="Priorità alta" />}
         </p>
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11px]">

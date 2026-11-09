@@ -17,6 +17,7 @@ import { PageBody } from "@/components/app/page-header";
 import { HeaderMenuButton, HeaderTools } from "@/components/layout/header-tools";
 import { Badge } from "@/components/ui/badge";
 import { AREA, type Area } from "@/lib/areas";
+import type { TaskPriority, TaskStatus } from "@/lib/database.types";
 import { getCurrentUser } from "@/lib/auth";
 import { TASK_STATUS } from "@/lib/labels";
 import { can } from "@/lib/permissions";
@@ -26,6 +27,7 @@ import { dueInfo, DueLabel, PriorityFlag } from "@/modules/task/components/task-
 import { DiscussionRowItem } from "@/modules/discussioni/components/discussion-meta";
 import { listOpenForDashboard } from "@/modules/discussioni/queries";
 import { UnassignedTasks } from "@/modules/task/components/unassigned-tasks";
+import { TaskTabs } from "@/modules/dashboard/components/task-tabs";
 import { listActiveTeam } from "@/modules/team/queries";
 
 export const metadata = { title: "Dashboard" };
@@ -59,15 +61,6 @@ export default async function DashboardPage() {
   const today = new Date().toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Rome" });
   const lateTasks = d.myTasks.filter((t) => dueInfo(t.due_date, t.status)?.late).length;
   const todayTasks = d.myTasks.filter((t) => dueInfo(t.due_date, t.status)?.diff === 0).length;
-
-  // I miei task divisi per urgenza: colori forti dove serve agire subito
-  const byDiff = (fn: (diff: number | null) => boolean) => d.myTasks.filter((t) => fn(dueInfo(t.due_date, t.status)?.diff ?? null));
-  const taskGroups = [
-    { key: "ritardo", label: "In ritardo", items: byDiff((x) => x !== null && x < 0), empty: "Nessun ritardo 👏", bg: "bg-destructive/[0.06]", dot: "bg-destructive", text: "text-destructive", count: "bg-destructive text-white", bar: "border-l-destructive" },
-    { key: "oggi", label: "Oggi e domani", items: byDiff((x) => x === 0 || x === 1), empty: "Niente in scadenza", bg: "bg-warning/[0.12]", dot: "bg-warning", text: "text-sales-ink", count: "bg-warning text-on-warning", bar: "border-l-warning" },
-    { key: "settimana", label: "Prossimi 7 giorni", items: byDiff((x) => x !== null && x >= 2 && x <= 7), empty: "Settimana libera", bg: "bg-work/[0.06]", dot: "bg-work", text: "text-work-ink", count: "bg-work text-white", bar: "border-l-work" },
-    { key: "dopo", label: "Più avanti / senza data", items: byDiff((x) => x === null || x > 7), empty: "Niente in coda", bg: "bg-muted/60", dot: "bg-muted-foreground/50", text: "text-muted-foreground", count: "bg-muted-foreground/20 text-foreground", bar: "border-l-muted-foreground/30" },
-  ];
 
   const kpis: { label: string; value: string; sub: string; icon: typeof Users; href: string; area: Area }[] = [
     { label: "I miei task aperti", value: d.myTasks.length === 40 ? "40+" : String(d.myTasks.length), sub: lateTasks ? `${lateTasks} in ritardo` : "nessun ritardo", icon: CheckSquare, href: "/task?miei=1", area: "work" },
@@ -136,109 +129,88 @@ export default async function DashboardPage() {
           </div>
       </section>
 
-      {/* I miei task, divisi per urgenza */}
-      <BandCard area="work" icon={CheckSquare} title={`I miei task · ${d.myTasks.length} aperti`} href="/task?miei=1" linkLabel="Tutti i miei task" bodyClassName="p-2.5 sm:p-3">
-        {d.myTasks.length === 0 ? (
-          <EmptyState area="work" icon={CheckCircle2} title="Niente da fare, per ora" description="I task che ti assegnano (o che prendi in carico) compaiono qui, divisi per urgenza." className="py-8" />
+      {/* Punti aperti: striscia compatta subito sotto l'intestazione */}
+      <section aria-label="Punti aperti e discussioni" className="flex flex-col gap-2 rounded-xl border border-[oklch(0.62_0.145_68)] bg-warning/[0.08] p-2 md:flex-row md:items-stretch">
+        <div className="flex shrink-0 items-center gap-3 px-2 md:w-44 md:flex-col md:items-start md:justify-center md:gap-0.5 md:border-r md:border-[oklch(0.62_0.145_68)]/30 md:pr-3">
+          <span className="flex items-center gap-1.5 text-[13.5px] font-semibold text-sales-ink">
+            <MessageCircleQuestion className="size-4" /> Punti aperti
+          </span>
+          <span className="text-[12px] text-sales-ink/90">
+            {points.total} {points.total === 1 ? "aperto" : "aperti"}
+            {points.mine > 0 && <strong className="font-semibold"> · {points.mine} tocca a te</strong>}
+          </span>
+          <Link href="/discussioni?stato=aperti" className="ml-auto text-[12px] font-medium text-primary hover:underline md:ml-0">
+            {points.total > 3 ? `Vedi tutti (${points.total})` : "Elenco"} →
+          </Link>
+        </div>
+        {points.items.length === 0 ? (
+          <p className="flex flex-1 items-center px-2 text-[13px] text-muted-foreground">Nessun punto aperto. Aprine uno quando c&apos;è qualcosa da decidere o di cui parlare insieme.</p>
         ) : (
-          <div className="grid items-start gap-2.5 md:grid-cols-2 xl:grid-cols-4">
-            {taskGroups.map((g) => (
-              <section key={g.key} className={cn("flex flex-col gap-2 rounded-xl p-2.5", g.bg)}>
-                <h3 className="flex items-center gap-2 px-1 text-[12.5px] font-semibold">
-                  <span className={cn("size-2.5 rounded-full", g.dot)} />
-                  <span className={g.text}>{g.label}</span>
-                  <span className={cn("ml-auto rounded-full px-1.5 text-[11px] font-semibold tabular", g.count)}>{g.items.length}</span>
-                </h3>
-                {g.items.length === 0 ? (
-                  <p className="px-1 pb-1 text-xs text-muted-foreground">{g.empty}</p>
-                ) : (
-                  g.items.map((t) => (
-                    <Link
-                      key={t.id}
-                      href={`/task?aperto=${t.id}`}
-                      className={cn("group flex flex-col gap-2 rounded-lg border border-l-4 bg-card p-2.5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md", g.bar)}
-                    >
-                      <p className="flex items-start gap-1.5 text-[13px] leading-snug font-semibold">
-                        <PriorityFlag priority={t.priority} />
-                        <span className="line-clamp-2">{t.title}</span>
-                      </p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {t.project && (
-                          <span className="flex max-w-full items-center gap-1 rounded-md bg-work/10 px-1.5 py-0.5 text-[11px] font-medium text-work-ink">
-                            <Briefcase className="size-3 shrink-0" />
-                            <span className="truncate">{t.project.code ? `${t.project.code}-${t.number} · ` : ""}{t.project.name}</span>
-                          </span>
-                        )}
-                        {t.project?.client && (
-                          <span className="flex max-w-full items-center gap-1 rounded-md bg-sales/20 px-1.5 py-0.5 text-[11px] font-medium text-sales-ink">
-                            <Users className="size-3 shrink-0" />
-                            <span className="truncate">{t.project.client.name}</span>
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge dot tone={TASK_STATUS[t.status].tone}>{TASK_STATUS[t.status].label}</Badge>
-                        <span className="ml-auto">
-                          <DueLabel due={t.due_date} status={t.status} />
-                        </span>
-                      </div>
-                    </Link>
-                  ))
-                )}
-              </section>
+          <div className="grid min-w-0 flex-1 auto-cols-[minmax(260px,85%)] grid-flow-col gap-2 overflow-x-auto md:auto-cols-auto md:grid-flow-row md:grid-cols-3 md:overflow-visible">
+            {points.items.slice(0, 3).map((p) => (
+              <DiscussionRowItem key={p.id} d={p} meId={user.id} compact />
             ))}
           </div>
         )}
-      </BandCard>
-
-      {/* Punti aperti e discussioni */}
-      <BandCard
-        area="sales"
-        icon={MessageCircleQuestion}
-        title={`Punti aperti e discussioni · ${points.total} ${points.total === 1 ? "aperto" : "aperti"}${points.mine ? ` · ${points.mine} tocca a te` : ""}`}
-        href="/discussioni?stato=aperti"
-        linkLabel={points.total > points.items.length ? `Vedi tutti (${points.total})` : "Apri l'elenco"}
-        bodyClassName="p-2.5 sm:p-3"
-      >
-        {points.items.length === 0 ? (
-          <EmptyState
-            area="sales"
-            icon={MessageCircleQuestion}
-            title="Nessun punto aperto"
-            description="Quando c'è qualcosa da decidere o di cui parlare, apri un punto: il team risponde e alla fine lo segnate come risolto."
-            action={
-              <Link href="/discussioni?nuovo=1" className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-[13px] font-medium text-primary-foreground hover:bg-primary/90">
-                <Plus className="size-4" /> Apri un punto
-              </Link>
-            }
-            className="py-6"
-          />
-        ) : (
-          <div className="flex flex-col gap-2">
-            <div className="grid gap-2 md:grid-cols-2">
-              {points.items.map((p) => (
-                <DiscussionRowItem key={p.id} d={p} meId={user.id} compact />
-              ))}
-            </div>
-            <Link href="/discussioni?nuovo=1" className="flex items-center justify-center gap-1.5 rounded-lg border border-dashed py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary">
-              <Plus className="size-4" /> Apri un nuovo punto o una discussione
-            </Link>
-          </div>
-        )}
-      </BandCard>
-
-      {/* Task senza assegnatario: da prendere in carico */}
-      {d.unassignedCount > 0 && (
-        <BandCard
-          area="work"
-          icon={UserPlus}
-          title={`Da assegnare · ${d.unassignedCount} task senza nessuno`}
-          href="/task?chi=nessuno"
-          linkLabel={d.unassignedCount > d.unassigned.length ? `Vedi tutti (${d.unassignedCount})` : "Apri i task"}
+        <Link
+          href="/discussioni?nuovo=1"
+          aria-label="Apri un nuovo punto o una discussione"
+          title="Apri un nuovo punto o una discussione"
+          className="flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-dashed border-[oklch(0.62_0.145_68)] text-[13px] font-medium text-sales-ink transition-colors hover:bg-warning/20 md:h-auto md:w-11"
         >
-          <UnassignedTasks tasks={d.unassigned} people={team} meId={user.id} />
-        </BandCard>
-      )}
+          <Plus className="size-5" />
+          <span className="md:hidden">Apri un punto</span>
+        </Link>
+      </section>
+
+      {/* Task: un solo riquadro con le schede */}
+      <BandCard area="work" icon={CheckSquare} title="Task" href="/task" linkLabel="Apri la pagina Task" bodyClassName="p-2.5 sm:p-3">
+        <TaskTabs
+          tabs={[
+            {
+              key: "miei",
+              label: "I miei task",
+              count: d.myTasks.length,
+              alert: lateTasks > 0,
+              content:
+                d.myTasks.length === 0 ? (
+                  <EmptyState area="work" icon={CheckCircle2} title="Niente da fare, per ora" description="I task che ti assegnano (o che prendi in carico) compaiono qui, divisi per urgenza." className="py-8" />
+                ) : (
+                  <TaskKanban tasks={d.myTasks} />
+                ),
+            },
+            {
+              key: "da-assegnare",
+              label: "Da assegnare",
+              count: d.unassignedCount,
+              content:
+                d.unassignedCount === 0 ? (
+                  <EmptyState area="work" icon={UserPlus} title="Nessun task senza assegnatario" description="I task creati senza nessuno compaiono qui: tu o un collega potete prenderli in carico." className="py-8" />
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <UnassignedTasks tasks={d.unassigned} people={team} meId={user.id} />
+                    {d.unassignedCount > d.unassigned.length && (
+                      <Link href="/task?chi=nessuno" className="self-end text-[12.5px] font-medium text-primary hover:underline">
+                        Vedi tutti i {d.unassignedCount} task da assegnare →
+                      </Link>
+                    )}
+                  </div>
+                ),
+            },
+            {
+              key: "team",
+              label: "Tutto il team",
+              count: d.teamCount,
+              content:
+                d.teamTasks.length === 0 ? (
+                  <EmptyState area="work" icon={Users} title="Nessun task assegnato" description="Qui vedi i task aperti di tutto il team, divisi per urgenza." className="py-8" />
+                ) : (
+                  <TaskKanban tasks={d.teamTasks} names={new Map(team.map((m) => [m.id, m.full_name]))} meId={user.id} />
+                ),
+            },
+          ]}
+        />
+      </BandCard>
 
       {/* Scadenze rinnovi */}
       {d.renewals.length > 0 && (
@@ -266,6 +238,86 @@ export default async function DashboardPage() {
 }
 
 /** Card della dashboard: fascia colorata dell'area con titolo bianco, bordo dello stesso colore */
+type KanbanTask = {
+  id: string;
+  title: string;
+  number: number | null;
+  status: TaskStatus;
+  priority: TaskPriority;
+  due_date: string | null;
+  project: { id: string; code: string | null; name: string; client: { id: string; name: string } | null } | null;
+  assignees?: { user_id: string }[];
+};
+
+/** Task divisi per urgenza: colori forti dove serve agire subito */
+function TaskKanban({ tasks, names, meId }: { tasks: KanbanTask[]; names?: Map<string, string>; meId?: string }) {
+  const byDiff = (fn: (diff: number | null) => boolean) => tasks.filter((t) => fn(dueInfo(t.due_date, t.status)?.diff ?? null));
+  const groups = [
+    { key: "ritardo", label: "In ritardo", items: byDiff((x) => x !== null && x < 0), empty: "Nessun ritardo 👏", bg: "bg-destructive/[0.06]", dot: "bg-destructive", text: "text-destructive", count: "bg-destructive text-white", bar: "border-l-destructive" },
+    { key: "oggi", label: "Oggi e domani", items: byDiff((x) => x === 0 || x === 1), empty: "Niente in scadenza", bg: "bg-warning/[0.12]", dot: "bg-warning", text: "text-sales-ink", count: "bg-warning text-on-warning", bar: "border-l-warning" },
+    { key: "settimana", label: "Prossimi 7 giorni", items: byDiff((x) => x !== null && x >= 2 && x <= 7), empty: "Settimana libera", bg: "bg-work/[0.06]", dot: "bg-work", text: "text-work-ink", count: "bg-work text-white", bar: "border-l-work" },
+    { key: "dopo", label: "Più avanti / senza data", items: byDiff((x) => x === null || x > 7), empty: "Niente in coda", bg: "bg-muted/60", dot: "bg-muted-foreground/50", text: "text-muted-foreground", count: "bg-muted-foreground/20 text-foreground", bar: "border-l-muted-foreground/30" },
+  ];
+  return (
+    <div className="grid items-start gap-2.5 md:grid-cols-2 xl:grid-cols-4">
+      {groups.map((g) => (
+        <section key={g.key} className={cn("flex flex-col gap-2 rounded-xl p-2.5", g.bg)}>
+          <h3 className="flex items-center gap-2 px-1 text-[12.5px] font-semibold">
+            <span className={cn("size-2.5 rounded-full", g.dot)} />
+            <span className={g.text}>{g.label}</span>
+            <span className={cn("ml-auto rounded-full px-1.5 text-[11px] font-semibold tabular", g.count)}>{g.items.length}</span>
+          </h3>
+          {g.items.length === 0 ? (
+            <p className="px-1 pb-1 text-xs text-muted-foreground">{g.empty}</p>
+          ) : (
+            g.items.map((t) => (
+              <Link
+                key={t.id}
+                href={`/task?aperto=${t.id}`}
+                className={cn("group flex flex-col gap-2 rounded-lg border border-l-4 bg-card p-2.5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md", g.bar)}
+              >
+                <p className="flex items-start gap-1.5 text-[13px] leading-snug font-semibold">
+                  <PriorityFlag priority={t.priority} />
+                  <span className="line-clamp-2">{t.title}</span>
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {t.project && (
+                    <span className="flex max-w-full items-center gap-1 rounded-md bg-work/10 px-1.5 py-0.5 text-[11px] font-medium text-work-ink">
+                      <Briefcase className="size-3 shrink-0" />
+                      <span className="truncate">{t.project.code ? `${t.project.code}-${t.number} · ` : ""}{t.project.name}</span>
+                    </span>
+                  )}
+                  {t.project?.client && (
+                    <span className="flex max-w-full items-center gap-1 rounded-md bg-sales/20 px-1.5 py-0.5 text-[11px] font-medium text-sales-ink">
+                      <Users className="size-3 shrink-0" />
+                      <span className="truncate">{t.project.client.name}</span>
+                    </span>
+                  )}
+                </div>
+                {names && t.assignees && t.assignees.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {t.assignees.map((a) => (
+                      <span key={a.user_id} className={cn("rounded-full px-1.5 py-0.5 text-[10.5px] font-semibold", a.user_id === meId ? "bg-primary text-primary-foreground" : "bg-muted text-foreground")}>
+                        {a.user_id === meId ? "Tu" : (names.get(a.user_id)?.split(" ")[0] ?? "Ex collega")}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <Badge dot tone={TASK_STATUS[t.status].tone}>{TASK_STATUS[t.status].label}</Badge>
+                  <span className="ml-auto">
+                    <DueLabel due={t.due_date} status={t.status} />
+                  </span>
+                </div>
+              </Link>
+            ))
+          )}
+        </section>
+      ))}
+    </div>
+  );
+}
+
 function BandCard({
   area,
   icon: Icon,

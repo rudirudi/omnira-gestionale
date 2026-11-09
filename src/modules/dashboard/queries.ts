@@ -49,7 +49,7 @@ export async function getDashboardData(userId: string, withMoney = false) {
     // Task aperti per trovare quelli senza nessuno assegnato
     supabase
       .from("tasks")
-      .select("id, title, number, status, priority, due_date, project:projects(id, code, name), assignees:task_assignees(user_id)")
+      .select("id, title, number, status, priority, due_date, project:projects(id, code, name, client:clients(id, name)), assignees:task_assignees(user_id)")
       .is("deleted_at", null)
       .neq("status", "fatto")
       .order("due_date", { ascending: true, nullsFirst: false })
@@ -92,7 +92,10 @@ export async function getDashboardData(userId: string, withMoney = false) {
     toCollectCents: toCollect,
     overdueCents: overdue,
     myTasks: myTasks.data ?? [],
-    unassigned: unassigned.slice(0, 10).map((t) => ({ id: t.id, title: t.title, number: t.number, status: t.status, priority: t.priority, due_date: t.due_date, project: t.project })),
+    unassigned: unassigned.slice(0, 10).map((t) => ({ id: t.id, title: t.title, number: t.number, status: t.status, priority: t.priority, due_date: t.due_date, project: t.project ? { id: t.project.id, code: t.project.code, name: t.project.name } : null })),
     unassignedCount: unassigned.length,
+    // Tutto il team: i task aperti con qualcuno assegnato (già in ordine di scadenza)
+    teamTasks: (openTasks.data ?? []).filter((t) => t.assignees.length > 0).slice(0, 60),
+    teamCount: (openTasks.data ?? []).filter((t) => t.assignees.length > 0).length,
   };
 }
