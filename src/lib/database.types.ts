@@ -470,6 +470,20 @@ export type ProjectServiceRow = {
   updated_at: string;
 };
 
+export type FileCategory = "documento" | "grafica" | "contratto" | "materiale_cliente" | "tecnico" | "altro";
+export type ProjectFileRow = {
+  id: string;
+  project_id: string;
+  path: string;
+  name: string;
+  size_bytes: number;
+  mime: string | null;
+  category: FileCategory;
+  note: string | null;
+  uploaded_by: string | null;
+  created_at: string;
+};
+
 type InsertOf<R, Required extends keyof R> = Pick<R, Required> & Partial<Omit<R, Required>>;
 
 export type Database = {
@@ -527,6 +541,12 @@ export type Database = {
           { foreignKeyName: "leads_client_id_fkey"; columns: ["client_id"]; isOneToOne: false; referencedRelation: "clients"; referencedColumns: ["id"] },
           { foreignKeyName: "leads_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ];
+      };
+      project_files: {
+        Row: ProjectFileRow;
+        Insert: InsertOf<ProjectFileRow, "project_id" | "path" | "name" | "size_bytes">;
+        Update: Partial<ProjectFileRow>;
+        Relationships: [{ foreignKeyName: "project_files_uploaded_by_fkey"; columns: ["uploaded_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] }];
       };
       project_tech: {
         Row: ProjectTechRow;
