@@ -35,13 +35,16 @@ function greeting() {
 const euroWhole = (cents: number) =>
   (cents / 100).toLocaleString("it-IT", { style: "currency", currency: "EUR", maximumFractionDigits: 0, useGrouping: "always" } as Intl.NumberFormatOptions);
 
-/** Colori dell'area sullo sfondo blu dell'intestazione */
+/** Blu istituzionale (quello della barra laterale) per i testi dell'intestazione */
+const BRAND = "text-sidebar dark:text-[oklch(0.85_0.07_262)]";
+
+/** Colori dell'area su icona e filo delle card numeri */
 const GLASS: Record<Area, { chip: string; bar: string }> = {
   work: { chip: "bg-[oklch(0.6_0.16_255)] text-white", bar: "bg-[oklch(0.72_0.14_250)]" },
   sales: { chip: "bg-sales text-on-warning", bar: "bg-sales" },
   money: { chip: "bg-[oklch(0.6_0.15_150)] text-white", bar: "bg-[oklch(0.75_0.16_150)]" },
   support: { chip: "bg-support text-white", bar: "bg-[oklch(0.7_0.18_25)]" },
-  system: { chip: "bg-white/20 text-white", bar: "bg-white/40" },
+  system: { chip: "bg-muted-foreground text-white", bar: "bg-muted-foreground/40" },
 };
 
 export default async function DashboardPage() {
@@ -74,14 +77,12 @@ export default async function DashboardPage() {
   return (
     <PageBody className="flex flex-col gap-3 pt-0 pb-4 sm:px-4">
       {/* Benvenuto */}
-      <section data-hero className="relative -mx-4 overflow-hidden border-white/60 bg-sidebar px-4 pt-3 pb-3 text-sidebar-foreground sm:px-5 lg:border-l">
-        <div className="absolute -top-20 -right-16 size-72 rounded-full bg-white/[0.06]" aria-hidden />
-        <div className="absolute -bottom-24 right-40 size-56 rounded-full bg-white/[0.04]" aria-hidden />
+      <section data-hero className={cn("relative pt-3 pb-1", BRAND)}>
         <div className="relative flex items-center gap-2">
-          <HeaderMenuButton onDark />
-          <p className="text-[13px] font-medium text-sidebar-muted first-letter:uppercase">{today}</p>
+          <HeaderMenuButton />
+          <p className="text-[13px] font-medium opacity-70 first-letter:uppercase">{today}</p>
           <div className="ml-auto" data-tools>
-            <HeaderTools onDark />
+            <HeaderTools />
           </div>
         </div>
         <div className="relative mt-3 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between xl:gap-6">
@@ -89,7 +90,7 @@ export default async function DashboardPage() {
             <h1 className="text-[22px] leading-tight font-semibold">
               {greeting()}, {firstName}
             </h1>
-            <p className="mt-1 flex flex-wrap items-center gap-x-3.5 gap-y-0.5 text-[12.5px] text-sidebar-foreground/85">
+            <p className="mt-1 flex flex-wrap items-center gap-x-3.5 gap-y-0.5 text-[12.5px] opacity-85">
               <span className="flex items-center gap-1.5">
                 <span className="size-2 rounded-full bg-warning" /> {todayTasks} task in scadenza oggi
               </span>
@@ -98,7 +99,7 @@ export default async function DashboardPage() {
                 {lateTasks ? `${lateTasks} in ritardo` : "nessun task in ritardo"}
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="size-2 rounded-full bg-[oklch(0.8_0.1_250)]" /> {d.due.length} promemoria questa settimana
+                <span className="size-2 rounded-full bg-work" /> {d.due.length} promemoria questa settimana
               </span>
             </p>
           </div>
@@ -111,16 +112,16 @@ export default async function DashboardPage() {
                 <Link
                   key={k.label}
                   href={k.href}
-                  className="group relative overflow-hidden rounded-lg bg-white/[0.07] px-3 pt-2 pb-2.5 ring-1 ring-white/[0.12] backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-white/[0.12] hover:ring-white/25"
+                  className="group relative overflow-hidden rounded-lg bg-card px-3 pt-2 pb-2.5 shadow-xs ring-1 ring-sidebar/15 transition-all hover:-translate-y-0.5 hover:shadow-md hover:ring-sidebar/35 dark:ring-white/15"
                 >
                   <span className="flex items-center gap-2">
                     <span className={cn("flex size-6 shrink-0 items-center justify-center rounded-md shadow-sm", g.chip)}>
                       <k.icon className="size-3" strokeWidth={2.2} aria-hidden />
                     </span>
-                    <span className="truncate text-[11.5px] font-medium text-white/75">{k.label}</span>
+                    <span className="truncate text-[11.5px] font-medium opacity-75">{k.label}</span>
                   </span>
-                  <span className={cn("mt-1.5 block truncate leading-none font-semibold tracking-tight text-white tabular", k.value.length > 9 ? "text-[18px]" : "text-[21px]")}>{k.value}</span>
-                  <span className="mt-1 flex items-center gap-1 text-[11px] text-white/60">
+                  <span className={cn("mt-1.5 block truncate leading-none font-semibold tracking-tight tabular", k.value.length > 9 ? "text-[18px]" : "text-[21px]")}>{k.value}</span>
+                  <span className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
                     <span className="truncate">{k.sub}</span>
                     <ArrowRight className="ml-auto size-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
                   </span>
