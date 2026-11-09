@@ -14,7 +14,7 @@ function isActive(pathname: string, href: string) {
 export function SidebarNav({ onNavigate, hidden = [] }: { onNavigate?: () => void; hidden?: string[] }) {
   const pathname = usePathname();
   return (
-    <nav className="flex flex-1 flex-col gap-4 overflow-y-auto px-3 py-3" aria-label="Navigazione principale">
+    <nav className="scroll-brand-dark flex min-h-0 flex-1 flex-col gap-4 px-3 py-3" aria-label="Navigazione principale">
       {NAV.map((section) => (
         <div key={section.label ?? "home"} className="flex flex-col gap-0.5">
           {section.label && (

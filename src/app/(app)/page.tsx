@@ -62,6 +62,8 @@ export default async function DashboardPage() {
   const lateTasks = d.myTasks.filter((t) => dueInfo(t.due_date, t.status)?.late).length;
   const todayTasks = d.myTasks.filter((t) => dueInfo(t.due_date, t.status)?.diff === 0).length;
 
+  const todayIso = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Rome" });
+
   const kpis: { label: string; value: string; sub: string; icon: typeof Users; href: string; area: Area }[] = [
     { label: "I miei task aperti", value: d.myTasks.length === 40 ? "40+" : String(d.myTasks.length), sub: lateTasks ? `${lateTasks} in ritardo` : "nessun ritardo", icon: CheckSquare, href: "/task?miei=1", area: "work" },
     { label: "Progetti attivi", value: String(d.activeProjects), sub: "in lavorazione", icon: Briefcase, href: "/progetti?stato=attivo", area: "work" },
@@ -71,11 +73,12 @@ export default async function DashboardPage() {
       : { label: "Vinti questo mese", value: euroWhole(d.wonMonthCents), sub: `${d.wonMonthCount} lead chiusi`, icon: TrendingUp, href: "/lead", area: "money" },
   ];
 
+  // Su computer la dashboard sta tutta nello schermo: scorre solo dentro il riquadro Task
   return (
-    <PageBody className="flex flex-col gap-3 pt-0 pb-4 sm:px-4">
+    <PageBody className="flex flex-col gap-3 pt-0 pb-4 sm:px-4 lg:h-[calc(100svh-3rem)] lg:min-h-[600px] lg:flex-none lg:overflow-hidden lg:pb-3">
       {/* Benvenuto */}
       {/* Griglia: data e saluto a sinistra uno sotto l'altro, strumenti e numeri a destra */}
-      <section data-hero className={cn("grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-6 pt-3 pb-1 xl:grid-cols-[minmax(0,1fr)_640px]", BRAND)}>
+      <section data-hero className={cn("grid shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-6 pt-3 pb-1 xl:grid-cols-[minmax(0,1fr)_640px]", BRAND)}>
         <div className="col-start-1 row-start-1 flex min-w-0 items-center gap-2">
           <HeaderMenuButton />
           <p className="text-[13px] font-medium opacity-70 first-letter:uppercase">{today}</p>
@@ -130,7 +133,7 @@ export default async function DashboardPage() {
       </section>
 
       {/* Punti aperti: striscia compatta subito sotto l'intestazione */}
-      <section aria-label="Punti aperti e discussioni" className="flex flex-col gap-2 rounded-xl border border-[oklch(0.62_0.145_68)] bg-warning/[0.08] p-2 md:flex-row md:items-stretch">
+      <section aria-label="Punti aperti e discussioni" className="flex shrink-0 flex-col gap-2 rounded-xl border border-[oklch(0.62_0.145_68)] bg-warning/[0.08] p-2 md:flex-row md:items-stretch">
         <div className="flex shrink-0 items-center gap-3 px-2 md:w-44 md:flex-col md:items-start md:justify-center md:gap-0.5 md:border-r md:border-[oklch(0.62_0.145_68)]/30 md:pr-3">
           <span className="flex items-center gap-1.5 text-[13.5px] font-semibold text-sales-ink">
             <MessageCircleQuestion className="size-4" /> Punti aperti
@@ -164,14 +167,14 @@ export default async function DashboardPage() {
       </section>
 
       {/* Task: un solo riquadro con le schede */}
-      {/* Altezza fissa = schermo: se il contenuto è di più, si scorre dentro il riquadro */}
+      {/* Occupa lo spazio che resta: se il contenuto è di più, si scorre dentro il riquadro */}
       <BandCard
         area="work"
         icon={CheckSquare}
         title="Task"
         href="/task"
         linkLabel="Apri la pagina Task"
-        className="flex h-[calc(100svh-1.5rem)] min-h-[480px] flex-col"
+        className="flex h-[80svh] min-h-[420px] flex-col lg:h-auto lg:min-h-0 lg:flex-1"
         bodyClassName="flex min-h-0 flex-1 flex-col p-2.5 sm:p-3"
       >
         <TaskTabs
@@ -207,6 +210,40 @@ export default async function DashboardPage() {
                 ),
             },
             {
+              key: "rinnovi",
+              label: "Rinnovi 30 gg",
+              count: d.renewals.length,
+              alert: d.renewals.some((r) => r.next_due_date < todayIso),
+              content:
+                d.renewals.length === 0 ? (
+                  <EmptyState area="money" icon={CalendarIcon} title="Nessun rinnovo nei prossimi 30 giorni" description="Domini, hosting e canoni in scadenza compaiono qui." className="py-8" />
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                      {d.renewals.map((r) => {
+                        const days = Math.round((new Date(`${r.next_due_date}T00:00:00`).getTime() - new Date(new Date().toDateString()).getTime()) / 86400000);
+                        return (
+                          <Link
+                            key={r.id}
+                            href={`/scadenze?aperto=${r.id}`}
+                            className={cn("rounded-lg border border-l-4 bg-card p-3 transition-colors hover:bg-muted/50", days < 0 ? "border-l-destructive bg-destructive/[0.03]" : "border-l-warning")}
+                          >
+                            <p className="truncate text-[13px] font-semibold">{r.name}</p>
+                            <p className="truncate text-xs text-muted-foreground">{r.client?.name ?? "Interno Omnira"}</p>
+                            <p className={cn("mt-1 text-xs font-semibold", days < 0 ? "text-destructive" : "text-[oklch(0.55_0.13_75)] dark:text-warning")}>
+                              {days < 0 ? `Scaduto da ${-days} g` : days === 0 ? "Scade oggi" : `Tra ${days} giorni`} · {new Date(`${r.next_due_date}T00:00:00`).toLocaleDateString("it-IT")}
+                            </p>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                    <Link href="/scadenze" className="self-end text-[12.5px] font-medium text-primary hover:underline">
+                      Tutte le scadenze →
+                    </Link>
+                  </div>
+                ),
+            },
+            {
               key: "team",
               label: "Tutto il team",
               count: d.teamCount,
@@ -221,27 +258,6 @@ export default async function DashboardPage() {
         />
       </BandCard>
 
-      {/* Scadenze rinnovi */}
-      {d.renewals.length > 0 && (
-        <BandCard area="money" icon={CalendarIcon} title="Rinnovi entro 30 giorni" href="/scadenze" linkLabel="Tutte le scadenze" bodyClassName="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-            {d.renewals.map((r) => {
-              const days = Math.round((new Date(`${r.next_due_date}T00:00:00`).getTime() - new Date(new Date().toDateString()).getTime()) / 86400000);
-              return (
-                <Link
-                  key={r.id}
-                  href={`/scadenze?aperto=${r.id}`}
-                  className={cn("rounded-lg border border-l-4 p-3 transition-colors hover:bg-muted/50", days < 0 ? "border-l-destructive bg-destructive/[0.03]" : "border-l-warning")}
-                >
-                  <p className="truncate text-[13px] font-semibold">{r.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">{r.client?.name ?? "Interno Omnira"}</p>
-                  <p className={cn("mt-1 text-xs font-semibold", days < 0 ? "text-destructive" : "text-[oklch(0.55_0.13_75)] dark:text-warning")}>
-                    {days < 0 ? `Scaduto da ${-days} g` : days === 0 ? "Scade oggi" : `Tra ${days} giorni`} · {new Date(`${r.next_due_date}T00:00:00`).toLocaleDateString("it-IT")}
-                  </p>
-                </Link>
-              );
-            })}
-        </BandCard>
-      )}
     </PageBody>
   );
 }

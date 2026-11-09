@@ -193,3 +193,48 @@
     scrollbar-color: var(--primary) color-mix(in oklch, var(--primary) 9%, transparent);
   }
 }
+
+/* Stessa barra su fondo blu scuro (menu laterale) */
+@utility scroll-brand-dark {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    margin: 4px 0;
+    border-radius: 999px;
+    background: oklch(1 0 0 / 6%);
+  }
+  &::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: oklch(1 0 0 / 32%) padding-box;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: oklch(1 0 0 / 50%) padding-box;
+  }
+  @supports (-moz-appearance: none) {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(1 0 0 / 32%) oklch(1 0 0 / 6%);
+  }
+}
+
+/* Anche lo scorrimento delle pagine è blu e sottile */
+html::-webkit-scrollbar {
+  width: 10px;
+}
+html::-webkit-scrollbar-track {
+  background: color-mix(in oklch, var(--primary) 6%, var(--background));
+}
+html::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--primary) padding-box;
+}
+@supports (-moz-appearance: none) {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) color-mix(in oklch, var(--primary) 6%, var(--background));
+  }
+}
