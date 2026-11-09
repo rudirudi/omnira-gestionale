@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { type ActionResult, fromDbError } from "@/lib/action-result";
 
-const ENTITY = z.enum(["task", "project", "client", "lead"]);
+const ENTITY = z.enum(["task", "project", "client", "lead", "discussion"]);
 
 export async function fetchCommentsAction(entityType: z.infer<typeof ENTITY>, entityId: string) {
   await getCurrentUser();

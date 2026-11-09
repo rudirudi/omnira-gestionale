@@ -6,7 +6,7 @@ export type NavSection = { label: string | null; area: Area; items: NavItem[] };
 // Il menu è diviso per area: ogni area ha il suo colore (vedi lib/areas.ts)
 export const NAV: NavSection[] = [
   { label: null, area: "system", items: [MODULES.dashboard, MODULES.chat] },
-  { label: "Operativo", area: "work", items: [MODULES.progetti, MODULES.task, MODULES.tempo] },
+  { label: "Operativo", area: "work", items: [MODULES.progetti, MODULES.task, MODULES.discussioni, MODULES.tempo] },
   { label: "Commerciale", area: "sales", items: [MODULES.clienti, MODULES.lead, MODULES.preventivi, MODULES.listino] },
   { label: "Economia", area: "money", items: [MODULES.incassi, MODULES.spese, MODULES.scadenze, MODULES.fatture, MODULES.report] },
   { label: "Assistenza", area: "support", items: [MODULES.ticket] },

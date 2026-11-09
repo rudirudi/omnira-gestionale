@@ -209,7 +209,7 @@ export type TaskAssigneeRow = { task_id: string; user_id: string; assigned_at: s
 
 export type CommentRow = {
   id: string;
-  entity_type: "task" | "project" | "client" | "lead";
+  entity_type: "task" | "project" | "client" | "lead" | "discussion";
   entity_id: string;
   body: string;
   mentions: string[];
@@ -414,6 +414,32 @@ export type ChatOverviewRow = {
   unread: number;
 };
 
+export type DiscussionKind = "punto" | "discussione";
+export type DiscussionStatus = "aperto" | "risolto";
+export type DiscussionPriority = "bassa" | "normale" | "alta";
+export type DiscussionRow = {
+  id: string;
+  number: number;
+  kind: DiscussionKind;
+  title: string;
+  body: string | null;
+  status: DiscussionStatus;
+  priority: DiscussionPriority;
+  owner_id: string | null;
+  due_date: string | null;
+  project_id: string | null;
+  client_id: string | null;
+  resolution: string | null;
+  resolved_at: string | null;
+  resolved_by: string | null;
+  created_by: string;
+  replies_count: number;
+  last_activity_at: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
 type InsertOf<R, Required extends keyof R> = Pick<R, Required> & Partial<Omit<R, Required>>;
 
 export type Database = {
@@ -470,6 +496,18 @@ export type Database = {
           { foreignKeyName: "leads_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
           { foreignKeyName: "leads_client_id_fkey"; columns: ["client_id"]; isOneToOne: false; referencedRelation: "clients"; referencedColumns: ["id"] },
           { foreignKeyName: "leads_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
+      };
+      discussions: {
+        Row: DiscussionRow;
+        Insert: InsertOf<DiscussionRow, "title">;
+        Update: Partial<DiscussionRow>;
+        Relationships: [
+          { foreignKeyName: "discussions_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "discussions_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "discussions_resolved_by_fkey"; columns: ["resolved_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "discussions_project_id_fkey"; columns: ["project_id"]; isOneToOne: false; referencedRelation: "projects"; referencedColumns: ["id"] },
+          { foreignKeyName: "discussions_client_id_fkey"; columns: ["client_id"]; isOneToOne: false; referencedRelation: "clients"; referencedColumns: ["id"] },
         ];
       };
       user_presence: {

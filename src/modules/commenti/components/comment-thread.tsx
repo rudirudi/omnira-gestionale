@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { addCommentAction, type CommentWithAuthor, deleteCommentAction, fetchCommentsAction } from "../actions";
 
-type Entity = "task" | "project" | "client" | "lead";
+type Entity = "task" | "project" | "client" | "lead" | "discussion";
 
 function timeAgo(iso: string) {
   const s = (Date.now() - new Date(iso).getTime()) / 1000;

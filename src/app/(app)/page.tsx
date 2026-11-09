@@ -9,6 +9,8 @@ import {
   Users,
   Wallet,
   CalendarClock as CalendarIcon,
+  MessageCircleQuestion,
+  Plus,
 } from "lucide-react";
 import { EmptyState } from "@/components/app/empty-state";
 import { PageBody } from "@/components/app/page-header";
@@ -21,6 +23,8 @@ import { can } from "@/lib/permissions";
 import { cn, formatEuro } from "@/lib/utils";
 import { getDashboardData } from "@/modules/dashboard/queries";
 import { dueInfo, DueLabel, PriorityFlag } from "@/modules/task/components/task-meta";
+import { DiscussionRowItem } from "@/modules/discussioni/components/discussion-meta";
+import { listOpenForDashboard } from "@/modules/discussioni/queries";
 import { UnassignedTasks } from "@/modules/task/components/unassigned-tasks";
 import { listActiveTeam } from "@/modules/team/queries";
 
@@ -50,7 +54,7 @@ const GLASS: Record<Area, { chip: string; bar: string }> = {
 export default async function DashboardPage() {
   const user = await getCurrentUser();
   const showMoney = can.viewMoney(user.role);
-  const [d, team] = await Promise.all([getDashboardData(user.id, showMoney), listActiveTeam()]);
+  const [d, team, points] = await Promise.all([getDashboardData(user.id, showMoney), listActiveTeam(), listOpenForDashboard(user.id)]);
   const firstName = user.full_name.split(" ")[0];
   const today = new Date().toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Rome" });
   const lateTasks = d.myTasks.filter((t) => dueInfo(t.due_date, t.status)?.late).length;
@@ -183,6 +187,42 @@ export default async function DashboardPage() {
                 )}
               </section>
             ))}
+          </div>
+        )}
+      </BandCard>
+
+      {/* Punti aperti e discussioni */}
+      <BandCard
+        area="sales"
+        icon={MessageCircleQuestion}
+        title={`Punti aperti e discussioni · ${points.total} ${points.total === 1 ? "aperto" : "aperti"}${points.mine ? ` · ${points.mine} tocca a te` : ""}`}
+        href="/discussioni?stato=aperti"
+        linkLabel={points.total > points.items.length ? `Vedi tutti (${points.total})` : "Apri l'elenco"}
+        bodyClassName="p-2.5 sm:p-3"
+      >
+        {points.items.length === 0 ? (
+          <EmptyState
+            area="sales"
+            icon={MessageCircleQuestion}
+            title="Nessun punto aperto"
+            description="Quando c'è qualcosa da decidere o di cui parlare, apri un punto: il team risponde e alla fine lo segnate come risolto."
+            action={
+              <Link href="/discussioni?nuovo=1" className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-[13px] font-medium text-primary-foreground hover:bg-primary/90">
+                <Plus className="size-4" /> Apri un punto
+              </Link>
+            }
+            className="py-6"
+          />
+        ) : (
+          <div className="flex flex-col gap-2">
+            <div className="grid gap-2 md:grid-cols-2">
+              {points.items.map((p) => (
+                <DiscussionRowItem key={p.id} d={p} meId={user.id} compact />
+              ))}
+            </div>
+            <Link href="/discussioni?nuovo=1" className="flex items-center justify-center gap-1.5 rounded-lg border border-dashed py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary">
+              <Plus className="size-4" /> Apri un nuovo punto o una discussione
+            </Link>
           </div>
         )}
       </BandCard>
