@@ -26,6 +26,8 @@ import { getDashboardData } from "@/modules/dashboard/queries";
 import { dueInfo, DueLabel, PriorityFlag } from "@/modules/task/components/task-meta";
 import { DiscussionRowItem } from "@/modules/discussioni/components/discussion-meta";
 import { listOpenForDashboard } from "@/modules/discussioni/queries";
+import { PaymentCheckPrompt } from "@/modules/incassi/components/payment-check-dialog";
+import { listPaymentChecks } from "@/modules/incassi/queries";
 import { UnassignedTasks } from "@/modules/task/components/unassigned-tasks";
 import { TaskTabs } from "@/modules/dashboard/components/task-tabs";
 import { listActiveTeam } from "@/modules/team/queries";
@@ -56,7 +58,12 @@ const GLASS: Record<Area, { chip: string; bar: string }> = {
 export default async function DashboardPage() {
   const user = await getCurrentUser();
   const showMoney = can.viewMoney(user.role);
-  const [d, team, points] = await Promise.all([getDashboardData(user.id, showMoney), listActiveTeam(), listOpenForDashboard(user.id)]);
+  const [d, team, points, paymentChecks] = await Promise.all([
+    getDashboardData(user.id, showMoney),
+    listActiveTeam(),
+    listOpenForDashboard(user.id),
+    can.manageMoney(user.role) ? listPaymentChecks() : Promise.resolve([]),
+  ]);
   const firstName = user.full_name.split(" ")[0];
   const today = new Date().toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Rome" });
   const lateTasks = d.myTasks.filter((t) => dueInfo(t.due_date, t.status)?.late).length;
@@ -131,6 +138,9 @@ export default async function DashboardPage() {
             })}
           </div>
       </section>
+
+      {/* Rinnovi scaduti: "è stato pagato?" */}
+      <PaymentCheckPrompt items={paymentChecks} />
 
       {/* Punti aperti: striscia compatta subito sotto l'intestazione */}
       <section aria-label="Punti aperti e discussioni" className="flex shrink-0 flex-col gap-2 rounded-xl border border-[oklch(0.62_0.145_68)] bg-warning/[0.08] p-2 md:flex-row md:items-stretch">

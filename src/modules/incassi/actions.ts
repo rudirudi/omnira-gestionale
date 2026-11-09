@@ -110,3 +110,35 @@ export async function deletePaymentAction(id: string): Promise<ActionResult> {
   revalidatePath("/", "layout");
   return { ok: true, message: "Pagamento eliminato" };
 }
+
+/** Domanda "è stato pagato?" sui rinnovi scaduti: sì → pagamento del residuo; no → resta da incassare */
+export async function answerPaymentCheckAction(
+  id: string,
+  paid: boolean,
+  opts: { paidOn?: string; method?: "bonifico" | "carta" | "contanti" | "paypal" | "stripe" | "riba" | "altro" } = {},
+): Promise<ActionResult> {
+  await requireRole([...MONEY]);
+  const rid = z.guid().parse(id);
+  const supabase = await createClient();
+  const { data: rec } = await supabase
+    .from("receivables")
+    .select("amount_cents, client_id, project_id, payments(amount_cents)")
+    .eq("id", rid)
+    .is("deleted_at", null)
+    .single();
+  if (!rec) return { ok: false, error: "Importo non trovato" };
+  if (paid) {
+    const remaining = rec.amount_cents - rec.payments.reduce((s, p) => s + p.amount_cents, 0);
+    if (remaining > 0) {
+      const paidOn = z.iso.date().catch(new Date().toISOString().slice(0, 10)).parse(opts.paidOn);
+      const method = z.enum(["bonifico", "carta", "contanti", "paypal", "stripe", "riba", "altro"]).catch("bonifico").parse(opts.method);
+      const { error } = await supabase.from("payments").insert({ receivable_id: rid, amount_cents: remaining, paid_on: paidOn, method });
+      if (error) return fromDbError(error);
+    }
+  }
+  const { error } = await supabase.from("receivables").update({ payment_confirmed_at: new Date().toISOString() }).eq("id", rid);
+  if (error) return fromDbError(error);
+  revalidateMoney(rec);
+  revalidatePath("/scadenze");
+  return { ok: true, message: paid ? "Segnato come pagato: è negli incassati" : "Resta da incassare" };
+}

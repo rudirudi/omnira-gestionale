@@ -26,3 +26,22 @@ export async function listProjectOptions() {
     .limit(500);
   return data ?? [];
 }
+
+/** Rinnovi arrivati a scadenza a cui non si è ancora risposto "è stato pagato?" */
+export async function listPaymentChecks() {
+  const supabase = await createClient();
+  const today = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Rome" });
+  const { data } = await supabase
+    .from("receivables")
+    .select("id, description, amount_cents, due_date, client:clients(id, name), renewal:renewals(id, name), payments(amount_cents)")
+    .not("renewal_id", "is", null)
+    .is("deleted_at", null)
+    .is("payment_confirmed_at", null)
+    .lte("due_date", today)
+    .order("due_date")
+    .limit(50);
+  return (data ?? [])
+    .map((r) => ({ ...r, remaining: r.amount_cents - r.payments.reduce((s, p) => s + p.amount_cents, 0) }))
+    .filter((r) => r.remaining > 0);
+}
+export type PaymentCheck = Awaited<ReturnType<typeof listPaymentChecks>>[number];

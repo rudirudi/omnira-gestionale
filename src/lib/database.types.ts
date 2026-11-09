@@ -272,6 +272,7 @@ export type ReceivableRow = Timestamps & {
   notes: string | null;
   created_by: string | null;
   deleted_at: string | null;
+  payment_confirmed_at: string | null;
 };
 
 export type PaymentRow = {
