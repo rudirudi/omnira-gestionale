@@ -441,6 +441,35 @@ export type DiscussionRow = {
   deleted_at: string | null;
 };
 
+export type TechServiceCategory = "hosting" | "database" | "dominio" | "email" | "ai" | "pagamenti" | "storage" | "analytics" | "monitoraggio" | "repository" | "altro";
+export type ProjectTechRow = {
+  project_id: string;
+  stack: string[];
+  patterns: string[];
+  repo_url: string | null;
+  prod_url: string | null;
+  staging_url: string | null;
+  notes: string | null;
+  updated_by: string | null;
+  updated_at: string;
+};
+export type ProjectServiceRow = {
+  id: string;
+  project_id: string;
+  provider: string;
+  category: TechServiceCategory;
+  purpose: string | null;
+  dashboard_url: string | null;
+  account: string | null;
+  plan: string | null;
+  owner: "omnira" | "cliente";
+  notes: string | null;
+  position: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 type InsertOf<R, Required extends keyof R> = Pick<R, Required> & Partial<Omit<R, Required>>;
 
 export type Database = {
@@ -498,6 +527,18 @@ export type Database = {
           { foreignKeyName: "leads_client_id_fkey"; columns: ["client_id"]; isOneToOne: false; referencedRelation: "clients"; referencedColumns: ["id"] },
           { foreignKeyName: "leads_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ];
+      };
+      project_tech: {
+        Row: ProjectTechRow;
+        Insert: InsertOf<ProjectTechRow, "project_id">;
+        Update: Partial<ProjectTechRow>;
+        Relationships: [{ foreignKeyName: "project_tech_updated_by_fkey"; columns: ["updated_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] }];
+      };
+      project_services: {
+        Row: ProjectServiceRow;
+        Insert: InsertOf<ProjectServiceRow, "project_id" | "provider">;
+        Update: Partial<ProjectServiceRow>;
+        Relationships: [];
       };
       discussions: {
         Row: DiscussionRow;
@@ -696,6 +737,7 @@ export type Database = {
       chat_open_direct: { Args: { other: string }; Returns: string };
       chat_mark_read: { Args: { conv: string }; Returns: undefined };
       chat_overview: { Args: Record<string, never>; Returns: ChatOverviewRow[] };
+      tech_suggestions: { Args: Record<string, never>; Returns: { kind: "stack" | "pattern" | "provider"; value: string; uses: number }[] };
       chat_heartbeat: { Args: Record<string, never>; Returns: undefined };
       chat_unread_total: { Args: Record<string, never>; Returns: number };
       current_app_role: { Args: Record<string, never>; Returns: AppRole };

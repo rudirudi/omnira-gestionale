@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Briefcase, Building2, CalendarDays, ChevronLeft, Clock, Euro, UserRound } from "lucide-react";
+import { getProjectTech } from "@/modules/tecnica/queries";
+import { TechSheet } from "@/modules/tecnica/components/tech-sheet";
 import { PageBody, PageHeader } from "@/components/app/page-header";
 import { ProgressBar } from "@/components/app/progress-bar";
 import { Badge } from "@/components/ui/badge";
@@ -38,13 +40,14 @@ export default async function ProgettoPage({ params, searchParams }: PageProps<"
   const [user, project] = await Promise.all([getCurrentUser(), getProject(id)]);
   if (!project) notFound();
   const showMoney = can.viewMoney(user.role);
-  const [tasks, team, clients, receivables, projectOptions, costs] = await Promise.all([
+  const [tasks, team, clients, receivables, projectOptions, costs, techData] = await Promise.all([
     listProjectTasks(id),
     listActiveTeam(),
     listClientOptions(),
     showMoney ? listReceivables({ projectId: id }) : Promise.resolve([]),
     showMoney ? listProjectOptions() : Promise.resolve([]),
     showMoney ? listExpenses({ projectId: id }) : Promise.resolve([]),
+    getProjectTech(id),
   ]);
   const canManage = can.manageProjects(user.role);
   const tab = typeof sp.scheda === "string" ? sp.scheda : "task";
@@ -120,6 +123,7 @@ export default async function ProgettoPage({ params, searchParams }: PageProps<"
             <TabsTrigger value="piano">Fasi e milestone</TabsTrigger>
             {showMoney && <TabsTrigger value="pagamenti">Pagamenti e costi</TabsTrigger>}
             <TabsTrigger value="team">Team ({project.members.length})</TabsTrigger>
+            <TabsTrigger value="tecnica">Scheda tecnica{techData.services.length ? ` (${techData.services.length})` : ""}</TabsTrigger>
             <TabsTrigger value="discussione">Discussione</TabsTrigger>
             <TabsTrigger value="dettagli">Dettagli</TabsTrigger>
           </TabsList>
@@ -184,6 +188,9 @@ export default async function ProgettoPage({ params, searchParams }: PageProps<"
           )}
           <TabsContent value="team" className="max-w-3xl">
             <MembersPanel projectId={id} members={project.members} team={team} managerId={project.manager_id} canEdit={canManage} />
+          </TabsContent>
+          <TabsContent value="tecnica">
+            <TechSheet projectId={id} data={techData} />
           </TabsContent>
           <TabsContent value="discussione" className="max-w-2xl">
             <CommentThread entityType="project" entityId={id} team={team} meId={user.id} isAdmin={user.role === "admin"} />
