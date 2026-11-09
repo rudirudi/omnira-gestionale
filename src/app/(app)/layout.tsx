@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { FEATURES } from "@/lib/features";
 import { can, ROLE_LABEL } from "@/lib/permissions";
 import { Assistant } from "@/modules/assistente/components/assistant";
+import { ChatDock } from "@/modules/chat/components/chat-dock";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const user = await getCurrentUser();
@@ -21,10 +22,11 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             <div className="border-t border-sidebar-border px-5 py-3 text-[11px] text-sidebar-muted">Omnira Soft · uso interno</div>
           </aside>
           <div className="flex min-w-0 flex-1 flex-col">
-            <main className="flex flex-1 flex-col">{children}</main>
+            <main className="flex flex-1 flex-col pb-20 has-[[data-chat-page]]:pb-0 lg:pb-12 lg:has-[[data-chat-page]]:pb-0">{children}</main>
           </div>
         </div>
         <CommandPalette />
+        <ChatDock />
         {FEATURES.assistant && <Assistant />}
       </TooltipProvider>
     </CurrentUserProvider>

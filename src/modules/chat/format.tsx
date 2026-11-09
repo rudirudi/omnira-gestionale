@@ -20,7 +20,7 @@ export function renderBody(text: string, mine: boolean): ReactNode[] {
       );
     } else {
       out.push(
-        <Link key={i} href={`/vai/${m[2]}`} className={cls} title="Apri nel gestionale">
+        <Link key={i} href={`/vai/${m[2]}`} className={`${cls} whitespace-nowrap`} title="Apri nel gestionale">
           {m[2]}
         </Link>,
       );

@@ -129,3 +129,11 @@ export async function chatSearchAction(query: string): Promise<ChatSearchHit[]> 
     .limit(30);
   return (data ?? []) as ChatMessage[];
 }
+
+/** Colleghi attivi (nomi nel riquadro chat in basso) */
+export async function chatTeamAction(): Promise<{ id: string; full_name: string }[]> {
+  await getCurrentUser();
+  const supabase = await createClient();
+  const { data } = await supabase.from("profiles").select("id, full_name").eq("active", true).order("full_name");
+  return data ?? [];
+}

@@ -18,7 +18,7 @@ export default async function ChatPage({ searchParams }: PageProps<"/chat">) {
   const thread = shown ? await chatMessagesAction(shown) : null;
 
   return (
-    <div className="flex h-svh flex-col">
+    <div className="flex h-svh flex-col" data-chat-page>
       <PageHeader title="Chat" icon={MessagesSquare} eyebrow="Team" description="Messaggi tra colleghi, in tempo reale" className="py-3" />
       <ChatView meId={user.id} team={team} initialOverview={overview} initialActive={active} initialThread={thread} />
     </div>
