@@ -209,7 +209,7 @@ export type TaskAssigneeRow = { task_id: string; user_id: string; assigned_at: s
 
 export type CommentRow = {
   id: string;
-  entity_type: "task" | "project" | "client" | "lead" | "discussion";
+  entity_type: "task" | "project" | "client" | "lead" | "discussion" | "ai_prompt";
   entity_id: string;
   body: string;
   mentions: string[];
@@ -470,6 +470,35 @@ export type ProjectServiceRow = {
   updated_at: string;
 };
 
+export type AiPromptKind = "system" | "prompt" | "agente" | "template" | "estrazione" | "altro";
+export type AiPromptStatus = "bozza" | "in_test" | "in_produzione" | "archiviato";
+export type AiPromptRow = {
+  id: string;
+  project_id: string;
+  title: string;
+  kind: AiPromptKind;
+  purpose: string | null;
+  status: AiPromptStatus;
+  production_version_id: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+export type AiPromptVersionRow = {
+  id: string;
+  prompt_id: string;
+  number: number;
+  label: string | null;
+  body: string;
+  model: string | null;
+  temperature: number | null;
+  max_tokens: number | null;
+  change_note: string | null;
+  result: string | null;
+  rating: number | null;
+  created_by: string | null;
+  created_at: string;
+};
 export type FileCategory = "documento" | "grafica" | "contratto" | "materiale_cliente" | "tecnico" | "altro";
 export type ProjectFileRow = {
   id: string;
@@ -540,6 +569,21 @@ export type Database = {
           { foreignKeyName: "leads_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
           { foreignKeyName: "leads_client_id_fkey"; columns: ["client_id"]; isOneToOne: false; referencedRelation: "clients"; referencedColumns: ["id"] },
           { foreignKeyName: "leads_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
+      };
+      ai_prompts: {
+        Row: AiPromptRow;
+        Insert: InsertOf<AiPromptRow, "project_id" | "title">;
+        Update: Partial<AiPromptRow>;
+        Relationships: [{ foreignKeyName: "ai_prompts_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] }];
+      };
+      ai_prompt_versions: {
+        Row: AiPromptVersionRow;
+        Insert: InsertOf<AiPromptVersionRow, "prompt_id" | "body">;
+        Update: Partial<AiPromptVersionRow>;
+        Relationships: [
+          { foreignKeyName: "ai_prompt_versions_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "ai_prompt_versions_prompt_id_fkey"; columns: ["prompt_id"]; isOneToOne: false; referencedRelation: "ai_prompts"; referencedColumns: ["id"] },
         ];
       };
       project_files: {
@@ -757,6 +801,7 @@ export type Database = {
       chat_open_direct: { Args: { other: string }; Returns: string };
       chat_mark_read: { Args: { conv: string }; Returns: undefined };
       chat_overview: { Args: Record<string, never>; Returns: ChatOverviewRow[] };
+      ai_prompt_comment_counts: { Args: { p_project: string }; Returns: { prompt_id: string; comments: number }[] };
       tech_suggestions: { Args: Record<string, never>; Returns: { kind: "stack" | "pattern" | "provider"; value: string; uses: number }[] };
       chat_heartbeat: { Args: Record<string, never>; Returns: undefined };
       chat_unread_total: { Args: Record<string, never>; Returns: number };

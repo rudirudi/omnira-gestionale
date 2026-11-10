@@ -5,6 +5,8 @@ import { getProjectTech } from "@/modules/tecnica/queries";
 import { TechSheet } from "@/modules/tecnica/components/tech-sheet";
 import { ProjectFiles } from "@/modules/file/components/project-files";
 import { listProjectFiles } from "@/modules/file/queries";
+import { AiWorkspace } from "@/modules/ai/components/ai-workspace";
+import { listProjectPrompts } from "@/modules/ai/queries";
 import { PageBody, PageHeader } from "@/components/app/page-header";
 import { ProgressBar } from "@/components/app/progress-bar";
 import { Badge } from "@/components/ui/badge";
@@ -42,7 +44,7 @@ export default async function ProgettoPage({ params, searchParams }: PageProps<"
   const [user, project] = await Promise.all([getCurrentUser(), getProject(id)]);
   if (!project) notFound();
   const showMoney = can.viewMoney(user.role);
-  const [tasks, team, clients, receivables, projectOptions, costs, techData, files] = await Promise.all([
+  const [tasks, team, clients, receivables, projectOptions, costs, techData, files, prompts] = await Promise.all([
     listProjectTasks(id),
     listActiveTeam(),
     listClientOptions(),
@@ -51,6 +53,7 @@ export default async function ProgettoPage({ params, searchParams }: PageProps<"
     showMoney ? listExpenses({ projectId: id }) : Promise.resolve([]),
     getProjectTech(id),
     listProjectFiles(id),
+    listProjectPrompts(id),
   ]);
   const canManage = can.manageProjects(user.role);
   const tab = typeof sp.scheda === "string" ? sp.scheda : "task";
@@ -127,6 +130,7 @@ export default async function ProgettoPage({ params, searchParams }: PageProps<"
             {showMoney && <TabsTrigger value="pagamenti">Pagamenti e costi</TabsTrigger>}
             <TabsTrigger value="team">Team ({project.members.length})</TabsTrigger>
             <TabsTrigger value="tecnica">Scheda tecnica{techData.services.length ? ` (${techData.services.length})` : ""}</TabsTrigger>
+            <TabsTrigger value="ai">AI{prompts.length ? ` (${prompts.length})` : ""}</TabsTrigger>
             <TabsTrigger value="file">File{files.length ? ` (${files.length})` : ""}</TabsTrigger>
             <TabsTrigger value="discussione">Discussione</TabsTrigger>
             <TabsTrigger value="dettagli">Dettagli</TabsTrigger>
@@ -195,6 +199,9 @@ export default async function ProgettoPage({ params, searchParams }: PageProps<"
           </TabsContent>
           <TabsContent value="tecnica">
             <TechSheet projectId={id} data={techData} />
+          </TabsContent>
+          <TabsContent value="ai">
+            <AiWorkspace projectId={id} prompts={prompts} team={team} meId={user.id} isAdmin={user.role === "admin"} initialPrompt={typeof sp.prompt === "string" ? sp.prompt : undefined} />
           </TabsContent>
           <TabsContent value="file">
             <ProjectFiles projectId={id} files={files} meId={user.id} isAdmin={user.role === "admin"} />
