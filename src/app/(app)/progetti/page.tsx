@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Briefcase, CalendarDays } from "lucide-react";
+import { Briefcase, Building2, CalendarDays } from "lucide-react";
 import { AvatarStack } from "@/components/app/avatar-stack";
 import { EmptyState } from "@/components/app/empty-state";
 import { PageBody, PageHeader } from "@/components/app/page-header";
@@ -81,7 +81,14 @@ export default async function ProgettiPage({ searchParams }: PageProps<"/progett
                     <div className="min-w-0">
                       <p className="text-[11px] font-semibold tracking-wide text-work-ink uppercase"><span className="font-mono">{p.code}</span> · {PROJECT_TYPE[p.type]}</p>
                       <p className="mt-1 truncate text-[15px] font-semibold group-hover:text-primary">{p.name}</p>
-                      <p className="truncate text-[13px] text-muted-foreground">{p.client?.name ?? "Progetto interno"}</p>
+                      {p.client ? (
+                        <p className="mt-0.5 flex items-center gap-1.5 text-[13.5px] font-semibold text-sales-ink">
+                          <Building2 className="size-3.5 shrink-0" />
+                          <span className="truncate">{p.client.name}</span>
+                        </p>
+                      ) : (
+                        <p className="mt-0.5 truncate text-[13px] text-muted-foreground italic">Progetto interno</p>
+                      )}
                     </div>
                     <Badge dot tone={PROJECT_STATUS[p.status].tone}>{PROJECT_STATUS[p.status].label}</Badge>
                   </div>
