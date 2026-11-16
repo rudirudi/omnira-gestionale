@@ -11,6 +11,7 @@ import { PROJECT_STATUS, PROJECT_TYPE } from "@/lib/labels";
 import { TONE } from "@/lib/areas";
 import { can } from "@/lib/permissions";
 import { cn, formatDate } from "@/lib/utils";
+import { type ProjectListItem } from "@/modules/progetti/queries";
 import { NewProjectDialog } from "@/modules/progetti/components/new-project-dialog";
 import { ProjectFilters } from "@/modules/progetti/components/project-filters";
 import { listClientOptions, listProjects } from "@/modules/progetti/queries";
@@ -30,6 +31,16 @@ export default async function ProgettiPage({ searchParams }: PageProps<"/progett
     listActiveTeam(),
   ]);
   const today = new Date().toISOString().slice(0, 10);
+  const ordine = typeof sp.ordine === "string" && sp.ordine in ORDER ? (sp.ordine as Order) : "stato";
+  const sorted = sortProjects(projects, ordine);
+  // Nell'ordine predefinito i progetti chiusi finiscono in fondo, in una sezione separata
+  const sections =
+    ordine === "stato"
+      ? [
+          { key: "aperti", title: "Da completare", items: sorted.filter((p) => !CLOSED.has(p.status)) },
+          { key: "chiusi", title: "Completati e annullati", items: sorted.filter((p) => CLOSED.has(p.status)) },
+        ].filter((x) => x.items.length)
+      : [{ key: "tutti", title: "", items: sorted }];
   const teamName = new Map(team.map((t) => [t.id, t.full_name]));
 
   return (
@@ -47,8 +58,17 @@ export default async function ProgettiPage({ searchParams }: PageProps<"/progett
         {projects.length === 0 ? (
           <EmptyState area="work" icon={Briefcase} title="Nessun progetto" description="Crea un progetto: fasi e task tipici vengono preparati in automatico." />
         ) : (
-          <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
-            {projects.map((p) => {
+          <div className="flex flex-col gap-6">
+            {sections.map((sec) => (
+              <section key={sec.key} aria-label={sec.title || undefined} className="flex flex-col gap-3">
+                {sec.title && sections.length > 1 && (
+                  <h2 className="flex items-center gap-2 text-[13px] font-semibold text-muted-foreground">
+                    {sec.title} <span className="rounded-full bg-muted px-2 text-[11.5px] tabular">{sec.items.length}</span>
+                    <span className="h-px flex-1 bg-border" />
+                  </h2>
+                )}
+              <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
+            {sec.items.map((p) => {
               const total = p.progress?.total_tasks ?? 0;
               const done = p.progress?.done_tasks ?? 0;
               const overdue = p.progress?.overdue_tasks ?? 0;
@@ -79,8 +99,41 @@ export default async function ProgettiPage({ searchParams }: PageProps<"/progett
               );
             })}
           </div>
+              </section>
+            ))}
+          </div>
         )}
       </PageBody>
     </>
   );
+}
+
+const CLOSED = new Set(["completato", "annullato"]);
+const ORDER = { stato: 1, scadenza: 1, avanzamento: 1, recenti: 1, nome: 1 };
+type Order = keyof typeof ORDER;
+const RANK: Record<string, number> = { attivo: 0, pianificato: 1, in_pausa: 2, completato: 3, annullato: 4 };
+
+function sortProjects(list: ProjectListItem[], order: Order) {
+  const due = (p: ProjectListItem) => p.due_date ?? "9999-12-31";
+  const pct = (p: ProjectListItem) => (p.progress?.total_tasks ? (p.progress.done_tasks ?? 0) / p.progress.total_tasks : 0);
+  const byName = (a: ProjectListItem, b: ProjectListItem) => a.name.localeCompare(b.name, "it");
+  return [...list].sort((a, b) => {
+    switch (order) {
+      case "scadenza":
+        return due(a).localeCompare(due(b)) || byName(a, b);
+      case "avanzamento":
+        return pct(b) - pct(a) || byName(a, b);
+      case "recenti":
+        return b.updated_at.localeCompare(a.updated_at);
+      case "nome":
+        return byName(a, b);
+      default: {
+        const r = (RANK[a.status] ?? 9) - (RANK[b.status] ?? 9);
+        if (r) return r;
+        // aperti: prima la scadenza più vicina; chiusi: prima i più recenti
+        if (CLOSED.has(a.status)) return (b.completed_at ?? b.updated_at).localeCompare(a.completed_at ?? a.updated_at);
+        return due(a).localeCompare(due(b)) || byName(a, b);
+      }
+    }
+  });
 }

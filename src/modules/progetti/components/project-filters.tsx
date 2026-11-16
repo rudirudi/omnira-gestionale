@@ -12,11 +12,20 @@ const STATI = [
   { value: "completato", label: "Completati" },
 ];
 
+const ORDINI = [
+  { value: "", label: "Da completare prima" },
+  { value: "scadenza", label: "Scadenza più vicina" },
+  { value: "avanzamento", label: "Più avanzati" },
+  { value: "recenti", label: "Modificati di recente" },
+  { value: "nome", label: "Nome (A-Z)" },
+];
+
 export function ProjectFilters() {
   const params = useSearchParams();
   const router = useRouter();
   const stato = params.get("stato") ?? "";
   const mine = params.get("miei") === "1";
+  const ordine = params.get("ordine") ?? "";
   const set = (k: string, v: string) => {
     const next = new URLSearchParams(params);
     if (v) next.set(k, v);
@@ -38,6 +47,16 @@ export function ProjectFilters() {
           </button>
         ))}
       </div>
+      <label className="flex items-center gap-2 text-[13px]">
+        <span className="text-muted-foreground">Ordina</span>
+        <select value={ordine} onChange={(e) => set("ordine", e.target.value)} aria-label="Ordina i progetti" className="h-8 rounded-md border bg-card px-2 text-[13px]">
+          {ORDINI.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </label>
       <label className="flex items-center gap-2 text-[13px]">
         <input type="checkbox" checked={mine} onChange={(e) => set("miei", e.target.checked ? "1" : "")} className="size-4 accent-[var(--primary)]" />
         Solo i miei progetti
