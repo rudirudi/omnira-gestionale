@@ -5,6 +5,7 @@ import { getProjectTech } from "@/modules/tecnica/queries";
 import { TechSheet } from "@/modules/tecnica/components/tech-sheet";
 import { ProjectFiles } from "@/modules/file/components/project-files";
 import { listProjectFiles } from "@/modules/file/queries";
+import { CompleteBanner } from "@/modules/progetti/components/complete-banner";
 import { AiWorkspace } from "@/modules/ai/components/ai-workspace";
 import { listProjectPrompts } from "@/modules/ai/queries";
 import { PageBody, PageHeader } from "@/components/app/page-header";
@@ -123,6 +124,7 @@ export default async function ProgettoPage({ params, searchParams }: PageProps<"
         <ProgressBar value={total ? (done / total) * 100 : 0} className="max-w-md" label="Avanzamento progetto" late={(project.progress?.overdue_tasks ?? 0) > 0} />
       </PageHeader>
       <PageBody>
+        {total > 0 && done === total && !["completato", "annullato"].includes(project.status) && <CompleteBanner projectId={id} total={total} canManage={canManage} />}
         <Tabs defaultValue={tab}>
           <TabsList>
             <TabsTrigger value="task">Task ({total})</TabsTrigger>

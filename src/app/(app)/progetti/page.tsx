@@ -72,7 +72,8 @@ export default async function ProgettiPage({ searchParams }: PageProps<"/progett
               const total = p.progress?.total_tasks ?? 0;
               const done = p.progress?.done_tasks ?? 0;
               const overdue = p.progress?.overdue_tasks ?? 0;
-              const late = p.due_date && p.due_date < today && p.status !== "completato";
+              const allDone = total > 0 && done === total && !CLOSED.has(p.status);
+              const late = p.due_date && p.due_date < today && !CLOSED.has(p.status) && !allDone;
               return (
                 <Link key={p.id} href={`/progetti/${p.id}`} className={cn("group relative flex flex-col gap-3 overflow-hidden rounded-xl border bg-card p-4 pt-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md")}>
                   <span className={cn("absolute inset-x-0 top-0 h-1", TONE[PROJECT_STATUS[p.status].tone].dot)} aria-hidden />
@@ -88,6 +89,7 @@ export default async function ProgettiPage({ searchParams }: PageProps<"/progett
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
                     <span className="tabular">{done}/{total} task</span>
                     {overdue > 0 && <span className="font-medium text-destructive">{overdue} in ritardo</span>}
+                    {allDone && <span className="rounded-full bg-success/12 px-2 py-0.5 font-semibold text-success">Da chiudere</span>}
                     {p.due_date && (
                       <span className={cn("flex items-center gap-1", late && "font-medium text-destructive")}>
                         <CalendarDays className="size-3.5" /> {formatDate(p.due_date)}
@@ -128,6 +130,9 @@ function sortProjects(list: ProjectListItem[], order: Order) {
       case "nome":
         return byName(a, b);
       default: {
+        // tra gli aperti, quelli con tutti i task chiusi vanno in coda (sono quasi finiti)
+        const fin = (p: ProjectListItem) => (!CLOSED.has(p.status) && p.progress?.total_tasks && p.progress.done_tasks === p.progress.total_tasks ? 1 : 0);
+        if (!CLOSED.has(a.status) && !CLOSED.has(b.status) && fin(a) !== fin(b)) return fin(a) - fin(b);
         const r = (RANK[a.status] ?? 9) - (RANK[b.status] ?? 9);
         if (r) return r;
         // aperti: prima la scadenza più vicina; chiusi: prima i più recenti

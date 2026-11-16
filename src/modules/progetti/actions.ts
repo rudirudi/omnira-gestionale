@@ -129,3 +129,14 @@ export async function setMemberAction(projectId: string, userId: string, member:
   revalidatePath(`/progetti/${projectId}`);
   return { ok: true };
 }
+
+export async function setProjectStatusAction(id: string, status: "completato" | "attivo"): Promise<ActionResult> {
+  await requireRole([...MANAGERS]);
+  const supabase = await createClient();
+  const { error } = await supabase.from("projects").update({ status: z.enum(["completato", "attivo"]).parse(status) }).eq("id", z.guid().parse(id));
+  if (error) return fromDbError(error);
+  revalidatePath(`/progetti/${id}`);
+  revalidatePath("/progetti");
+  revalidatePath("/");
+  return { ok: true, message: status === "completato" ? "Progetto completato" : "Progetto riaperto" };
+}
