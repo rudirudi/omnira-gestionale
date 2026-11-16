@@ -33,8 +33,39 @@ export function CompanyForm({ company, canEdit }: { company: CompanySettingsRow;
         <Field label="PEC" htmlFor="s_pec"><Input id="s_pec" name="pec" defaultValue={c.pec ?? ""} /></Field>
         <Field label="Email" htmlFor="s_email"><Input id="s_email" name="email" defaultValue={c.email ?? ""} /></Field>
         <Field label="Telefono" htmlFor="s_phone"><Input id="s_phone" name="phone" defaultValue={c.phone ?? ""} /></Field>
-        <Field label="Sede legale" htmlFor="s_addr" className="sm:col-span-2"><Input id="s_addr" name="address" defaultValue={c.address ?? ""} /></Field>
-        <Field label="IBAN" htmlFor="s_iban" className="sm:col-span-2"><Input id="s_iban" name="iban" defaultValue={c.iban ?? ""} className="font-mono" /></Field>
+        <Field label="Indirizzo sede legale" htmlFor="s_addr" hint="Via e numero civico" className="sm:col-span-2"><Input id="s_addr" name="address" defaultValue={c.address ?? ""} /></Field>
+        <div className="grid grid-cols-[6rem_minmax(0,1fr)_5rem_4.5rem] gap-3 sm:col-span-2">
+          <Field label="CAP" htmlFor="s_zip" error={err("zip")}><Input id="s_zip" name="zip" inputMode="numeric" maxLength={5} defaultValue={c.zip ?? ""} /></Field>
+          <Field label="Comune" htmlFor="s_city"><Input id="s_city" name="city" defaultValue={c.city ?? ""} /></Field>
+          <Field label="Prov." htmlFor="s_prov" error={err("province")}><Input id="s_prov" name="province" maxLength={2} defaultValue={c.province ?? ""} className="uppercase" /></Field>
+          <Field label="Nazione" htmlFor="s_country" error={err("country")}><Input id="s_country" name="country" maxLength={2} defaultValue={c.country ?? "IT"} className="uppercase" /></Field>
+        </div>
+        <Field label="Regime fiscale" htmlFor="s_regime" hint="Va nell'intestazione di ogni fattura elettronica">
+          <select id="s_regime" name="tax_regime" defaultValue={c.tax_regime ?? "RF01"} className="h-9 rounded-md border bg-background px-2 text-[13.5px]">
+            <option value="RF01">Ordinario (RF01)</option>
+            <option value="RF19">Forfettario (RF19)</option>
+            <option value="RF02">Contribuenti minimi (RF02)</option>
+          </select>
+        </Field>
+        <div className="grid grid-cols-[5rem_minmax(0,1fr)] gap-3">
+          <Field label="REA prov." htmlFor="s_rea_o" error={err("rea_office")}><Input id="s_rea_o" name="rea_office" maxLength={2} defaultValue={c.rea_office ?? ""} className="uppercase" /></Field>
+          <Field label="Numero REA" htmlFor="s_rea_n" hint="Per le società iscritte"><Input id="s_rea_n" name="rea_number" defaultValue={c.rea_number ?? ""} /></Field>
+        </div>
+        <Field label="IBAN" htmlFor="s_iban" hint="Stampato nelle fatture per il bonifico" className="sm:col-span-2"><Input id="s_iban" name="iban" defaultValue={c.iban ?? ""} className="font-mono" /></Field>
+        <Field
+          label="Ultima fattura già emessa fuori dal gestionale"
+          htmlFor="s_ext_n"
+          error={err("invoice_last_external_number")}
+          hint="Se quest'anno avete già emesso fatture con un altro programma, la numerazione riparte dal numero successivo"
+          className="sm:col-span-2"
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] text-muted-foreground">Numero</span>
+            <Input id="s_ext_n" name="invoice_last_external_number" type="number" min={0} defaultValue={c.invoice_last_external_number ?? ""} className="w-24" />
+            <span className="text-[13px] text-muted-foreground">dell&apos;anno</span>
+            <Input name="invoice_last_external_year" aria-label="Anno" type="number" min={2000} max={2100} defaultValue={c.invoice_last_external_year ?? new Date().getFullYear()} className="w-24" />
+          </div>
+        </Field>
         <Field label="Prefisso fatture" htmlFor="s_pref" error={err("invoice_prefix")}>
           <Input id="s_pref" name="invoice_prefix" defaultValue={c.invoice_prefix} />
         </Field>

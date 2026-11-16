@@ -98,8 +98,8 @@ export function ProjectFiles({ projectId, files, meId, isAdmin }: { projectId: s
       w?.close();
       return toast.error(res.ok ? "Non riesco ad aprire il file" : res.error);
     }
-    if (w) w.location.href = res.data;
-    else window.location.href = res.data;
+    if (w) w.location.assign(res.data);
+    else window.location.assign(res.data);
   }
 
   async function remove(f: ProjectFile) {

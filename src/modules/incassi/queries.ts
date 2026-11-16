@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { withBalance } from "./balance";
 
 const SELECT =
-  "*, client:clients(id, name), project:projects(id, code, name), renewal:renewals(id, name, type), payments(id, amount_cents, paid_on, method, note, created_at)";
+  "*, client:clients(id, name), project:projects(id, code, name), renewal:renewals(id, name, type), payments(id, amount_cents, paid_on, method, note, created_at), invoice_lines(invoice:invoices(id, number, year, status, test, deleted_at))";
 
 export async function listReceivables(filter: { clientId?: string; projectId?: string } = {}) {
   const supabase = await createClient();
@@ -12,7 +12,13 @@ export async function listReceivables(filter: { clientId?: string; projectId?: s
   if (filter.projectId) q = q.eq("project_id", filter.projectId);
   const { data, error } = await q;
   if (error) throw new Error(error.message);
-  return data.map((r) => withBalance({ ...r, payments: [...r.payments].sort((a, b) => b.paid_on.localeCompare(a.paid_on)) }));
+  return data.map(({ invoice_lines, ...r }) =>
+    withBalance({
+      ...r,
+      invoice: invoice_lines.map((l) => l.invoice).find((i) => i && !i.deleted_at) ?? null,
+      payments: [...r.payments].sort((a, b) => b.paid_on.localeCompare(a.paid_on)),
+    }),
+  );
 }
 export type ReceivableItem = Awaited<ReturnType<typeof listReceivables>>[number];
 

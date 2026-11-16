@@ -68,6 +68,18 @@ export type CompanySettingsRow = {
   email_from: string;
   telegram_bot_username: string | null;
   telegram_getme_request: number | null;
+  tax_regime: string;
+  zip: string | null;
+  city: string | null;
+  province: string | null;
+  country: string;
+  rea_office: string | null;
+  rea_number: string | null;
+  invoicing_mode: "prova" | "reale";
+  invoice_last_external_year: number | null;
+  invoice_last_external_number: number | null;
+  invoicing_status: Json | null;
+  invoicing_checked_at: string | null;
 };
 
 export type AuditLogRow = {
@@ -499,6 +511,84 @@ export type AiPromptVersionRow = {
   created_by: string | null;
   created_at: string;
 };
+export type InvoiceStatus = "bozza" | "in_invio" | "inviata" | "consegnata" | "non_consegnata" | "scartata" | "errore";
+export type InvoiceDocType = "TD01" | "TD02" | "TD04" | "TD06";
+export type InvoiceRow = {
+  id: string;
+  test: boolean;
+  doc_type: InvoiceDocType;
+  year: number | null;
+  number: number | null;
+  date: string;
+  client_id: string;
+  project_id: string | null;
+  related_invoice_id: string | null;
+  customer: Json | null;
+  causale: string | null;
+  notes: string | null;
+  payment_method: string;
+  payment_due: string | null;
+  iban: string | null;
+  net_cents: number;
+  vat_cents: number;
+  total_cents: number;
+  status: InvoiceStatus;
+  xml: string | null;
+  file_name: string | null;
+  request_id: number | null;
+  attempts: number;
+  itx_send_id: number | null;
+  sdi_identifier: string | null;
+  sdi_state: string | null;
+  sdi_message: string | null;
+  sdi_errors: Json | null;
+  sent_at: string | null;
+  delivered_at: string | null;
+  last_sdi_update: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+export type InvoiceLineRow = {
+  id: string;
+  invoice_id: string;
+  position: number;
+  description: string;
+  quantity: number;
+  unit_price_cents: number;
+  vat_rate: number;
+  vat_nature: string | null;
+  receivable_id: string | null;
+};
+export type PurchaseInvoiceRow = {
+  id: string;
+  test: boolean;
+  itx_receive_id: number | null;
+  sdi_identifier: string | null;
+  file_name: string | null;
+  supplier_vat: string | null;
+  supplier_name: string | null;
+  number: string | null;
+  doc_date: string | null;
+  doc_type: string | null;
+  net_cents: number | null;
+  vat_cents: number | null;
+  total_cents: number | null;
+  due_date: string | null;
+  description: string | null;
+  payload: string | null;
+  encoding: string | null;
+  received_at: string | null;
+  parsed_at: string | null;
+  status: "da_registrare" | "registrata" | "pagata" | "ignorata";
+  expense_id: string | null;
+  project_id: string | null;
+  notes: string | null;
+  source: "sdi" | "importata";
+  created_at: string;
+  updated_at: string;
+};
 export type FileCategory = "documento" | "grafica" | "contratto" | "materiale_cliente" | "tecnico" | "altro";
 export type ProjectFileRow = {
   id: string;
@@ -569,6 +659,35 @@ export type Database = {
           { foreignKeyName: "leads_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
           { foreignKeyName: "leads_client_id_fkey"; columns: ["client_id"]; isOneToOne: false; referencedRelation: "clients"; referencedColumns: ["id"] },
           { foreignKeyName: "leads_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
+      };
+      invoices: {
+        Row: InvoiceRow;
+        Insert: InsertOf<InvoiceRow, "client_id">;
+        Update: Partial<InvoiceRow>;
+        Relationships: [
+          { foreignKeyName: "invoices_client_id_fkey"; columns: ["client_id"]; isOneToOne: false; referencedRelation: "clients"; referencedColumns: ["id"] },
+          { foreignKeyName: "invoices_project_id_fkey"; columns: ["project_id"]; isOneToOne: false; referencedRelation: "projects"; referencedColumns: ["id"] },
+          { foreignKeyName: "invoices_related_invoice_id_fkey"; columns: ["related_invoice_id"]; isOneToOne: false; referencedRelation: "invoices"; referencedColumns: ["id"] },
+          { foreignKeyName: "invoices_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
+      };
+      invoice_lines: {
+        Row: InvoiceLineRow;
+        Insert: InsertOf<InvoiceLineRow, "invoice_id" | "description" | "unit_price_cents">;
+        Update: Partial<InvoiceLineRow>;
+        Relationships: [
+          { foreignKeyName: "invoice_lines_invoice_id_fkey"; columns: ["invoice_id"]; isOneToOne: false; referencedRelation: "invoices"; referencedColumns: ["id"] },
+          { foreignKeyName: "invoice_lines_receivable_id_fkey"; columns: ["receivable_id"]; isOneToOne: false; referencedRelation: "receivables"; referencedColumns: ["id"] },
+        ];
+      };
+      purchase_invoices: {
+        Row: PurchaseInvoiceRow;
+        Insert: Partial<PurchaseInvoiceRow>;
+        Update: Partial<PurchaseInvoiceRow>;
+        Relationships: [
+          { foreignKeyName: "purchase_invoices_expense_id_fkey"; columns: ["expense_id"]; isOneToOne: false; referencedRelation: "expenses"; referencedColumns: ["id"] },
+          { foreignKeyName: "purchase_invoices_project_id_fkey"; columns: ["project_id"]; isOneToOne: false; referencedRelation: "projects"; referencedColumns: ["id"] },
         ];
       };
       ai_prompts: {
@@ -801,6 +920,12 @@ export type Database = {
       chat_open_direct: { Args: { other: string }; Returns: string };
       chat_mark_read: { Args: { conv: string }; Returns: undefined };
       chat_overview: { Args: Record<string, never>; Returns: ChatOverviewRow[] };
+      invoice_assign_number: { Args: { p_invoice: string }; Returns: number };
+      invoice_submit: { Args: { p_invoice: string; p_xml: string; p_file_name: string; p_customer: Json }; Returns: string };
+      invoicing_sync: { Args: Record<string, never>; Returns: Json };
+      invoicing_check: { Args: Record<string, never>; Returns: string };
+      invoicing_ready: { Args: Record<string, never>; Returns: boolean };
+      invoice_editable: { Args: { p_invoice: string }; Returns: boolean };
       ai_prompt_comment_counts: { Args: { p_project: string }; Returns: { prompt_id: string; comments: number }[] };
       tech_suggestions: { Args: Record<string, never>; Returns: { kind: "stack" | "pattern" | "provider"; value: string; uses: number }[] };
       chat_heartbeat: { Args: Record<string, never>; Returns: undefined };

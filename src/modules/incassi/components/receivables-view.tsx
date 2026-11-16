@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 
 import * as React from "react";
 import Link from "next/link";
-import { CalendarDays, CheckCircle2, Plus, Repeat, Trash2, Wallet } from "lucide-react";
+import { CalendarDays, CheckCircle2, Plus, Receipt, Repeat, Trash2, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/app/empty-state";
 import { Badge } from "@/components/ui/badge";
@@ -199,6 +199,12 @@ export function ReceivablesView({
                   <div className="flex flex-col items-end gap-1">
                     <Badge dot tone={st.tone}>{st.label}</Badge>
                     {r.remaining > 0 && <span className="text-[13px] font-semibold tabular">{formatEuro(r.remaining)}</span>}
+                    {r.invoice && (
+                      <span className="flex items-center gap-1 text-[11px] font-medium text-money-ink">
+                        <Receipt className="size-3" /> {r.invoice.number ? `Fattura ${r.invoice.number}/${r.invoice.year}` : "In fattura (bozza)"}
+                        {r.invoice.test ? " · prova" : ""}
+                      </span>
+                    )}
                   </div>
                 </button>
               </li>
@@ -234,6 +240,22 @@ export function ReceivablesView({
                 </DialogDescription>
               </DialogHeader>
 
+              {canManage && (
+                <div className="-mt-2 flex flex-wrap items-center gap-2 text-[13px]">
+                  {open.invoice ? (
+                    <Link href={`/fatture/${open.invoice.id}`} className="flex items-center gap-1.5 font-medium text-money-ink hover:underline">
+                      <Receipt className="size-4" /> {open.invoice.number ? `Fattura n. ${open.invoice.number}/${open.invoice.year}` : "Bozza di fattura"}
+                      {open.invoice.test ? " (prova)" : ""}
+                    </Link>
+                  ) : (
+                    <Button asChild size="sm" variant="outline">
+                      <Link href={`/fatture/nuova?incasso=${open.id}`}>
+                        <Receipt /> Emetti fattura
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              )}
               <div className="grid grid-cols-3 gap-2 text-center">
                 <Mini label="Importo" value={formatEuro(open.amount_cents)} />
                 <Mini label="Pagato" value={formatEuro(open.paid)} tone="success" />

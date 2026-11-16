@@ -124,7 +124,7 @@ export const MODULES = {
   incassi: { href: "/incassi", label: "Incassi", icon: Wallet, area: "money", module: "M8" },
   spese: { href: "/spese", label: "Spese", icon: HandCoins, area: "money", module: "M9" },
   scadenze: { href: "/scadenze", label: "Scadenze", icon: CalendarClock, area: "money", module: "M9" },
-  fatture: { href: "/fatture", label: "Fatture", icon: Receipt, area: "money", module: "M8", phase: 2 },
+  fatture: { href: "/fatture", label: "Fatture", icon: Receipt, area: "money", module: "M8" },
   report: { href: "/report", label: "Report", icon: BarChart3, area: "money", module: "M12", phase: 4 },
   ticket: { href: "/ticket", label: "Ticket", icon: LifeBuoy, area: "support", module: "M10", phase: 3 },
   impostazioni: { href: "/impostazioni", label: "Impostazioni", icon: Settings, area: "system", module: "M0" },

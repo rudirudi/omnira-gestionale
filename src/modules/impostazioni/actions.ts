@@ -15,7 +15,16 @@ const companySchema = z.object({
   email: optionalText,
   phone: optionalText,
   address: optionalText,
-  iban: optionalText,
+  zip: optionalText.refine((v) => !v || /^\d{5}$/.test(v), "5 cifre"),
+  city: optionalText,
+  province: optionalText.refine((v) => !v || /^[A-Za-z]{2}$/.test(v), "Sigla di 2 lettere").transform((v) => v?.toUpperCase() ?? null),
+  country: z.string().trim().length(2, "Sigla di 2 lettere (IT)").transform((v) => v.toUpperCase()),
+  tax_regime: z.enum(["RF01", "RF19", "RF02"]),
+  rea_office: optionalText.refine((v) => !v || /^[A-Za-z]{2}$/.test(v), "Sigla della provincia").transform((v) => v?.toUpperCase() ?? null),
+  rea_number: optionalText,
+  iban: optionalText.transform((v) => v?.replace(/\s+/g, "").toUpperCase() ?? null),
+  invoice_last_external_year: z.preprocess((v) => (v === "" || v === undefined ? null : v), z.coerce.number().int().min(2000).max(2100).nullable()),
+  invoice_last_external_number: z.preprocess((v) => (v === "" || v === undefined ? null : v), z.coerce.number().int().min(0).nullable()),
   invoice_prefix: z.string().trim().min(1).max(10),
   default_vat_rate: z.coerce.number().min(0).max(100),
 });
@@ -25,10 +34,39 @@ export async function updateCompanyAction(_prev: ActionResult, formData: FormDat
   const parsed = companySchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fromZodError(parsed.error);
   const supabase = await createClient();
-  const { error } = await supabase.from("company_settings").update(parsed.data).eq("id", 1);
+  const data = parsed.data;
+  const { error } = await supabase
+    .from("company_settings")
+    .update({ ...data, vat_number: data.vat_number?.replace(/\s+/g, "").replace(/^IT/i, "") ?? null })
+    .eq("id", 1);
   if (error) return fromDbError(error);
   revalidatePath("/impostazioni");
+  revalidatePath("/fatture");
   return { ok: true, message: "Dati aziendali salvati" };
+}
+
+/** Prova ↔ reale: cambia la numerazione e quale chiave va nel Vault */
+export async function setInvoicingModeAction(mode: "prova" | "reale"): Promise<ActionResult> {
+  await requireRole(["admin"]);
+  const supabase = await createClient();
+  const { error } = await supabase.from("company_settings").update({ invoicing_mode: z.enum(["prova", "reale"]).parse(mode) }).eq("id", 1);
+  if (error) return fromDbError(error);
+  revalidatePath("/impostazioni");
+  revalidatePath("/fatture");
+  return { ok: true, message: mode === "reale" ? "Fatturazione reale attiva" : "Modalità prova attiva" };
+}
+
+/** Controlla la chiave e registra l'azienda su Invoicetronic; il risultato arriva dopo qualche secondo */
+export async function checkInvoicingAction(): Promise<ActionResult> {
+  await requireRole(["admin", "amministrazione"]);
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("invoicing_check");
+  if (error) return fromDbError(error);
+  if (data === "senza_chiave") return { ok: false, error: "La chiave Invoicetronic non è ancora nel Vault" };
+  await new Promise((r) => setTimeout(r, 2500));
+  await supabase.rpc("invoicing_sync");
+  revalidatePath("/impostazioni");
+  return { ok: true, message: "Verifica completata" };
 }
 
 const profileSchema = z.object({
