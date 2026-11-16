@@ -1,5 +1,7 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
+
 import * as React from "react";
 import Link from "next/link";
 import { CalendarDays, CheckCircle2, Plus, Repeat, Trash2, Wallet } from "lucide-react";
@@ -60,12 +62,34 @@ export function ReceivablesView({
   compact?: boolean;
 }) {
   const [filter, setFilter] = React.useState<(typeof FILTERS)[number]["value"]>("tutti");
+  const params = useSearchParams();
+  const [clientId, setClientIdState] = React.useState(params.get("cliente") ?? "");
+  const setClientId = (id: string) => {
+    setClientIdState(id);
+    const url = new URL(window.location.href);
+    if (id) url.searchParams.set("cliente", id);
+    else url.searchParams.delete("cliente");
+    window.history.replaceState(null, "", url);
+  };
+  // Solo i clienti che hanno importi, con quanto resta da incassare
+  const clientOptions = React.useMemo(() => {
+    const m = new Map<string, { id: string; name: string; count: number; remaining: number }>();
+    for (const r of items) {
+      if (!r.client) continue;
+      const o = m.get(r.client.id) ?? { id: r.client.id, name: r.client.name, count: 0, remaining: 0 };
+      o.count += 1;
+      o.remaining += r.remaining;
+      m.set(r.client.id, o);
+    }
+    return [...m.values()].sort((a, b) => a.name.localeCompare(b.name, "it"));
+  }, [items]);
+  const byClient = clientId ? items.filter((r) => r.client?.id === clientId) : items;
   const [openId, setOpenId] = React.useState<string | null>(null);
   const [creating, setCreating] = React.useState(false);
   const [editing, setEditing] = React.useState(false);
   const [, start] = React.useTransition();
-  const t = totals(items);
-  const shown = items.filter((r) =>
+  const t = totals(byClient);
+  const shown = byClient.filter((r) =>
     filter === "tutti" ? true : filter === "aperti" ? r.state !== "pagato" : r.state === filter,
   );
   const open = items.find((r) => r.id === openId) ?? null;
@@ -95,6 +119,30 @@ export function ReceivablesView({
               </button>
             ))}
           </div>
+        )}
+        {showFilters && showClient && clientOptions.length > 1 && (
+          <label className="flex min-w-0 items-center gap-2 text-[13px]">
+            <span className="shrink-0 text-muted-foreground">Cliente</span>
+            <select
+              value={clientId}
+              onChange={(e) => setClientId(e.target.value)}
+              aria-label="Filtra per cliente"
+              className={cn("h-8 max-w-[22rem] min-w-0 rounded-md border bg-card px-2 text-[13px]", clientId && "border-money font-semibold text-money-ink")}
+            >
+              <option value="">Tutti i clienti ({clientOptions.length})</option>
+              {clientOptions.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                  {c.remaining > 0 ? ` · ${formatEuro(c.remaining)} da incassare` : " · saldato"}
+                </option>
+              ))}
+            </select>
+            {clientId && (
+              <button type="button" onClick={() => setClientId("")} className="text-[12px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline">
+                Togli
+              </button>
+            )}
+          </label>
         )}
         {canManage && (
           <Button size="sm" className="ml-auto bg-money hover:bg-money/90" onClick={() => setCreating(true)}>
@@ -166,7 +214,7 @@ export function ReceivablesView({
             <DialogTitle>Nuovo importo da incassare</DialogTitle>
             <DialogDescription>Es. il prezzo di un sito, un acconto o una rata. I pagamenti si registrano dopo, anche in più volte.</DialogDescription>
           </DialogHeader>
-          <ReceivableForm action={createReceivableAction} clients={clients} projects={projects} defaults={newDefaults} submitLabel="Aggiungi importo" isNew onDone={() => setCreating(false)} />
+          <ReceivableForm action={createReceivableAction} clients={clients} projects={projects} defaults={clientId && !newDefaults?.client_id ? { ...newDefaults, client_id: clientId } : newDefaults} submitLabel="Aggiungi importo" isNew onDone={() => setCreating(false)} />
         </DialogContent>
       </Dialog>
 
